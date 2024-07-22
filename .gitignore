@@ -2,3 +2,7 @@ dist
 build
 env
 main.spec
+ui2.py
+productos.db
+productos.xlsx
+error_log.txt
