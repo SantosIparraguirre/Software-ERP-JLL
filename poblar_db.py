@@ -1,10 +1,12 @@
 import pandas as pd
+
+# Importar las clases de los modelos
 from database import session, Capea, Polietileno, Peirano, Latyn, Fusiogas, Chicote, H3, Caños, PiezasPVC, Sigas, PPRosca, Awaduck, Amancofusion, Rotoplas
 
-# Cargar el archivo Excel con múltiples hojas
+# Ruta del archivo Excel
 file_path = 'productos.xlsx'
 
-# Diccionario para mapear nombres de hojas a clases
+# Diccionario para mapear nombres de hojas a clases (tablas)
 sheet_class_mapping = {
     'CAPEA': Capea,
     'POLIETILENO': Polietileno,
@@ -31,3 +33,6 @@ for sheet_name, cls in sheet_class_mapping.items():
 
 # Confirmar la transacción
 session.commit()
+
+# Cerrar la sesión
+session.close()
