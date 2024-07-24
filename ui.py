@@ -3,7 +3,7 @@ from tkinter import ttk, messagebox, filedialog
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from sqlalchemy.orm import sessionmaker
-from database import engine, Capea, Polietileno, Peirano, Latyn, Fusiogas, Chicote, H3, Caños, PiezasPVC, Sigas, PPRosca, Awaduck, Amancofusion, Rotoplas
+from database import engine, Capea, Polietileno, Peirano, Latyn, Fusiogas, Chicote, H3, CañosPVC, PiezasPVC, Sigas, PPRosca, Awaduck, Amancofusion, Rotoplas
 
 # Crear una sesión
 Session = sessionmaker(bind=engine)
@@ -11,20 +11,20 @@ session = Session()
 
 # Diccionario para mapear nombres de tablas a clases
 tabla_clase_mapping = {
-    'capea': Capea,
-    'polietileno': Polietileno,
-    'peirano': Peirano,
-    'latyn': Latyn,
-    'fusiogas': Fusiogas,
-    'chicote': Chicote,
-    'h3': H3,
-    'caños pvc': Caños,
-    'piezas pvc y losung': PiezasPVC,
-    'sigas': Sigas,
-    'pp rosca': PPRosca,
-    'awaduck': Awaduck,
-    'amanco fusion': Amancofusion,
-    'rotoplas': Rotoplas
+    'CAPEA': Capea,
+    'POLIETILENO': Polietileno,
+    'PEIRANO': Peirano,
+    'LATYN': Latyn,
+    'FUSIOGAS': Fusiogas,
+    'CHICOTE': Chicote,
+    'H3': H3,
+    'CAÑOS PVC': CañosPVC,
+    'PIEZAS PVC Y LOSUNG': PiezasPVC,
+    'SIGAS': Sigas,
+    'PP ROSCA': PPRosca,
+    'AWADUCK': Awaduck,
+    'AMANCO FUSION': Amancofusion,
+    'ROTOPLAS': Rotoplas
 }
 
 # Clase para la interfaz de presupuestos
@@ -57,7 +57,11 @@ class PresupuestoApp(tk.Tk):
 
         # Botón para aumentar precios
         self.aumentar_precios_button = ttk.Button(self.main_frame, text="Aumentar Precios", command=self.aumentar_precios)
-        self.aumentar_precios_button.grid(column=0, row=1, columnspan=3, padx=10, pady=10)
+        self.aumentar_precios_button.grid(column=2, row=0, columnspan=1, padx=10, pady=10)
+        
+        # Información del último aumento
+        self.ultimo_aumento_label = ttk.Label(self.main_frame, text="Último aumento: N/A")
+        self.ultimo_aumento_label.grid(column=3, row=0, padx=10, pady=10)
 
         # Cuadro de búsqueda de productos
         self.busqueda_label = ttk.Label(self.main_frame, text="Buscar Producto:")
@@ -74,7 +78,7 @@ class PresupuestoApp(tk.Tk):
         self.producto_label = ttk.Label(self.main_frame, text="Seleccioná un producto:")
         self.producto_label.grid(column=0, row=3, padx=10, pady=10)
 
-        self.productos_listbox = tk.Listbox(self.main_frame, width=50)
+        self.productos_listbox = tk.Listbox(self.main_frame, width=75)
         self.productos_listbox.grid(column=1, row=3, padx=10, pady=10, columnspan=2)
 
         # Campo de cantidad
@@ -98,7 +102,7 @@ class PresupuestoApp(tk.Tk):
         self.add_button.grid(column=0, row=6, columnspan=3, padx=10, pady=10)
 
         # Listbox para mostrar el carrito
-        self.carrito_listbox = tk.Listbox(self.main_frame, width=75)
+        self.carrito_listbox = tk.Listbox(self.main_frame, width=100)
         self.carrito_listbox.grid(column=0, row=7, columnspan=3, padx=10, pady=10, sticky='nsew')
 
         # Botón para borrar del carrito
@@ -235,5 +239,10 @@ class PresupuestoApp(tk.Tk):
 
 # Ejecutar la aplicación
 if __name__ == "__main__":
-    app = PresupuestoApp()
-    app.mainloop()
+    try:
+        app = PresupuestoApp()
+        app.mainloop()
+    except Exception as e:
+        with open("error.log", "w") as f:
+            f.write(str(e))
+    input("Presiona Enter para salir...")

@@ -16,85 +16,85 @@ session = Session()
 
 # Tablas de la base de datos
 class Capea(Base):
-    __tablename__ = 'capea'
+    __tablename__ = 'CAPEA'
     id = Column(Integer, primary_key=True, autoincrement=True)
     producto = Column(String, nullable=False)
     precio = Column(Float, nullable=False)
 
 class Polietileno(Base):
-    __tablename__ = 'polietileno'
+    __tablename__ = 'POLIETILENO'
     id = Column(Integer, primary_key=True, autoincrement=True)
     producto = Column(String, nullable=False)
     precio = Column(Float, nullable=False)
 
 class Peirano(Base):
-    __tablename__ = 'peirano'
+    __tablename__ = 'PEIRANO'
     id = Column(Integer, primary_key=True, autoincrement=True)
     producto = Column(String, nullable=False)
     precio = Column(Float, nullable=False)
 
 class Latyn(Base):
-    __tablename__ = 'latyn'
+    __tablename__ = 'LATYN'
     id = Column(Integer, primary_key=True, autoincrement=True)
     producto = Column(String, nullable=False)
     precio = Column(Float, nullable=False)
 
 class Fusiogas(Base):
-    __tablename__ = 'fusiogas'
+    __tablename__ = 'FUSIOGAS'
     id = Column(Integer, primary_key=True, autoincrement=True)
     producto = Column(String, nullable=False)
     precio = Column(Float, nullable=False)
 
 class Chicote(Base):
-    __tablename__ = 'chicote'
+    __tablename__ = 'CHICOTE'
     id = Column(Integer, primary_key=True, autoincrement=True)
     producto = Column(String, nullable=False)
     precio = Column(Float, nullable=False)
 
 class H3(Base):
-    __tablename__ = 'h3'
+    __tablename__ = 'H3'
     id = Column(Integer, primary_key=True, autoincrement=True)
     producto = Column(String, nullable=False)
     precio = Column(Float, nullable=False)
 
-class Caños(Base):
-    __tablename__ = 'caños'
+class CañosPVC(Base):
+    __tablename__ = 'CAÑOS PVC'
     id = Column(Integer, primary_key=True, autoincrement=True)
     producto = Column(String, nullable=False)
     precio = Column(Float, nullable=False)
 
 class PiezasPVC(Base):
-    __tablename__ = 'piezas pvc y losung'
+    __tablename__ = 'PIEZAS PVC Y LOSUNG'
     id = Column(Integer, primary_key=True, autoincrement=True)
     producto = Column(String, nullable=False)
     precio = Column(Float, nullable=False)
 
 class Sigas(Base):
-    __tablename__ = 'sigas'
+    __tablename__ = 'SIGAS'
     id = Column(Integer, primary_key=True, autoincrement=True)
     producto = Column(String, nullable=False)
     precio = Column(Float, nullable=False)
 
 class PPRosca(Base):
-    __tablename__ = 'pprosca'
+    __tablename__ = 'PP ROSCA'
     id = Column(Integer, primary_key=True, autoincrement=True)
     producto = Column(String, nullable=False)
     precio = Column(Float, nullable=False)
 
 class Awaduck(Base):
-    __tablename__ = 'awaduck'
+    __tablename__ = 'AWADUCK'
     id = Column(Integer, primary_key=True, autoincrement=True)
     producto = Column(String, nullable=False)
     precio = Column(Float, nullable=False)
 
 class Amancofusion(Base):
-    __tablename__ = 'amanco fusion'
+    __tablename__ = 'AMANCO FUSION'
     id = Column(Integer, primary_key=True, autoincrement=True)
     producto = Column(String, nullable=False)
     precio = Column(Float, nullable=False)
 
 class Rotoplas(Base):
-    __tablename__ = 'rotoplas'
+    __tablename__ = 'ROTOPLAS'
     id = Column(Integer, primary_key=True, autoincrement=True)
     producto = Column(String, nullable=False)
     precio = Column(Float, nullable=False)

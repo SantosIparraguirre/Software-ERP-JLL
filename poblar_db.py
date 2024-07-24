@@ -1,7 +1,7 @@
 import pandas as pd
 
 # Importar las clases de los modelos
-from database import session, Capea, Polietileno, Peirano, Latyn, Fusiogas, Chicote, H3, Caños, PiezasPVC, Sigas, PPRosca, Awaduck, Amancofusion, Rotoplas
+from database import session, Capea, Polietileno, Peirano, Latyn, Fusiogas, Chicote, H3, CañosPVC, PiezasPVC, Sigas, PPRosca, Awaduck, Amancofusion, Rotoplas
 
 # Ruta del archivo Excel
 file_path = 'productos.xlsx'
@@ -15,7 +15,7 @@ sheet_class_mapping = {
     'FUSIOGAS': Fusiogas,
     'CHICOTE': Chicote,
     'H3': H3,
-    'CAÑOS PVC': Caños,
+    'CAÑOS PVC': CañosPVC,
     'PIEZAS PVC Y LOSUNG': PiezasPVC,
     'SIGAS': Sigas,
     'PP ROSCA': PPRosca,
