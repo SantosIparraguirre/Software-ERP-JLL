@@ -1,9 +1,12 @@
 import tkinter as tk
-from tkinter import ttk, messagebox, filedialog
+from tkinter import ttk, messagebox, filedialog, simpledialog
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from sqlalchemy.orm import sessionmaker
-from database import engine, Capea, Polietileno, Peirano, Latyn, Fusiogas, Chicote, H3, CañosPVC, PiezasPVC, Sigas, PPRosca, Awaduck, Amancofusion, Rotoplas
+from database_presupuestos import engine, Capea, Polietileno, Peirano, Latyn, Fusiogas, Chicote, H3, CañosPVC, PiezasPVC, Sigas, PPRosca, Awaduck, Amancofusion, Rotoplas
+import pandas as pd
+from openpyxl import load_workbook
+import datetime
 
 # Crear una sesión
 Session = sessionmaker(bind=engine)
@@ -32,18 +35,35 @@ class PresupuestoApp(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Sistema de Presupuestos")
-        self.geometry("1000x600")
+        self.geometry("1200x700")
         self.create_widgets()
         self.carrito = []
+        self.ultimo_aumento = {}
 
     def create_widgets(self):
         # Menú lateral
         self.menu_lateral = tk.Frame(self, width=200, bg='gray')
         self.menu_lateral.pack(side='left', fill='y')
 
+        # Botón para mostrar presupuestos
+        self.presupuestos_button = ttk.Button(self.menu_lateral, text="Presupuestos", command=self.mostrar_presupuestos)
+        self.presupuestos_button.pack(padx=10, pady=10)
+
+        # Botón para mostrar clientes
+        self.clientes_button = ttk.Button(self.menu_lateral, text="Clientes", command=self.mostrar_clientes)
+        self.clientes_button.pack(padx=10, pady=10)
+
         # Frame principal
         self.main_frame = tk.Frame(self)
         self.main_frame.pack(side='right', fill='both', expand=True)
+
+        # Mostrar la sección de presupuestos por defecto
+        self.mostrar_presupuestos()
+
+    def mostrar_presupuestos(self):
+        # Limpiar el main_frame antes de agregar nuevos widgets
+        for widget in self.main_frame.winfo_children():
+            widget.destroy()
 
         # Menú de selección de tablas
         self.tabla_label = ttk.Label(self.main_frame, text="Seleccioná una lista:")
@@ -58,7 +78,7 @@ class PresupuestoApp(tk.Tk):
         # Botón para aumentar precios
         self.aumentar_precios_button = ttk.Button(self.main_frame, text="Aumentar Precios", command=self.aumentar_precios)
         self.aumentar_precios_button.grid(column=2, row=0, columnspan=1, padx=10, pady=10)
-        
+
         # Información del último aumento
         self.ultimo_aumento_label = ttk.Label(self.main_frame, text="Último aumento: N/A")
         self.ultimo_aumento_label.grid(column=3, row=0, padx=10, pady=10)
@@ -74,12 +94,14 @@ class PresupuestoApp(tk.Tk):
         self.buscar_button = ttk.Button(self.main_frame, text="Buscar", command=self.buscar_producto)
         self.buscar_button.grid(column=2, row=2, padx=10, pady=10)
 
-        # Cuadro de lista de productos
+        # Tabla de productos
         self.producto_label = ttk.Label(self.main_frame, text="Seleccioná un producto:")
         self.producto_label.grid(column=0, row=3, padx=10, pady=10)
 
-        self.productos_listbox = tk.Listbox(self.main_frame, width=75)
-        self.productos_listbox.grid(column=1, row=3, padx=10, pady=10, columnspan=2)
+        self.productos_tree = ttk.Treeview(self.main_frame, columns=('Producto', 'Precio'), show='headings')
+        self.productos_tree.heading('Producto', text='Producto')
+        self.productos_tree.heading('Precio', text='Precio')
+        self.productos_tree.grid(column=1, row=3, padx=10, pady=10, columnspan=2)
 
         # Campo de cantidad
         self.cantidad_label = ttk.Label(self.main_frame, text="Cantidad:")
@@ -110,8 +132,17 @@ class PresupuestoApp(tk.Tk):
         self.delete_button.grid(column=0, row=8, columnspan=3, padx=10, pady=10)
 
         # Botón para generar el presupuesto
-        self.generate_button = ttk.Button(self.main_frame, text="Generar Presupuesto", command=self.generar_presupuesto)
+        self.generate_button = ttk.Button(self.main_frame, text="Generar Presupuesto", command=self.generar_presupuesto_excel)
         self.generate_button.grid(column=0, row=9, columnspan=3, padx=10, pady=10)
+
+    def mostrar_clientes(self):
+        # Limpiar el main_frame antes de agregar nuevos widgets
+        for widget in self.main_frame.winfo_children():
+            widget.destroy()
+
+        # Crear widgets específicos para la sección de clientes (a desarrollar)
+        self.clientes_label = ttk.Label(self.main_frame, text="Sección de Clientes (en desarrollo)")
+        self.clientes_label.grid(column=0, row=0, padx=10, pady=10)
 
     def update_productos(self, event):
         tabla = self.tabla_var.get()
@@ -121,12 +152,16 @@ class PresupuestoApp(tk.Tk):
         search_term = self.busqueda_var.get().lower()
 
         productos = session.query(clase).all()
-        self.productos_listbox.delete(0, tk.END)
+        self.productos_tree.delete(*self.productos_tree.get_children())
         for producto in productos:
             if search_term in producto.producto.lower():
-                self.productos_listbox.insert(tk.END, f"{producto.producto} - Precio: {producto.precio}")
+                self.productos_tree.insert('', 'end', values=(producto.producto, producto.precio))
 
-
+        # Actualizar la etiqueta de último aumento
+        if tabla in self.ultimo_aumento:
+            self.ultimo_aumento_label.config(text=f"Último aumento: {self.ultimo_aumento[tabla]}%")
+        else:
+            self.ultimo_aumento_label.config(text="Último aumento: N/A")
 
     def buscar_producto(self):
         search_term = self.busqueda_var.get().lower()
@@ -134,29 +169,18 @@ class PresupuestoApp(tk.Tk):
         clase = tabla_clase_mapping[tabla]
 
         productos = session.query(clase).all()
-        self.productos_listbox.delete(0, tk.END)
+        self.productos_tree.delete(*self.productos_tree.get_children())
         for producto in productos:
             if search_term in producto.producto.lower():
-                self.productos_listbox.insert(tk.END, f"{producto.producto} - Precio: {producto.precio}")
-
-
-
-    def filtrar_productos(self, tabla, busqueda):
-        clase = tabla_clase_mapping[tabla]
-        productos = session.query(clase).filter(clase.producto.contains(busqueda)).all()
-        self.productos_listbox.delete(0, tk.END)
-        for producto in productos:
-            self.productos_listbox.insert(tk.END, producto.producto)
+                self.productos_tree.insert('', 'end', values=(producto.producto, producto.precio))
 
     def agregar_al_carrito(self):
-        producto_seleccionado = self.productos_listbox.get(tk.ACTIVE)
-        if not producto_seleccionado:
+        selected_item = self.productos_tree.selection()
+        if not selected_item:
             messagebox.showerror("Error", "Selecciona un producto.")
             return
 
-        # Extraer el nombre del producto (antes del guión)
-        producto_nombre = producto_seleccionado.split(" - ")[0]
-
+        producto_nombre, precio = self.productos_tree.item(selected_item)['values']
         cantidad = self.cantidad_var.get()
         descuento = self.descuento_var.get()
 
@@ -164,24 +188,14 @@ class PresupuestoApp(tk.Tk):
             messagebox.showerror("Error", "Ingresa una cantidad válida.")
             return
 
-        # Obtener el precio del producto
-        tabla = self.tabla_var.get()
-        clase = tabla_clase_mapping[tabla]
-        producto_info = session.query(clase).filter_by(producto=producto_nombre).first()
-        precio = producto_info.precio
-
         self.carrito.append((producto_nombre, cantidad, descuento, precio))
         self.actualizar_carrito()
-
-
-
 
     def actualizar_carrito(self):
         self.carrito_listbox.delete(0, tk.END)
         for item in self.carrito:
             producto, cantidad, descuento, precio = item
             self.carrito_listbox.insert(tk.END, f"Producto: {producto}, Cantidad: {cantidad}, Descuento: {descuento}%, Precio: {precio}")
-
 
     def eliminar_del_carrito(self):
         seleccion = self.carrito_listbox.curselection()
@@ -192,57 +206,68 @@ class PresupuestoApp(tk.Tk):
         self.carrito.pop(seleccion[0])
         self.actualizar_carrito()
 
-    def generar_presupuesto(self):
-    # Solicitar ubicación para guardar el archivo PDF
-        file_path = filedialog.asksaveasfilename(defaultextension=".pdf", filetypes=[("PDF files", "*.pdf")])
+    def generar_presupuesto_excel(self):
+        # Solicitar ubicación para guardar el archivo Excel
+        file_path = filedialog.asksaveasfilename(defaultextension=".xlsx", filetypes=[("Excel files", "*.xlsx")])
         if not file_path:
             return
-    
-    # Crear el PDF
-        c = canvas.Canvas(file_path, pagesize=letter)
-        width, height = letter
-        c.drawString(100, height - 50, "Presupuesto")
-        y = height - 100
 
-        total = 0
+        # Cargar la plantilla de Excel
+        wb = load_workbook('./data/PLANTILLA PRESUPUESTO.xlsx')
+        sheet = wb.active
+
+        # Obtener la fecha actual
+        fecha_actual = datetime.date.today().strftime("%Y-%m-%d")
+
+        # Rellenar los datos generales del presupuesto
+
+        # Fecha
+        sheet.cell(row=3, column=6, value=fecha_actual)
+
+
+
+        # Rellenar la plantilla con los datos del presupuesto
+        fila_inicial = 11  # Fila donde comienzan los productos en la plantilla
         for item in self.carrito:
             producto, cantidad, descuento, precio = item
-            precio_descuento = precio * (1 - descuento / 100)
-            total_item = precio_descuento * cantidad
-            total += total_item
+            cantidad = int(cantidad)
+            precio = float(precio)
+            precio_mas_iva = cantidad * precio * (1 - descuento / 100) * 1.21
+            descuento = float(descuento) / 100
 
-            c.drawString(100, y, f"Producto: {producto}, Cantidad: {cantidad}, Precio: {precio}, Descuento: {descuento}%, Total: {total_item:.2f}")
-            y -= 20
+            # Escribir los datos en las celdas correspondientes
+            sheet.cell(row=fila_inicial, column=2, value=cantidad)
+            sheet.cell(row=fila_inicial, column=3, value=producto)
+            sheet.cell(row=fila_inicial, column=4, value=precio).number_format = '$ 0.0'
+            sheet.cell(row=fila_inicial, column=5, value=descuento).number_format = '0.0%'
+            sheet.cell(row=fila_inicial, column=6, value=precio_mas_iva)
+            fila_inicial += 1
 
-        c.drawString(100, y - 20, f"Total: {total:.2f}")
-        c.save()
-
-        messagebox.showinfo("Información", "Presupuesto generado correctamente.")
-
+        # Guardar el archivo Excel
+        wb.save(file_path)
+        messagebox.showinfo("Éxito", f"Presupuesto generado en {file_path}")
 
     def aumentar_precios(self):
-        porcentaje = tk.simpledialog.askfloat("Aumentar Precios", "Ingresa el porcentaje de aumento de precios (%):")
-        if porcentaje is None or porcentaje <= 0:
-            messagebox.showerror("Error", "Ingresa un porcentaje válido.")
+        tabla = self.tabla_var.get()
+        if not tabla:
+            messagebox.showerror("Error", "Selecciona una lista.")
             return
 
-        tabla = self.tabla_var.get()
-        clase = tabla_clase_mapping[tabla]
+        aumento = simpledialog.askfloat("Aumentar Precios", "Ingrese el porcentaje de aumento (por ejemplo, 10 para un 10%):")
+        if aumento is None or aumento <= 0:
+            messagebox.showerror("Error", "Ingrese un porcentaje de aumento válido.")
+            return
 
+        clase = tabla_clase_mapping[tabla]
         productos = session.query(clase).all()
         for producto in productos:
-            producto.precio *= (1 + porcentaje / 100)
+            producto.precio *= (1 + aumento / 100)
         session.commit()
 
-        messagebox.showinfo("Información", "Precios aumentados correctamente.")
+        self.ultimo_aumento[tabla] = aumento
         self.update_productos(None)
+        messagebox.showinfo("Éxito", f"Los precios de {tabla} han sido aumentados en un {aumento}%.")
 
-# Ejecutar la aplicación
 if __name__ == "__main__":
-    try:
-        app = PresupuestoApp()
-        app.mainloop()
-    except Exception as e:
-        with open("error.log", "w") as f:
-            f.write(str(e))
-    input("Presiona Enter para salir...")
+    app = PresupuestoApp()
+    app.mainloop()
