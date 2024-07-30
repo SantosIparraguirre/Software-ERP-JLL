@@ -1,10 +1,8 @@
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog, simpledialog
 from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
 from sqlalchemy.orm import sessionmaker
 from database_presupuestos import engine, Capea, Polietileno, Peirano, Latyn, Fusiogas, Chicote, H3, CañosPVC, PiezasPVC, Sigas, PPRosca, Awaduck, Amancofusion, Rotoplas
-import pandas as pd
 from openpyxl import load_workbook
 import datetime
 
@@ -67,21 +65,21 @@ class PresupuestoApp(tk.Tk):
 
         # Menú de selección de tablas
         self.tabla_label = ttk.Label(self.main_frame, text="Seleccioná una lista:")
-        self.tabla_label.grid(column=0, row=0, padx=10, pady=10)
+        self.tabla_label.grid(column=0, row=0, padx=(10,2), pady=10)
 
         self.tabla_var = tk.StringVar()
         self.tabla_combobox = ttk.Combobox(self.main_frame, textvariable=self.tabla_var)
         self.tabla_combobox['values'] = list(tabla_clase_mapping.keys())
         self.tabla_combobox.bind("<<ComboboxSelected>>", self.update_productos)
-        self.tabla_combobox.grid(column=1, row=0, padx=10, pady=10)
+        self.tabla_combobox.grid(column=1, row=0, padx=(0,5), pady=10)
 
         # Botón para aumentar precios
         self.aumentar_precios_button = ttk.Button(self.main_frame, text="Aumentar Precios", command=self.aumentar_precios)
-        self.aumentar_precios_button.grid(column=2, row=0, columnspan=1, padx=10, pady=10)
+        self.aumentar_precios_button.grid(column=2, row=0, columnspan=1, padx=(0,10), pady=10)
 
         # Información del último aumento
         self.ultimo_aumento_label = ttk.Label(self.main_frame, text="Último aumento: N/A")
-        self.ultimo_aumento_label.grid(column=3, row=0, padx=10, pady=10)
+        self.ultimo_aumento_label.grid(column=3, row=0, padx=1, pady=10)
 
         # Cuadro de búsqueda de productos
         self.busqueda_label = ttk.Label(self.main_frame, text="Buscar Producto:")
@@ -89,43 +87,41 @@ class PresupuestoApp(tk.Tk):
 
         self.busqueda_var = tk.StringVar()
         self.busqueda_entry = ttk.Entry(self.main_frame, textvariable=self.busqueda_var)
-        self.busqueda_entry.grid(column=1, row=2, padx=10, pady=10)
+        self.busqueda_entry.grid(column=1, row=2, padx=(10, 2), pady=10)
 
         self.buscar_button = ttk.Button(self.main_frame, text="Buscar", command=self.buscar_producto)
-        self.buscar_button.grid(column=2, row=2, padx=10, pady=10)
-
-        # Tabla de productos
-        self.producto_label = ttk.Label(self.main_frame, text="Seleccioná un producto:")
-        self.producto_label.grid(column=0, row=3, padx=10, pady=10)
-
-        self.productos_tree = ttk.Treeview(self.main_frame, columns=('Producto', 'Precio'), show='headings')
-        self.productos_tree.heading('Producto', text='Producto')
-        self.productos_tree.heading('Precio', text='Precio')
-        self.productos_tree.grid(column=1, row=3, padx=10, pady=10, columnspan=2)
+        self.buscar_button.grid(column=2, row=2, padx=(0, 10), pady=10)
 
         # Campo de cantidad
         self.cantidad_label = ttk.Label(self.main_frame, text="Cantidad:")
-        self.cantidad_label.grid(column=0, row=4, padx=10, pady=10)
+        self.cantidad_label.grid(column=0, row=3, padx=10, pady=10)
 
         self.cantidad_var = tk.IntVar()
         self.cantidad_entry = ttk.Entry(self.main_frame, textvariable=self.cantidad_var)
-        self.cantidad_entry.grid(column=1, row=4, padx=10, pady=10)
+        self.cantidad_entry.grid(column=1, row=3, padx=10, pady=10)
 
         # Campo de descuento
         self.descuento_label = ttk.Label(self.main_frame, text="Descuento (%):")
-        self.descuento_label.grid(column=0, row=5, padx=10, pady=10)
+        self.descuento_label.grid(column=2, row=3, padx=10, pady=10)
 
         self.descuento_var = tk.DoubleVar()
         self.descuento_entry = ttk.Entry(self.main_frame, textvariable=self.descuento_var)
-        self.descuento_entry.grid(column=1, row=5, padx=10, pady=10)
+        self.descuento_entry.grid(column=3, row=3, padx=10, pady=10)
 
         # Botón para agregar al carrito
         self.add_button = ttk.Button(self.main_frame, text="Agregar al Carrito", command=self.agregar_al_carrito)
-        self.add_button.grid(column=0, row=6, columnspan=3, padx=10, pady=10)
+        self.add_button.grid(column=0, row=4, columnspan=3, padx=10, pady=10)
+
+        # Tabla de productos
+        self.productos_tree = ttk.Treeview(self.main_frame, columns=('Producto', 'Precio'), show='headings')
+        self.productos_tree.heading('Producto', text='Producto')
+        self.productos_tree.heading('Precio', text='Precio')
+        self.productos_tree.grid(column=0, row=5, padx=10, pady=10, columnspan=2)
 
         # Listbox para mostrar el carrito
-        self.carrito_listbox = tk.Listbox(self.main_frame, width=100)
-        self.carrito_listbox.grid(column=0, row=7, columnspan=3, padx=10, pady=10, sticky='nsew')
+        self.carrito_listbox = tk.Listbox(self.main_frame, width=80)
+        self.carrito_listbox.grid(column=2, row=5, columnspan=3, padx=10, pady=10, sticky='nsew')
+
 
         # Botón para borrar del carrito
         self.delete_button = ttk.Button(self.main_frame, text="Eliminar del Carrito", command=self.eliminar_del_carrito)
@@ -217,7 +213,7 @@ class PresupuestoApp(tk.Tk):
         sheet = wb.active
 
         # Obtener la fecha actual
-        fecha_actual = datetime.date.today().strftime("%Y-%m-%d")
+        fecha_actual = datetime.date.today().strftime("%d-%m-%Y")
 
         # Rellenar los datos generales del presupuesto
 
@@ -232,15 +228,15 @@ class PresupuestoApp(tk.Tk):
             producto, cantidad, descuento, precio = item
             cantidad = int(cantidad)
             precio = float(precio)
-            precio_mas_iva = cantidad * precio * (1 - descuento / 100) * 1.21
+            precio_total = cantidad * precio * (1 - descuento / 100)
             descuento = float(descuento) / 100
 
             # Escribir los datos en las celdas correspondientes
             sheet.cell(row=fila_inicial, column=2, value=cantidad)
             sheet.cell(row=fila_inicial, column=3, value=producto)
-            sheet.cell(row=fila_inicial, column=4, value=precio).number_format = '$ 0.0'
+            sheet.cell(row=fila_inicial, column=4, value=precio).number_format = '$ 0,0.00'
             sheet.cell(row=fila_inicial, column=5, value=descuento).number_format = '0.0%'
-            sheet.cell(row=fila_inicial, column=6, value=precio_mas_iva)
+            sheet.cell(row=fila_inicial, column=6, value=precio_total).number_format = '$ 0,0.00'
             fila_inicial += 1
 
         # Guardar el archivo Excel

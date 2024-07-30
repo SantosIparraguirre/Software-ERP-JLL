@@ -6,3 +6,6 @@ ui2.py
 productos.db
 productos.xlsx
 error_log.txt
+data
+__pycache__
+ui.spec

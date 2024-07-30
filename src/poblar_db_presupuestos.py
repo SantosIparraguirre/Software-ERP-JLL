@@ -1,7 +1,7 @@
 import pandas as pd
 
 # Importar las clases de los modelos
-from database import session, Capea, Polietileno, Peirano, Latyn, Fusiogas, Chicote, H3, CañosPVC, PiezasPVC, Sigas, PPRosca, Awaduck, Amancofusion, Rotoplas
+from database_presupuestos import session, Capea, Polietileno, Peirano, Latyn, Fusiogas, Chicote, H3, CañosPVC, PiezasPVC, Sigas, PPRosca, Awaduck, Amancofusion, Rotoplas
 
 # Ruta del archivo Excel
 file_path = 'productos.xlsx'
