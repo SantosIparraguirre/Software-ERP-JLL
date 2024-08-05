@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, Integer, String, Float
+from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey, relationship
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
@@ -15,6 +15,64 @@ Session = sessionmaker(bind=engine)
 session = Session()
 
 # Tablas de la base de datos
+
+# Clientes
+class Clientes(Base):
+    __tablename__ = 'CLIENTES'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    nombre = Column(String, nullable=False)
+    cuit = Column(String, nullable=False)
+
+# Presupuestos
+class Presupuestos(Base):
+    __tablename__ = 'PRESUPUESTOS'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    id_cliente = Column(Integer, ForeignKey ('CLIENTES.id'), nullable=False)
+    fecha = Column(String, nullable=False)
+    total = Column(Float, nullable=False)
+    cliente = relationship('Clientes')
+
+# Detalles de presupuestos
+class DetallesPresupuestos(Base):
+    __tablename__ = 'DETALLES_PRESUPUESTOS'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    id_presupuesto = Column(Integer, ForeignKey ('PRESUPUESTOS.id'), nullable=False)
+    producto = Column(String, nullable=False)
+    cantidad = Column(Integer, nullable=False)
+    precio_unitario = Column(Float, nullable=False)
+    descuento = Column(Float, nullable=False)
+    total = Column(Float, nullable=False)
+    presupuesto = relationship('Presupuestos')
+
+# Remitos
+class Remitos(Base):
+    __tablename__ = 'REMITOS'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    id_cliente = Column(Integer, ForeignKey ('CLIENTES.id'), nullable=False)
+    fecha = Column(String, nullable=False)
+    total = Column(Float, nullable=False)
+    cliente = relationship('Clientes')
+
+# Detalles de remitos
+class DetallesRemitos(Base):
+    __tablename__ = 'DETALLES_REMITOS'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    id_remito = Column(Integer, ForeignKey ('REMITOS.id'), nullable=False)
+    producto = Column(String, nullable=False)
+    cantidad = Column(Integer, nullable=False)
+    precio_unitario = Column(Float, nullable=False)
+    descuento = Column(Float, nullable=False)
+    total = Column(Float, nullable=False)
+    remito = relationship('Remitos')
+
+class Vasser(Base):
+    __tablename__ = 'VASSER'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    codigo = Column(String, nullable=False)
+    linea = Column(String, nullable=False)
+    producto = Column(String, nullable=False)
+    precio = Column(Float, nullable=False)
+
 class Capea(Base):
     __tablename__ = 'CAPEA'
     id = Column(Integer, primary_key=True, autoincrement=True)

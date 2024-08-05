@@ -1,7 +1,7 @@
 import pandas as pd
 
 # Importar las clases de los modelos
-from database_presupuestos import session, Capea, Polietileno, Peirano, Latyn, Fusiogas, Chicote, H3, CañosPVC, PiezasPVC, Sigas, PPRosca, Awaduck, Amancofusion, Rotoplas
+from database import session, Vasser, Capea, Polietileno, Peirano, Latyn, Fusiogas, Chicote, H3, CañosPVC, PiezasPVC, Sigas, PPRosca, Awaduck, Amancofusion, Rotoplas
 
 # Ruta del archivo Excel
 file_path = 'productos.xlsx'
@@ -30,6 +30,12 @@ for sheet_name, cls in sheet_class_mapping.items():
     for _, row in df.iterrows():
         producto = cls(producto=row['PRODUCTO'], precio=row['PRECIO'])
         session.add(producto)
+
+# Cargar los datos de vasser
+df = pd.read_excel(file_path, sheet_name='VASSER')
+for _, row in df.iterrows():
+    producto = Vasser(codigo=row['Codigo'], linea=row['Linea'], producto=row['Descripcion'], precio=row['Precio'])
+    session.add(producto)
 
 # Confirmar la transacción
 session.commit()
