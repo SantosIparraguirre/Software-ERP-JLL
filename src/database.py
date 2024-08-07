@@ -1,6 +1,6 @@
-from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey, relationship
+from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, relationship
 
 # Crear la base de datos
 Base = declarative_base()

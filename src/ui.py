@@ -68,9 +68,6 @@ class PresupuestoApp(tk.Tk):
         # Empaquetar el frame principal en la ventana principal
         self.main_frame.pack(side='right', fill='both', expand=True)
 
-        # Mostrar la sección de presupuestos por defecto
-        self.mostrar_presupuestos()
-
     def mostrar_presupuestos(self):
         # Limpiar el main_frame antes de agregar nuevos widgets para evitar superposiciones
         for widget in self.main_frame.winfo_children():
@@ -209,18 +206,20 @@ class PresupuestoApp(tk.Tk):
         self.carrito_treeview.heading('Cantidad', text='Cantidad')
         self.carrito_treeview.heading('Descuento', text='Descuento')
         self.carrito_treeview.heading('Precio', text='Precio')
-        self.carrito_treeview.column('Producto', width=300)
-        self.carrito_treeview.column('Cantidad', width=50)
-        self.carrito_treeview.column('Descuento', width=50)
+        self.carrito_treeview.column('Producto', width=350)
+        self.carrito_treeview.column('Cantidad', width=75)
+        self.carrito_treeview.column('Descuento', width=75)
         self.carrito_treeview.column('Precio', width=100)
-        self.carrito_treeview.place(x=550, y=160)
+        self.carrito_treeview.place(x=552, y=160)
+
+        self.actualizar_carrito()
 
         # Scrollbar para la lista de productos del carrito
         # Scrollbar en el eje vertical que se conecta con la lista de productos del carrito y se mueve con ella
         scrollbar = ttk.Scrollbar(self.main_frame, orient=tk.VERTICAL, command=self.carrito_treeview.yview)
         # Configurar la scrollbar para que se mueva junto con la lista de productos del carrito en el eje y (vertical)
         self.carrito_treeview.configure(yscroll=scrollbar.set)
-        scrollbar.place(x=1155, y=160, relheight=0.3)
+        scrollbar.place(x=1155, y=160, relheight=0.31)
 
         # Botón para borrar del carrito
         # El botón llama a la función eliminar_del_carrito cuando se hace click
@@ -230,7 +229,7 @@ class PresupuestoApp(tk.Tk):
         # Botón para generar el presupuesto
         # El botón llama a la función generar_presupuesto_excel cuando se hace click
         self.generate_button = ttk.Button(self.main_frame, text="Generar Presupuesto", command=self.generar_presupuesto_excel)
-        self.generate_button.place(x=825, y=400)
+        self.generate_button.place(x=780, y=400)
 
         # Botón para generar el remito
         # El botón llama a la función generar_remito_excel cuando se hace click
@@ -243,9 +242,10 @@ class PresupuestoApp(tk.Tk):
         for widget in self.main_frame.winfo_children():
             widget.destroy()
 
-        # Crear widgets específicos para la sección de clientes (a desarrollar)
-        self.clientes_label = ttk.Label(self.main_frame, text="Sección de Clientes (en desarrollo)")
-        self.clientes_label.grid(column=0, row=0, padx=10, pady=10)
+        # Label de seccion en desarrollo
+        self.seccion_label = ttk.Label(self.main_frame, text="Sección en desarrollo")
+        self.seccion_label.place(x=10, y=10)
+        
 
     def aumentar_precios(self):
         # Obtener la tabla seleccionada
@@ -330,7 +330,14 @@ class PresupuestoApp(tk.Tk):
         # Verificar si la clase tiene un atributo 'codigo' y 'linea' para mostrar en la tabla
         if hasattr(clase, 'codigo') and hasattr(clase, 'linea'):
             for producto in productos:
+                # Si la búsqueda está contenida en el nombre del producto, insertar el producto en la tabla
                 if search_term in producto.producto.lower():
+                    self.productos_tree.insert('', 'end', values=(producto.codigo, producto.linea, producto.producto, producto.precio))
+                # Si la búsqueda está contenida en el código del producto, insertar el producto en la tabla
+                elif search_term in producto.codigo.lower():
+                    self.productos_tree.insert('', 'end', values=(producto.codigo, producto.linea, producto.producto, producto.precio))
+                # Si la búsqueda está contenida en la línea del producto, insertar el producto en la tabla
+                elif search_term in producto.linea.lower():
                     self.productos_tree.insert('', 'end', values=(producto.codigo, producto.linea, producto.producto, producto.precio))
         else:
             for producto in productos:
@@ -522,9 +529,13 @@ class PresupuestoApp(tk.Tk):
         # Abrir el archivo automáticamente
         try:
             os.startfile(file_path)
+            self.carrito = []
+            self.actualizar_carrito()
 
         except Exception as e:
             messagebox.showerror("Error", f"No se pudo abrir el archivo: {str(e)}")
+
+        
       
 
     def generar_presupuesto_excel(self):
@@ -616,6 +627,8 @@ class PresupuestoApp(tk.Tk):
         # Abrir el archivo automáticamente
         try:
             os.startfile(file_path)
+            self.carrito = []
+            self.actualizar_carrito()
 
         except Exception as e:
             messagebox.showerror("Error", f"No se pudo abrir el archivo: {str(e)}")
