@@ -12,17 +12,17 @@ Este proyecto es una aplicación de escritorio desarrollada en Python utilizando
 - Búsqueda y Filtros: Búsqueda de productos por nombre, código o línea.
 - Productos Fuera de Lista: Posibilidad de agregar productos que no están en la lista principal.
 
-# Características futuras
+## Características futuras
 - Finalización de la sección de clientes: Incluir la posibilidad de gestionar clientes y asociar documentos a cada uno.
 - Generación de facturas: Permitir la generación de facturas y su almacenamiento.
 - Mejoras en la interfaz: Embellecer el diseño, incorporar íconos y colores.
 - Añadir funcionalidades: Más botones para modificar listas, productos, etc.
 
 ## Librerias principales
-Tkinter
-SQLAlchemy
-Openpyxl
-ReportLab
+- Tkinter
+- SQLAlchemy
+- Openpyxl
+- ReportLab
 
 ## Contacto
 
