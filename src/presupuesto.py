@@ -1,12 +1,15 @@
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog, simpledialog
+from ttkwidgets.autocomplete import AutocompleteCombobox
 from reportlab.lib.pagesizes import letter
 from sqlalchemy.orm import sessionmaker
-from database import engine, Vasser, Capea, Polietileno, Peirano, Latyn, Fusiogas, Chicote, H3, CañosPVC, PiezasPVC, Sigas, PPRosca, Awaduck, Amancofusion, Rotoplas
+from database import engine, Vasser, Capea, Polietileno, Peirano, Latyn, Fusiogas, Chicote, H3, CañosPVC, PiezasPVC, Sigas, PPRosca, Awaduck, Amancofusion, Rotoplas, Clientes, Presupuestos, DetallesPresupuestos, Remitos, DetallesRemitos
 from openpyxl import load_workbook
 import datetime
 from openpyxl.styles import Border, Side, PatternFill, Font, Alignment
 import os
+from PIL import Image, ImageTk
+from clientes import ClientesApp
 
 # Sesión de SQLAlchemy para interactuar con la base de datos
 Session = sessionmaker(bind=engine)
@@ -39,11 +42,13 @@ class PresupuestoApp(tk.Tk):
         # Título de la ventana
         self.title("Sistema de Presupuestos")
         # Geometría de la ventana
-        self.geometry("1280x720")
+        self.geometry("1300x700")
         # Crear los widgets con la función create_widgets
         self.create_widgets()
         # Lista para almacenar los productos del carrito
         self.carrito = []
+        # Lista para almacenar los precios anteriores antes de un aumento
+        self.precios_anteriores = []
 
     def create_widgets(self):
         # Menú lateral
@@ -74,10 +79,18 @@ class PresupuestoApp(tk.Tk):
             # Destruir el widget
             widget.destroy()
 
+        self.cliente_label = ttk.Label(self.main_frame, text="Nombre del Cliente:")
+        self.cliente_label.place(x=10, y=10)
+
+        self.cliente_var = tk.StringVar()
+        self.cliente_combobox = AutocompleteCombobox(self.main_frame, textvariable=self.cliente_var)
+        self.cliente_combobox.set_completion_list(self.obtener_nombres_clientes())
+        self.cliente_combobox.place(x=135, y=10)
+
         # Menú de selección de tablas (listas de precios)
-        self.tabla_label = ttk.Label(self.main_frame, text="Seleccioná una lista:")
+        self.tabla_label = ttk.Label(self.main_frame, text="Seleccionar una lista:")
         # Empaquetar la etiqueta en el main_frame con place
-        self.tabla_label.place(x=10, y=10)
+        self.tabla_label.place(x=10, y=100)
 
         # Combobox para seleccionar la tabla
 
@@ -90,55 +103,36 @@ class PresupuestoApp(tk.Tk):
         # Seleccionar la primera opción por defecto
         self.tabla_combobox.bind("<<ComboboxSelected>>", self.update_productos)
 
-        self.tabla_combobox.place(x=135, y=10)
+        self.tabla_combobox.place(x=135, y=100)
 
-        # Botón para aumentar precios
-        # El botón llama a la función aumentar_precios cuando se hace click
-        self.aumentar_precios_button = ttk.Button(self.main_frame, text="Aumentar Precios", command=self.aumentar_precios)
-        self.aumentar_precios_button.place(x=300, y=8)
+        # # Botón para aumentar precios
+        # # El botón llama a la función aumentar_precios cuando se hace click
+        # self.aumentar_precios_button = ttk.Button(self.main_frame, text="Modificar Precios", command=self.modificar_precios)
+        # self.aumentar_precios_button.place(x=300, y=98)
+
+        # self.deshacer_aumento_button = ttk.Button(self.main_frame, text="Deshacer", command=self.deshacer_ultimo_aumento)
+        # self.deshacer_aumento_button.place(x=420, y=98)
 
         # Etiqueta de búsqueda
-        self.busqueda_label = ttk.Label(self.main_frame, text="Buscar Producto:")
-        self.busqueda_label.place(x=10, y=40)
+        self.busqueda_label = ttk.Label(self.main_frame, text="Buscar un producto:")
+        self.busqueda_label.place(x=10, y=130)
 
         # Campo de búsqueda
         # StringVar para almacenar el valor ingresado en el campo de búsqueda 
         self.busqueda_var = tk.StringVar()
         # Entry para ingresar el término de búsqueda, textvariable es la variable que almacena el valor ingresado
         self.busqueda_entry = ttk.Entry(self.main_frame, textvariable=self.busqueda_var)
-        self.busqueda_entry.place(x=135, y=40)
+        self.busqueda_entry.place(x=135, y=130)
 
         # Botón para buscar productos
+        # Cargar la imagen de búsqueda y redimensionarla
+        original_search_image = Image.open("./icons/search.png")
+        resized_search_image = original_search_image.resize((15, 15), Image.LANCZOS)
+        self.search_image = ImageTk.PhotoImage(resized_search_image)
+
         # El botón llama a la función buscar_producto cuando se hace click
-        self.buscar_button = ttk.Button(self.main_frame, text="Buscar", command=self.buscar_producto)
-        self.buscar_button.place(x=300, y=38)
-
-        # Etiqueta de cantidad
-        self.cantidad_label = ttk.Label(self.main_frame, text="Cantidad:")
-        self.cantidad_label.place(x=10, y=70)
-
-        # Campo de cantidad
-        # IntVar para almacenar el valor ingresado en el campo de cantidad 
-        self.cantidad_var = tk.IntVar()
-        # Entry para ingresar la cantidad, textvariable es la variable que almacena el valor ingresado
-        self.cantidad_entry = ttk.Entry(self.main_frame, textvariable=self.cantidad_var)
-        self.cantidad_entry.place(x=135, y=70)
-
-        # Etiqueta de descuento
-        self.descuento_label = ttk.Label(self.main_frame, text="Descuento (%):")
-        self.descuento_label.place(x=10, y=100)
-
-        # Campo de descuento
-        # DoubleVar para almacenar el valor ingresado en el campo de descuento
-        self.descuento_var = tk.DoubleVar()
-        # Entry para ingresar el descuento, textvariable es la variable que almacena el valor ingresado
-        self.descuento_entry = ttk.Entry(self.main_frame, textvariable=self.descuento_var)
-        self.descuento_entry.place(x=135, y=100)
-
-        # Botón para agregar al carrito
-        # El botón llama a la función agregar_al_carrito cuando se hace click
-        self.add_button = ttk.Button(self.main_frame, text="Agregar al Carrito", command=self.agregar_al_carrito)
-        self.add_button.place(x=135, y=130)
+        self.buscar_button = ttk.Button(self.main_frame, image=self.search_image, command=self.buscar_producto)
+        self.buscar_button.place(x=270, y=128)
 
         # Tabla de productos
         # Treeview con las columnas Producto y Precio
@@ -162,11 +156,38 @@ class PresupuestoApp(tk.Tk):
         self.productos_tree.configure(yscroll=scrollbar.set)
         scrollbar.place(x=532, y=160, relheight=0.31)
 
+        # Etiqueta de cantidad
+        self.cantidad_label = ttk.Label(self.main_frame, text="Cantidad:")
+        self.cantidad_label.place(x=10, y=400)
+
+        # Campo de cantidad
+        # IntVar para almacenar el valor ingresado en el campo de cantidad 
+        self.cantidad_var = tk.IntVar()
+        # Entry para ingresar la cantidad, textvariable es la variable que almacena el valor ingresado
+        self.cantidad_entry = ttk.Entry(self.main_frame, textvariable=self.cantidad_var)
+        self.cantidad_entry.place(x=115, y=400)
+
+        # Etiqueta de descuento
+        self.descuento_label = ttk.Label(self.main_frame, text="Descuento (%):")
+        self.descuento_label.place(x=10, y=430)
+
+        # Campo de descuento
+        # DoubleVar para almacenar el valor ingresado en el campo de descuento
+        self.descuento_var = tk.DoubleVar()
+        # Entry para ingresar el descuento, textvariable es la variable que almacena el valor ingresado
+        self.descuento_entry = ttk.Entry(self.main_frame, textvariable=self.descuento_var)
+        self.descuento_entry.place(x=115, y=430)
+
+        # Botón para agregar al carrito
+        # El botón llama a la función agregar_al_carrito cuando se hace click
+        self.add_button = ttk.Button(self.main_frame, text="Agregar al Carrito", command=self.agregar_al_carrito)
+        self.add_button.place(x=260, y=398)
+
         # Carrito
 
         # Agregar productos fuera de lista
         # Etiqueta de productos fuera de lista
-        self.productos_fuera_lista_label = ttk.Label(self.main_frame, text="Productos Fuera de Lista")
+        self.productos_fuera_lista_label = ttk.Label(self.main_frame, text="PRODUCTOS FUERA DE LISTA")
         self.productos_fuera_lista_label.place(x=750, y=10)
 
         # Etiqueta para nombre del producto
@@ -236,48 +257,83 @@ class PresupuestoApp(tk.Tk):
         self.generate_button = ttk.Button(self.main_frame, text="Generar Remito", command=self.generar_remito_excel)
         self.generate_button.place(x=1000, y=400)
 
+    # Funciones para interactuar con la base de datos y la interfaz
 
-    def mostrar_clientes(self):
-        # Limpiar el main_frame antes de agregar nuevos widgets
-        for widget in self.main_frame.winfo_children():
-            widget.destroy()
+    def obtener_nombres_clientes(self):
+        clientes = session.query(Clientes.nombre).all()
+        return [cliente[0] for cliente in clientes]
 
-        # Label de seccion en desarrollo
-        self.seccion_label = ttk.Label(self.main_frame, text="Sección en desarrollo")
-        self.seccion_label.place(x=10, y=10)
-        
-
-    def aumentar_precios(self):
-        # Obtener la tabla seleccionada
-        tabla = self.tabla_var.get()
-        if not tabla:
-            messagebox.showerror("Error", "Selecciona una lista.")
+    def modificar_precios(self):
+        # Verificar si hay una lista seleccionada
+        if not self.tabla_var.get():
+            # Mostrar un mensaje de error si no hay una lista seleccionada
+            messagebox.showerror("Error", "Selecciona una lista de productos.")
             return
-
         # Solicitar el porcentaje de aumento al usuario
-        aumento = simpledialog.askfloat("Aumentar Precios", "Ingrese el porcentaje de aumento (por ejemplo, 10 para un 10%):")
-        # Si el usuario cancela la operación o ingresa un valor inválido, mostrar un mensaje de error
-        if aumento is None or aumento <= 0:
-            messagebox.showerror("Error", "Ingrese un porcentaje de aumento válido.")
+        porcentaje_aumento = simpledialog.askfloat("Modificar Precios", "Ingrese el porcentaje (por ejemplo, 10 para un 10%):")
+        # Si el usuario ingresó un porcentaje
+        if porcentaje_aumento is not None:
+            
+            # Obtener la tabla seleccionada por el usuario
+            tabla_seleccionada = self.tabla_var.get()
+            # Verificar si la tabla seleccionada está en el diccionario de mapeo
+            if tabla_seleccionada in tabla_clase_mapping:
+                # Obtener la clase correspondiente a la tabla seleccionada por el usuario del diccionario de mapeo
+                ClaseTabla = tabla_clase_mapping[tabla_seleccionada]
+
+                # Obtener todos los productos de la tabla seleccionada
+                productos = session.query(ClaseTabla).all()
+
+                # Guardar los precios anteriores antes de modificarlos
+                self.precios_anteriores = [(producto.producto, producto.precio) for producto in productos]  # Guardar precios anteriores
+                
+                # Iterar sobre los productos y aumentar el precio según el porcentaje ingresado
+                for producto in productos:
+                    producto.precio *= (1 + porcentaje_aumento / 100)
+
+                # Confirmar los cambios en la base de datos
+                session.commit()
+                # Mostrar un mensaje de éxito al usuario con el porcentaje de aumento y la tabla seleccionada
+                messagebox.showinfo("Éxito", f"Los precios de {tabla_seleccionada} han sido modificados en un {porcentaje_aumento}%.")
+                # Actualizar la lista de productos
+                self.update_productos(None)
+
+    def deshacer_ultimo_aumento(self):
+        # Verificar si hay precios anteriores guardados
+        if not self.precios_anteriores:
+            # Mostrar un mensaje de error si no hay precios anteriores guardados
+            messagebox.showwarning("Error", "No hay modificaciones previas para deshacer.")
             return
 
-        # Obtener la clase correspondiente a la tabla seleccionada por el usuario del diccionario de mapeo
-        clase = tabla_clase_mapping[tabla]
-        # Obtener todos los productos de la tabla seleccionada por el usuario
-        productos = session.query(clase).all()
-        # Aumentar los precios de los productos en la tabla seleccionada
-        for producto in productos:
-            producto.precio *= (1 + aumento / 100)
-        session.commit()
+        # Obtener la tabla seleccionada por el usuario
+        tabla_seleccionada = self.tabla_var.get()
+        # Verificar si la tabla seleccionada está en el diccionario de mapeo
+        if tabla_seleccionada in tabla_clase_mapping:
+            # Obtener la clase correspondiente a la tabla seleccionada por el usuario del diccionario de mapeo
+            ClaseTabla = tabla_clase_mapping[tabla_seleccionada]
 
-        # Actualizar la tabla de productos, no es necesario pasar el evento como argumento
-        self.update_productos(None)
-        messagebox.showinfo("Éxito", f"Los precios de {tabla} han sido aumentados en un {aumento}%.")
+            # Iterar sobre los productos y revertir el último aumento de precio
+            for nombre_producto, precio_anterior in self.precios_anteriores:
+                # Obtener el producto por el nombre
+                producto = session.query(ClaseTabla).filter_by(producto=nombre_producto).first()
+                # Si el producto existe, revertir el precio al precio anterior
+                if producto:
+                    producto.precio = precio_anterior
+
+            # Confirmar los cambios en la base de datos
+            session.commit()
+            # Mostrar un mensaje de éxito al usuario
+            messagebox.showinfo("Éxito", "Última modificación revertida exitosamente.")
+            # Actualizar la lista de productos
+            self.update_productos(None)
+            self.precios_anteriores = []  # Limpiar la lista después de deshacer
 
     def agregar_fuera_lista(self):
         # Obtener el nombre y precio del producto ingresados por el usuario
         producto = self.producto_var.get()
+        # Obtener la cantidad y precio del producto ingresados por el usuario
         cantidad = self.cantidad_fuera_lista_var.get()
+        # Obtener la cantidad y precio del producto ingresados por el usuario
         precio = self.precio_var.get()
 
         # Validar que el producto y el precio no estén vacíos
@@ -306,9 +362,11 @@ class PresupuestoApp(tk.Tk):
 
         # Verificar si la clase tiene un atributo 'codigo' y 'linea' para mostrar en la tabla
         if hasattr(clase, 'codigo') and hasattr(clase, 'linea'):
+            # Iterar sobre los productos y agregarlos a la tabla si coinciden con el término de búsqueda
             for producto in productos:
                 if search_term in producto.producto.lower():
                     self.productos_tree.insert('', 'end', values=(producto.codigo, producto.linea, producto.producto, producto.precio))
+        # Si la clase no tiene los atributos 'codigo' y 'linea', agregar sólo el nombre del producto y el precio
         else:
             for producto in productos:
                 if search_term in producto.producto.lower():
@@ -339,6 +397,7 @@ class PresupuestoApp(tk.Tk):
                 # Si la búsqueda está contenida en la línea del producto, insertar el producto en la tabla
                 elif search_term in producto.linea.lower():
                     self.productos_tree.insert('', 'end', values=(producto.codigo, producto.linea, producto.producto, producto.precio))
+        # Si la clase no tiene los atributos 'codigo' y 'linea', agregar sólo el nombre del producto y el precio
         else:
             for producto in productos:
                 if search_term in producto.producto.lower():
@@ -399,11 +458,29 @@ class PresupuestoApp(tk.Tk):
         wb = load_workbook('./data/PLANTILLA REMITO.xlsx')
         sheet = wb.active
 
+        # Rellenar los datos del remito
+
+        # Obtener el cliente
+        cliente = self.cliente_var.get()
+
+        # Si el cliente es "Consumidor Final", no imputamos datos de cliente
+        if cliente != "Consumidor Final":
+            # Verificar si el cliente está en la base de datos
+            cliente_db = session.query(Clientes).filter_by(nombre=cliente).first()
+            if cliente_db:
+                nombre_cliente = cliente_db.nombre
+                cuit_cliente = cliente_db.cuit
+                domicilio_cliente = cliente_db.direccion
+
+                # Escribir los datos del cliente en las celdas correspondientes
+                sheet.cell(row=6, column=4, value=f"CLIENTE: {nombre_cliente}").font = Font(name='Arial')
+                sheet.cell(row=8, column=4, value=f"DOMICILIO: {domicilio_cliente}").font = Font(name='Arial')
+                sheet.cell(row=8, column=6, value=f"CUIT: {cuit_cliente}").font = Font(name='Arial')
+
         # Obtener la fecha actual
         fecha_actual = datetime.date.today().strftime("%d-%m-%Y")
 
-        # Rellenar los datos del remito
-        # Fecha
+        # Escribir la fecha actual en la celda correspondiente
         sheet.cell(row=4, column=4, value=fecha_actual)
 
         fila_inicial = 11
@@ -467,6 +544,12 @@ class PresupuestoApp(tk.Tk):
 
             # Etiqueta "CUIT"
             sheet.cell(row=fila_inicial + 3, column=3, value="CUIT:")
+
+            # Rellenar los datos del cliente si está en la base de datos
+            if cliente_db:
+                sheet.cell(row=fila_inicial + 1, column=2, value=nombre_cliente)
+                sheet.cell(row=fila_inicial + 1, column=4, value=cuit_cliente)
+                sheet.cell(row=fila_inicial + 3, column=2, value=domicilio_cliente)
 
             # Borde para las celdas
             borde_cant = Border(left=Side(style='thin'),
@@ -534,8 +617,6 @@ class PresupuestoApp(tk.Tk):
 
         except Exception as e:
             messagebox.showerror("Error", f"No se pudo abrir el archivo: {str(e)}")
-
-        
       
 
     def generar_presupuesto_excel(self):
@@ -632,6 +713,14 @@ class PresupuestoApp(tk.Tk):
 
         except Exception as e:
             messagebox.showerror("Error", f"No se pudo abrir el archivo: {str(e)}")
+
+    def mostrar_clientes(self):
+        # Limpiar el main_frame antes de agregar nuevos widgets
+        for widget in self.main_frame.winfo_children():
+            widget.destroy()
+
+        # Crear una instancia de ClientesApp y agregar sus widgets al main_frame
+        self.clientes_app = ClientesApp(self.main_frame)         
 
 # Función principal para ejecutar la aplicación
 # Si el script se ejecuta directamente, se crea una instancia de la clase PresupuestoApp y se llama al método mainloop

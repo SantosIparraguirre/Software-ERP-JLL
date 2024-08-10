@@ -21,7 +21,9 @@ class Clientes(Base):
     __tablename__ = 'CLIENTES'
     id = Column(Integer, primary_key=True, autoincrement=True)
     nombre = Column(String, nullable=False)
-    cuit = Column(String, nullable=False)
+    cuit = Column(String)
+    telefono = Column(String)
+    direccion = Column(String)
 
 # Presupuestos
 class Presupuestos(Base):
