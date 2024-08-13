@@ -1,7 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-from database import session
-from database import Clientes
+from database_v2 import session, Clientes
 from PIL import Image, ImageTk
 
 class ClientesApp(tk.Tk):
