@@ -9,7 +9,7 @@ import datetime
 from openpyxl.styles import Border, Side, PatternFill, Font, Alignment
 import os
 from PIL import Image, ImageTk
-from clientes import ClientesApp
+from clientes_v2 import ClientesApp
 
 # Sesión de SQLAlchemy para interactuar con la base de datos
 Session = sessionmaker(bind=engine)
@@ -71,7 +71,7 @@ class PresupuestoApp(tk.Tk):
         # Menú de selección de tablas (listas de precios)
         self.tabla_label = ttk.Label(self.main_frame, text="Seleccionar una lista:")
         # Empaquetar la etiqueta en el main_frame con place
-        self.tabla_label.place(x=10, y=100)
+        self.tabla_label.place(x=10, y=70)
 
         # Combobox para seleccionar la categoría
 
@@ -89,7 +89,7 @@ class PresupuestoApp(tk.Tk):
         # Llamar a la función update_productos cuando se selecciona una tabla
         self.tabla_combobox.bind("<<ComboboxSelected>>", self.update_productos)
         # Colocar el combobox en el main_frame
-        self.tabla_combobox.place(x=135, y=100)
+        self.tabla_combobox.place(x=135, y=70)
 
         # # Botón para aumentar precios
         # # El botón llama a la función aumentar_precios cuando se hace click
@@ -174,7 +174,7 @@ class PresupuestoApp(tk.Tk):
         # Agregar productos fuera de lista
         # Etiqueta de productos fuera de lista
         self.productos_fuera_lista_label = ttk.Label(self.main_frame, text="PRODUCTOS FUERA DE LISTA")
-        self.productos_fuera_lista_label.place(x=750, y=10)
+        self.productos_fuera_lista_label.place(x=765, y=10)
 
         # Etiqueta para nombre del producto
         self.producto_label = ttk.Label(self.main_frame, text="Producto:")
@@ -205,7 +205,20 @@ class PresupuestoApp(tk.Tk):
 
         # Botón para agregar productos fuera de lista
         self.add_fuera_lista_button = ttk.Button(self.main_frame, text="Agregar al Carrito", command=self.agregar_fuera_lista)
-        self.add_fuera_lista_button.place(x=750, y=130)
+        self.add_fuera_lista_button.place(x=960, y=68)
+
+        # Botón para borrar del carrito
+        # El botón llama a la función eliminar_del_carrito cuando se hace click
+        self.delete_button = ttk.Button(self.main_frame, text="Eliminar Producto", command=self.eliminar_del_carrito)
+        self.delete_button.place(x=625, y=130)
+
+        # Etiqueta "CARRITO"
+        self.carrito_label = ttk.Label(self.main_frame, text="CARRITO")
+        self.carrito_label.place(x=810, y=133)
+
+        # Botón para limpiar el carrito
+        self.clear_button = ttk.Button(self.main_frame, text="Limpiar Carrito", command=self.limpiar_carrito)
+        self.clear_button.place(x=950, y=130)
 
         # Treeview para mostrar los productos del carrito
         self.carrito_treeview = ttk.Treeview(self.main_frame, columns=('Producto', 'Cantidad', 'Descuento', 'Precio'), show='headings')
@@ -228,20 +241,23 @@ class PresupuestoApp(tk.Tk):
         self.carrito_treeview.configure(yscroll=scrollbar.set)
         scrollbar.place(x=1155, y=160, relheight=0.31)
 
-        # Botón para borrar del carrito
-        # El botón llama a la función eliminar_del_carrito cuando se hace click
-        self.delete_button = ttk.Button(self.main_frame, text="Eliminar del Carrito", command=self.eliminar_del_carrito)
-        self.delete_button.place(x=585, y=400)
-
         # Botón para generar el presupuesto
         # El botón llama a la función generar_presupuesto_excel cuando se hace click
         self.generate_button = ttk.Button(self.main_frame, text="Generar Presupuesto", command=self.generar_presupuesto_excel)
-        self.generate_button.place(x=780, y=400)
+        self.generate_button.place(x=560, y=400)
+
+        # Botón para guardar el presupuesto en la base de datos
+        self.save_presupuesto_button = ttk.Button(self.main_frame, text="Guardar Presupuesto", command=self.guardar_presupuesto)
+        self.save_presupuesto_button.place(x=700, y=400)
 
         # Botón para generar el remito
         # El botón llama a la función generar_remito_excel cuando se hace click
         self.generate_button = ttk.Button(self.main_frame, text="Generar Remito", command=self.generar_remito_excel)
-        self.generate_button.place(x=1000, y=400)
+        self.generate_button.place(x=850, y=400)
+
+        # Botón para guardar el remito en la base de datos
+        self.save_remito_button = ttk.Button(self.main_frame, text="Guardar Remito", command=self.guardar_remito)
+        self.save_remito_button.place(x=1000, y=400)
 
     # Funciones para interactuar con la base de datos y la interfaz
 
@@ -435,6 +451,12 @@ class PresupuestoApp(tk.Tk):
         del self.carrito[index]
 
         self.actualizar_carrito()
+
+    def limpiar_carrito(self):
+        # Limpiar la lista de productos del carrito
+        self.carrito = []
+        # Actualizar la lista de productos del carrito
+        self.actualizar_carrito()
         
     def generar_remito_excel(self):
         # Solicitar ubicación para guardar el archivo Excel
@@ -450,6 +472,11 @@ class PresupuestoApp(tk.Tk):
 
         # Obtener el cliente
         cliente = self.cliente_var.get()
+
+        # Si no se seleccionó un cliente, mostrar un mensaje de error
+        if not cliente:
+            messagebox.showerror("Error", "Selecciona un cliente.")
+            return
 
         # Si el cliente es "Consumidor Final", no imputamos datos de cliente
         if cliente != "Consumidor Final":
@@ -494,7 +521,7 @@ class PresupuestoApp(tk.Tk):
             fila_inicial += 1
         
         # Imputar el total
-        sheet.cell(row=fila_inicial, column=8, value=total)
+        sheet.cell(row=fila_inicial, column=8, value=total).font = Font(name='Arial', bold=True)
 
         # Firma del cliente y observaciones
         sheet.cell(row=fila_inicial + 1, column=1, value="FIRMA DEL CLIENTE:").font = Font(name='Arial', bold=True)
@@ -516,28 +543,21 @@ class PresupuestoApp(tk.Tk):
             # Fecha actual 
             sheet.cell(row=fila_inicial, column=2, value=fecha_actual)
 
-            # Etiqueta "CLIENTE" 
-            sheet.cell(row=fila_inicial + 1, column=1, value="CLIENTE:")
+            # Si el cliente no es consumidor final, rellenar
+            if cliente != "Consumidor Final":
+            # Rellenar los datos del cliente
+                sheet.cell(row=fila_inicial + 1, column=1, value=f"NOMBRE: {nombre_cliente}").font = Font(name='Arial')
+                sheet.cell(row=fila_inicial + 1, column=3, value=f"CUIT: {cuit_cliente}").font = Font(name='Arial')
+                sheet.cell(row=fila_inicial + 3, column=1, value=f"DOMICILIO: {domicilio_cliente}").font = Font(name='Arial')
+                sheet.cell(row=fila_inicial + 3, column=3, value="DNI:").font = Font(name='Arial')
 
-            # Etiqueta "DNI"
-            sheet.cell(row=fila_inicial + 1, column=3, value="DNI:")
-
-            # Etiqueta "Domicilio"
-            sheet.cell(row=fila_inicial + 3, column=1, value="DOMICILIO:")
-
+            else:
+                sheet.cell(row=fila_inicial + 2, column=1, value="CLIENTE: CONSUMIDOR FINAL").font = Font(name='Arial')
+            
             # Alinear a la izquierda Fecha de entrega, Cliente y Domicilio
             sheet.cell(row=fila_inicial, column=1).alignment = Alignment(horizontal='left')
             sheet.cell(row=fila_inicial + 1, column=1).alignment = Alignment(horizontal='left')
             sheet.cell(row=fila_inicial + 3, column=1).alignment = Alignment(horizontal='left')
-
-            # Etiqueta "CUIT"
-            sheet.cell(row=fila_inicial + 3, column=3, value="CUIT:")
-
-            # Rellenar los datos del cliente si está en la base de datos
-            if cliente_db:
-                sheet.cell(row=fila_inicial + 1, column=2, value=nombre_cliente)
-                sheet.cell(row=fila_inicial + 1, column=4, value=cuit_cliente)
-                sheet.cell(row=fila_inicial + 3, column=2, value=domicilio_cliente)
 
             # Borde para las celdas
             borde_cant = Border(left=Side(style='thin'),
@@ -587,7 +607,7 @@ class PresupuestoApp(tk.Tk):
                 fila_inicial += 1
             
             # Imputar el total
-            sheet.cell(row=fila_inicial, column=8, value=total)       
+            sheet.cell(row=fila_inicial, column=8, value=total).font = Font(name='Arial', bold=True)    
 
             # Firma del cliente y observaciones
             sheet.cell(row=fila_inicial + 1, column=1, value="FIRMA DEL CLIENTE:").font = Font(name='Arial', bold=True)     
@@ -600,11 +620,61 @@ class PresupuestoApp(tk.Tk):
         # Abrir el archivo automáticamente
         try:
             os.startfile(file_path)
-            self.carrito = []
-            self.actualizar_carrito()
 
         except Exception as e:
             messagebox.showerror("Error", f"No se pudo abrir el archivo: {str(e)}")
+
+    def guardar_remito(self):
+        try:
+            # Obtener el nombre del cliente seleccionado
+            nombre_cliente = self.cliente_var.get()
+
+            # Buscar el cliente en la base de datos
+            cliente = session.query(Clientes).filter_by(nombre=nombre_cliente).first()
+
+            if not cliente:
+                messagebox.showerror("Error", "Cliente no encontrado en la base de datos.")
+                return
+
+            # Obtener la fecha actual
+            fecha_actual = datetime.date.today().strftime("%d-%m-%Y")
+
+            # Crear un nuevo remito
+            nuevo_remito = Remitos(id_cliente=cliente.id, fecha=fecha_actual, total=0)
+
+            # Agregar el remito a la base de datos
+            session.add(nuevo_remito)
+            session.commit()
+
+            total_remito = 0
+
+            # Iterar sobre los elementos del carrito para agregarlos a los detalles del remito
+            for producto, cantidad, descuento, precio in self.carrito:
+                cantidad = int(cantidad)
+                precio = float(precio)
+                descuento = float(descuento)
+                total = cantidad * precio * (1 - descuento / 100)
+                detalle = DetallesRemitos(
+                    id_remito=nuevo_remito.id,
+                    producto=producto,
+                    cantidad=cantidad,
+                    precio_unitario=precio,
+                    descuento=descuento,
+                    total=total
+                )
+                total_remito += total
+                session.add(detalle)
+
+            # Actualizar el total del remito
+            nuevo_remito.total = total_remito
+            session.commit()
+
+            messagebox.showinfo("Éxito", "El remito se ha guardado correctamente en la base de datos.")
+        
+        except Exception as e:
+            session.rollback()
+            messagebox.showerror("Error", f"Ocurrió un error al guardar el remito: {str(e)}")
+        
       
 
     def generar_presupuesto_excel(self):
@@ -617,12 +687,38 @@ class PresupuestoApp(tk.Tk):
         wb = load_workbook('./data/PLANTILLA PRESUPUESTO.xlsx')
         sheet = wb.active
 
+        # Obtener el cliente
+        cliente = self.cliente_var.get()
+
+        # Si no se seleccionó un cliente, mostrar un mensaje de error
+        if not cliente:
+            messagebox.showerror("Error", "Selecciona un cliente.")
+            return
+
         # Obtener la fecha actual
         fecha_actual = datetime.date.today().strftime("%d-%m-%Y")
 
         # Rellenar los datos generales del presupuesto
         # Fecha
         sheet.cell(row=3, column=6, value=fecha_actual)
+
+        # Si el cliente es "Consumidor Final", no imputamos datos de cliente
+        if cliente != "Consumidor Final":
+            # Verificar si el cliente está en la base de datos
+            cliente_db = session.query(Clientes).filter_by(nombre=cliente).first()
+            if cliente_db:
+                nombre_cliente = cliente_db.nombre
+                cuit_cliente = cliente_db.cuit
+                domicilio_cliente = cliente_db.direccion
+
+                # Escribir los datos del cliente en las celdas correspondientes
+                sheet.cell(row=5, column=6, value=nombre_cliente)
+                sheet.cell(row=6, column=6, value=cuit_cliente)
+                sheet.cell(row=7, column=6, value=domicilio_cliente)
+
+        else:
+            # Si el cliente es "Consumidor Final", escribir "Consumidor Final" en la celda correspondiente
+            sheet.cell(row=5, column=6, value="Consumidor Final")
 
         # Estilo de borde y relleno para las celdas aplicado con openpyxl
         thin_border = Border(left=Side(style='thin'), 
@@ -689,6 +785,117 @@ class PresupuestoApp(tk.Tk):
                 # Aplicar relleno azul a las celdas de subtotal, iva y total
                 # cell.fill = blue_fill
 
+        # Copia para la empresa
+
+        if fila_inicial <= 40:
+            fila_inicial = 40
+            # Fusionar celdas para el título
+            sheet.merge_cells(start_row=fila_inicial, start_column=5, end_row=fila_inicial +2, end_column=6)
+            # Titulo "PRESUPUESTO" con fuente 'Arial' de tamaño 20 y negrita
+            sheet.cell(row=fila_inicial, column=5, value="PRESUPUESTO").font = Font(name='Arial', size=27, bold=True, color="8db3e2")
+            # Alinear a la derecha y arriba
+            sheet.cell(row=fila_inicial, column=5).alignment = Alignment(horizontal='right', vertical='top')
+
+            # Etiqueta "Fecha"
+            sheet.cell(row=fila_inicial, column=4, value=f"Fecha: {fecha_actual}")
+
+            # Guardar el nombre del cliente en una variable
+            nombre_cliente = self.cliente_var.get()
+
+            # Si el cliente no es "Consumidor Final", rellenar los datos del cliente
+            if nombre_cliente != "Consumidor Final":
+                # Etiqueta "CLIENTE" y nombre del cliente alineado a la izquierda
+                sheet.cell(row=fila_inicial, column=2, value=f"CLIENTE: {nombre_cliente}").alignment = Alignment(horizontal='left')
+
+                # Etiqueta "Domicilio" y domicilio del cliente
+                sheet.cell(row=fila_inicial + 1, column=2, value=f"Domicilio: {domicilio_cliente}").alignment = Alignment(horizontal='left')
+
+                # Etiqueta "CUIT" y CUIT del cliente
+                sheet.cell(row=fila_inicial + 2, column=2, value=f"CUIT: {cuit_cliente}").alignment = Alignment(horizontal='left')
+
+                # Etiqueta "DNI" y espacio para completar
+                sheet.cell(row=fila_inicial + 3, column=2, value="DNI:").alignment = Alignment(horizontal='left')
+
+            else:
+                # Si el cliente es "Consumidor Final", escribir "Consumidor Final" en la celda correspondiente
+                sheet.cell(row=fila_inicial + 1, column=2, value="CLIENTE: Consumidor Final").alignment = Alignment(horizontal='left')
+
+            # Borde para las celdas
+            borde = Border(left=Side(style='thin'),
+                                top=Side(style='thin'),
+                                bottom=Side(style='thin'),
+                                right=Side(style='thin'))
+            
+            # CANTIDAD, DETALLE, PRECIO UD., DESCUENTO, IMPORTE C/IVA
+            sheet.cell(row=fila_inicial + 4, column=2, value="CANTIDAD").border = borde
+            sheet.cell(row=fila_inicial + 4, column=3, value="DETALLE").border = borde
+            sheet.cell(row=fila_inicial + 4, column=4, value="PRECIO UD.").border = borde
+            sheet.cell(row=fila_inicial + 4, column=5, value="DESCUENTO").border = borde
+            sheet.cell(row=fila_inicial + 4, column=6, value="IMPORTE C/IVA").border = borde
+
+            # Color
+            color_fondo = PatternFill(start_color="dbe5f1", end_color="dbe5f1", fill_type="solid")
+
+            # Aplicar color de fondo dbe5f1 a la fila de los encabezados
+            for col in range(2, 7):
+                sheet.cell(row=fila_inicial + 4, column=col).fill = color_fondo
+
+                  # Rellenar la plantilla con los datos del presupuesto
+        fila_inicial += 5  # Fila donde comienzan los productos en la plantilla
+        subtotal = 0
+
+        # Iterar sobre los productos en el carrito y hacer los cálculos necesarios
+        for item in self.carrito:
+            # Desempaquetar los datos de la lista del carrito en variables separadas 
+            producto, cantidad, descuento, precio = item
+            # Convertir la cantidad y el precio a entero y flotante
+            cantidad = int(cantidad)
+            precio = float(precio)
+            # Calcular el precio total con descuento y sin IVA del producto
+            precio_total = cantidad * precio * (1 - descuento / 100)
+            precio_sin_iva = precio_total / 1.21
+            # Convertir el descuento a porcentaje
+            descuento_porcentaje = float(descuento) / 100
+
+            # Escribir los datos en las celdas correspondientes
+            sheet.cell(row=fila_inicial, column=2, value=cantidad)
+            sheet.cell(row=fila_inicial, column=3, value=producto)
+            sheet.cell(row=fila_inicial, column=4, value=precio)
+            sheet.cell(row=fila_inicial, column=5, value=descuento_porcentaje).number_format = '0.00%'
+            sheet.cell(row=fila_inicial, column=6, value=precio_total)
+
+            # Aplicar borde a las celdas de la fila actual
+            for col in range(2, 7):
+                sheet.cell(row=fila_inicial, column=col).border = borde
+
+            # Calcular el subtotal del presupuesto con los precios sin IVA
+            subtotal += precio_sin_iva
+            # Pasar a la siguiente fila
+            fila_inicial += 1
+
+        # Calcular los totales
+        iva = subtotal * 0.21
+        total = subtotal + iva
+
+        # Escribir los totales en las celdas correspondientes
+        sheet.cell(row=fila_inicial, column=5, value="Subtotal").font = Font(bold=True)
+        sheet.cell(row=fila_inicial, column=6, value=subtotal)
+
+        sheet.cell(row=fila_inicial + 1, column=5, value="IVA").font = Font(bold=True)
+        sheet.cell(row=fila_inicial + 1, column=6, value=iva)
+
+        sheet.cell(row=fila_inicial + 2, column=5, value="Total").font = Font(bold=True)
+        sheet.cell(row=fila_inicial + 2, column=6, value=total)
+
+        # Gracias por su confianza en la tercer columna
+        sheet.cell(row=fila_inicial + 2, column=3, value="GRACIAS POR SU CONFIANZA").font = Font(bold=True)
+
+        # Aplicar borde y relleno a las celdas de subtotal, iva y total
+        for row in range(fila_inicial, fila_inicial + 3):
+            for col in range(5, 7):
+                cell = sheet.cell(row=row, column=col)
+                cell.border = borde
+
         # Guardar el archivo Excel
         wb.save(file_path)
         messagebox.showinfo("Éxito", f"Presupuesto generado en {file_path}")
@@ -696,11 +903,106 @@ class PresupuestoApp(tk.Tk):
         # Abrir el archivo automáticamente
         try:
             os.startfile(file_path)
-            self.carrito = []
-            self.actualizar_carrito()
 
         except Exception as e:
             messagebox.showerror("Error", f"No se pudo abrir el archivo: {str(e)}")
+
+    def guardar_presupuesto(self):
+        try:
+            # Obtener el nombre del cliente seleccionado
+            nombre_cliente = self.cliente_var.get()
+
+            # Buscar el cliente en la base de datos
+            cliente = session.query(Clientes).filter_by(nombre=nombre_cliente).first()
+
+            if not cliente:
+                messagebox.showerror("Error", "Cliente no encontrado en la base de datos.")
+                return
+
+            # Obtener la fecha actual
+            fecha_actual = datetime.date.today().strftime("%d-%m-%Y")
+
+            # Crear un nuevo presupuesto
+            nuevo_presupuesto = Presupuestos(id_cliente=cliente.id, fecha=fecha_actual, total=0)
+
+            # Agregar el presupuesto a la base de datos
+            session.add(nuevo_presupuesto)
+            session.commit()
+
+            total_presupuesto = 0
+
+            # Iterar sobre los elementos del carrito para agregarlos a los detalles del presupuesto
+            for producto, cantidad, descuento, precio in self.carrito:
+                cantidad = int(cantidad)
+                precio = float(precio)
+                descuento = float(descuento)
+                total = cantidad * precio * (1 - descuento / 100)
+                detalle = DetallesPresupuestos(
+                    id_presupuesto=nuevo_presupuesto.id,
+                    producto=producto,
+                    cantidad=cantidad,
+                    precio_unitario=precio,
+                    descuento=descuento,
+                    total=total
+                )
+                total_presupuesto += total
+                session.add(detalle)
+
+            # Actualizar el total del presupuesto
+            nuevo_presupuesto.total = total_presupuesto
+            session.commit()
+
+            messagebox.showinfo("Éxito", "El presupuesto se ha guardado correctamente en la base de datos.")
+        
+        except Exception as e:
+            session.rollback()
+            messagebox.showerror("Error", f"Ocurrió un error al guardar el presupuesto: {str(e)}")
+
+    
+    # def guardar_presupuesto(self):
+    #     # Obtener el cliente
+    #     cliente = self.cliente_var.get()
+
+    #     # Si no se seleccionó un cliente, mostrar un mensaje de error
+    #     if not cliente:
+    #         messagebox.showerror("Error", "Selecciona un cliente.")
+    #         return
+
+    #     try:
+    #         # Verificar si el cliente está en la base de datos
+    #         cliente_db = session.query(Clientes).filter_by(nombre=cliente).first()
+    #         if cliente_db:
+    #             id_cliente = cliente_db.id
+    #             fecha_actual = datetime.date.today()
+
+    #             # Crear un nuevo objeto Presupuesto con los datos del cliente y el total del carrito
+    #             presupuesto = Presupuestos(id_cliente=id_cliente, fecha=fecha_actual, total=sum([float(item[3]) for item in self.carrito]))
+    #             # Agregar el presupuesto a la base de datos
+    #             session.add(presupuesto)
+    #             session.flush()
+
+    #             # Agregar los detalles del presupuesto
+    #             for item in self.carrito:
+    #                 nombre_producto, cantidad, descuento, precio_unitario = item
+    #                 total_item = cantidad * precio_unitario * (1 - descuento/100)
+                    
+    #                 detalle = DetallesPresupuestos(
+    #                     id_presupuesto=presupuesto.id,
+    #                     producto=nombre_producto,
+    #                     cantidad=cantidad,
+    #                     precio_unitario=precio_unitario,
+    #                     descuento=descuento,
+    #                     total=total_item
+    #                 )
+    #                 session.add(detalle)
+    #                 # Confirmar los cambios en la base de datos
+    #                 session.commit()
+    #                 messagebox.showinfo("Éxito", "Presupuesto guardado exitosamente.")
+    #                 return
+    #     except Exception as e:
+    #         session.rollback()
+    #         messagebox.showerror("Error", f"Error al guardar el presupuesto: {str(e)}")
+    #         return
 
     def mostrar_clientes(self):
         # Limpiar el main_frame antes de agregar nuevos widgets
