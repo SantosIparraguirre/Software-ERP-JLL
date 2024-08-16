@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey, Date
+from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey, Date, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 import datetime
@@ -51,7 +51,7 @@ class Presupuestos(Base):
     __tablename__ = 'PRESUPUESTOS'
     id = Column(Integer, primary_key=True, autoincrement=True)
     id_cliente = Column(Integer, ForeignKey ('CLIENTES.id'), nullable=False)
-    fecha = Column(String, nullable=False)
+    fecha = Column(DateTime, nullable=False)
     total = Column(Float, nullable=False)
     cliente = relationship('Clientes', back_populates='presupuestos')
     detalles = relationship('DetallesPresupuestos', back_populates='presupuesto')
@@ -73,8 +73,9 @@ class Remitos(Base):
     __tablename__ = 'REMITOS'
     id = Column(Integer, primary_key=True, autoincrement=True)
     id_cliente = Column(Integer, ForeignKey ('CLIENTES.id'), nullable=False)
-    fecha = Column(String, nullable=False)
+    fecha = Column(DateTime, nullable=False)
     total = Column(Float, nullable=False)
+    pago = Column(String, nullable=False)
     cliente = relationship('Clientes', back_populates='remitos')
     detalles = relationship('DetallesRemitos', back_populates='remito')
 
@@ -95,54 +96,11 @@ class Acopios(Base):
     __tablename__ = 'ACOPIOS'
     id = Column(Integer, primary_key=True, autoincrement=True)
     id_cliente = Column(Integer, ForeignKey('CLIENTES.id'), nullable=False)
-    fecha_creacion = Column(Date, default=datetime.date.today().strftime("%d-%m-%Y"))
-    fecha_modificacion = Column(Date, default=datetime.date.today().strftime("%d-%m-%Y"), onupdate=datetime.date.today().strftime("%d-%m-%Y"))
+    fecha_creacion = Column(DateTime, default=datetime.now)
+    fecha_modificacion = Column(DateTime, default=datetime.now, onupdate=datetime.now)
+    producto = Column(String, nullable=False)
+    cantidad = Column(Integer, nullable=False)
     cliente = relationship('Clientes', back_populates='acopios')
-    detalles = relationship('DetallesAcopios', back_populates='acopio')
-
-# Detalles de acopios
-class DetallesAcopios(Base):
-    __tablename__ = 'DETALLES_ACOPIOS'
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    id_acopio = Column(Integer, ForeignKey('ACOPIOS.id'), nullable=False)
-    producto = Column(String, nullable=False)
-    cantidad = Column(Integer, nullable=False)
-    acopio = relationship('Acopios', back_populates='detalles')
-
-# Deudas
-class Deudas(Base):
-    __tablename__ = 'DEUDAS'
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    id_cliente = Column(Integer, ForeignKey('CLIENTES.id'), nullable=False)
-    fecha_creacion = Column(Date, default=datetime.date.today().strftime("%d-%m-%Y"))
-    total_original = Column(Float, nullable=False)
-    saldo_pendiente = Column(Float, nullable=False)
-    fecha_actualizacion = Column(Date, default=datetime.date.today().strftime("%d-%m-%Y"), onupdate=datetime.date.today().strftime("%d-%m-%Y"))
-    estado = Column(String, default='Pendiente')  # Pendiente, Parcial, Pagada
-    cliente = relationship('Clientes', back_populates='deudas')
-    detalles = relationship('DetallesDeudas', back_populates='deuda')
-    pagos = relationship('PagosDeudas', back_populates='deuda')
-
-# Detalles de deudas
-class DetallesDeudas(Base):
-    __tablename__ = 'DETALLES_DEUDAS'
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    id_deuda = Column(Integer, ForeignKey('DEUDAS.id'), nullable=False)
-    producto = Column(String, nullable=False)
-    cantidad = Column(Integer, nullable=False)
-    precio_unitario = Column(Float, nullable=False)
-    descuento = Column(Float, nullable=False)
-    total = Column(Float, nullable=False)
-    deuda = relationship('Deudas', back_populates='detalles')
-
-# Pagos de deudas
-class PagosDeudas(Base):
-    __tablename__ = 'PAGOS_DEUDAS'
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    id_deuda = Column(Integer, ForeignKey('DEUDAS.id'), nullable=False)
-    fecha_pago = Column(Date, default=datetime.date.today().strftime("%d-%m-%Y"))
-    monto = Column(Float, nullable=False)
-    deuda = relationship('Deudas', back_populates='pagos')
 
 
 # Crear las tablas

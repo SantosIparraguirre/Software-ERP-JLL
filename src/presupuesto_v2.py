@@ -60,11 +60,14 @@ class PresupuestoApp(tk.Tk):
             # Destruir el widget
             widget.destroy()
 
+        # Etiqueta para el nombre del cliente
         self.cliente_label = ttk.Label(self.main_frame, text="Nombre del Cliente:")
         self.cliente_label.place(x=10, y=10)
-
+        
+        # Combobox para seleccionar el cliente
         self.cliente_var = tk.StringVar()
         self.cliente_combobox = AutocompleteCombobox(self.main_frame, textvariable=self.cliente_var)
+        # Establecer la lista de opciones para el combobox con los nombres de los clientes
         self.cliente_combobox.set_completion_list(self.obtener_nombres_clientes())
         self.cliente_combobox.place(x=135, y=10)
 
@@ -91,13 +94,15 @@ class PresupuestoApp(tk.Tk):
         # Colocar el combobox en el main_frame
         self.tabla_combobox.place(x=135, y=70)
 
-        # # Botón para aumentar precios
-        # # El botón llama a la función aumentar_precios cuando se hace click
-        # self.aumentar_precios_button = ttk.Button(self.main_frame, text="Modificar Precios", command=self.modificar_precios)
-        # self.aumentar_precios_button.place(x=300, y=98)
+        # Botón para aumentar precios
+        # El botón llama a la función aumentar_precios cuando se hace click
+        self.aumentar_precios_button = ttk.Button(self.main_frame, text="Modificar Precios", command=self.modificar_precios)
+        self.aumentar_precios_button.place(x=300, y=68)
 
-        # self.deshacer_aumento_button = ttk.Button(self.main_frame, text="Deshacer", command=self.deshacer_ultimo_aumento)
-        # self.deshacer_aumento_button.place(x=420, y=98)
+        # Botón para deshacer el último aumento
+        # El botón llama a la función deshacer_ultimo_aumento cuando se hace click
+        self.deshacer_aumento_button = ttk.Button(self.main_frame, text="Deshacer", command=self.deshacer_ultimo_aumento)
+        self.deshacer_aumento_button.place(x=420, y=68)
 
         # Etiqueta de búsqueda
         self.busqueda_label = ttk.Label(self.main_frame, text="Buscar un producto:")
@@ -222,10 +227,12 @@ class PresupuestoApp(tk.Tk):
 
         # Treeview para mostrar los productos del carrito
         self.carrito_treeview = ttk.Treeview(self.main_frame, columns=('Producto', 'Cantidad', 'Descuento', 'Precio'), show='headings')
+        # Encabezados de las columnas
         self.carrito_treeview.heading('Producto', text='Producto')
         self.carrito_treeview.heading('Cantidad', text='Cantidad')
         self.carrito_treeview.heading('Descuento', text='Descuento')
         self.carrito_treeview.heading('Precio', text='Precio')
+        # Ancho de las columnas
         self.carrito_treeview.column('Producto', width=350)
         self.carrito_treeview.column('Cantidad', width=75)
         self.carrito_treeview.column('Descuento', width=75)
@@ -265,70 +272,71 @@ class PresupuestoApp(tk.Tk):
         clientes = session.query(Clientes.nombre).all()
         return [cliente[0] for cliente in clientes]
 
-    # def modificar_precios(self):
-    #     # Verificar si hay una lista seleccionada
-    #     if not self.tabla_var.get():
-    #         # Mostrar un mensaje de error si no hay una lista seleccionada
-    #         messagebox.showerror("Error", "Selecciona una lista de productos.")
-    #         return
-    #     # Solicitar el porcentaje de aumento al usuario
-    #     porcentaje_aumento = simpledialog.askfloat("Modificar Precios", "Ingrese el porcentaje (por ejemplo, 10 para un 10%):")
-    #     # Si el usuario ingresó un porcentaje
-    #     if porcentaje_aumento is not None:
-            
-    #         # Obtener la tabla seleccionada por el usuario
-    #         tabla_seleccionada = self.tabla_var.get()
-    #         # Verificar si la tabla seleccionada está en el diccionario de mapeo
-    #         if tabla_seleccionada in tabla_clase_mapping:
-    #             # Obtener la clase correspondiente a la tabla seleccionada por el usuario del diccionario de mapeo
-    #             ClaseTabla = tabla_clase_mapping[tabla_seleccionada]
+    def modificar_precios(self):
+        # Verificar si hay una lista seleccionada
+        if not self.tabla_var.get():
+            # Mostrar un mensaje de error si no hay una lista seleccionada
+            messagebox.showerror("Error", "Selecciona una lista de productos.")
+            return
 
-    #             # Obtener todos los productos de la tabla seleccionada
-    #             productos = session.query(ClaseTabla).all()
+        # Solicitar el porcentaje de aumento al usuario
+        porcentaje_aumento = simpledialog.askfloat("Modificar Precios", "Ingrese el porcentaje (por ejemplo, 10 para un 10%):")
+        # Si el usuario ingresó un porcentaje
+        if porcentaje_aumento is not None:
+            # Obtener la categoría seleccionada por el usuario
+            categoria_seleccionada = self.tabla_var.get()
 
-    #             # Guardar los precios anteriores antes de modificarlos
-    #             self.precios_anteriores = [(producto.producto, producto.precio) for producto in productos]  # Guardar precios anteriores
-                
-    #             # Iterar sobre los productos y aumentar el precio según el porcentaje ingresado
-    #             for producto in productos:
-    #                 producto.precio *= (1 + porcentaje_aumento / 100)
+            # Obtener el ID de la categoría seleccionada
+            categoria_seleccionada = session.query(Categorias).filter_by(nombre=categoria_seleccionada).first().id
 
-    #             # Confirmar los cambios en la base de datos
-    #             session.commit()
-    #             # Mostrar un mensaje de éxito al usuario con el porcentaje de aumento y la tabla seleccionada
-    #             messagebox.showinfo("Éxito", f"Los precios de {tabla_seleccionada} han sido modificados en un {porcentaje_aumento}%.")
-    #             # Actualizar la lista de productos
-    #             self.update_productos(None)
+            # Obtener todos los productos de la categoría seleccionada
+            productos = session.query(Productos).filter_by(id_categoria=categoria_seleccionada).all()
 
-    # def deshacer_ultimo_aumento(self):
-    #     # Verificar si hay precios anteriores guardados
-    #     if not self.precios_anteriores:
-    #         # Mostrar un mensaje de error si no hay precios anteriores guardados
-    #         messagebox.showwarning("Error", "No hay modificaciones previas para deshacer.")
-    #         return
+            # Guardar los precios anteriores antes de aumentarlos
+            self.precios_anteriores = [(producto.nombre, producto.precio) for producto in productos]
 
-    #     # Obtener la tabla seleccionada por el usuario
-    #     tabla_seleccionada = self.tabla_var.get()
-    #     # Verificar si la tabla seleccionada está en el diccionario de mapeo
-    #     if tabla_seleccionada in tabla_clase_mapping:
-    #         # Obtener la clase correspondiente a la tabla seleccionada por el usuario del diccionario de mapeo
-    #         ClaseTabla = tabla_clase_mapping[tabla_seleccionada]
+            # Iterar sobre los productos y aumentar el precio según el porcentaje ingresado
+            for producto in productos:
+                producto.precio *= (1 + porcentaje_aumento / 100)
 
-    #         # Iterar sobre los productos y revertir el último aumento de precio
-    #         for nombre_producto, precio_anterior in self.precios_anteriores:
-    #             # Obtener el producto por el nombre
-    #             producto = session.query(ClaseTabla).filter_by(producto=nombre_producto).first()
-    #             # Si el producto existe, revertir el precio al precio anterior
-    #             if producto:
-    #                 producto.precio = precio_anterior
+            # Confirmar los cambios en la base de datos
+            session.commit()
 
-    #         # Confirmar los cambios en la base de datos
-    #         session.commit()
-    #         # Mostrar un mensaje de éxito al usuario
-    #         messagebox.showinfo("Éxito", "Última modificación revertida exitosamente.")
-    #         # Actualizar la lista de productos
-    #         self.update_productos(None)
-    #         self.precios_anteriores = []  # Limpiar la lista después de deshacer
+            nombre_categoria = self.tabla_var.get()
+
+            # Mostrar un mensaje de éxito al usuario con el porcentaje de aumento y la categoría seleccionada
+            messagebox.showinfo("Éxito", f"Los precios de la lista {nombre_categoria} han sido modificados en un {porcentaje_aumento}%.")
+            # Actualizar la lista de productos
+            self.update_productos(None)
+
+    def deshacer_ultimo_aumento(self):
+        # Verificar si hay precios anteriores guardados
+        if not self.precios_anteriores:
+            # Mostrar un mensaje de error si no hay precios anteriores guardados
+            messagebox.showwarning("Error", "No hay modificaciones previas para deshacer.")
+            return
+
+        # Obtener la categoría seleccionada por el usuario
+        categoria_seleccionada = self.tabla_var.get()
+
+        # Obtener el ID de la categoría seleccionada
+        categoria_seleccionada = session.query(Categorias).filter_by(nombre=categoria_seleccionada).first().id
+
+        # Iterar sobre los productos y revertir el último aumento de precio
+        for nombre_producto, precio_anterior in self.precios_anteriores:
+            # Obtener el producto por el nombre y la categoría
+            producto = session.query(Productos).filter_by(nombre=nombre_producto, id_categoria=categoria_seleccionada).first()
+            # Si el producto existe, revertir el precio al precio anterior
+            if producto:
+                producto.precio = precio_anterior
+
+        # Confirmar los cambios en la base de datos
+        session.commit()
+        # Mostrar un mensaje de éxito al usuario
+        messagebox.showinfo("Éxito", "Última modificación revertida exitosamente.")
+        # Actualizar la lista de productos
+        self.update_productos(None)
+        self.precios_anteriores = []  # Limpiar la lista después de deshacer
 
     def agregar_fuera_lista(self):
         # Obtener el nombre y precio del producto ingresados por el usuario
@@ -957,52 +965,6 @@ class PresupuestoApp(tk.Tk):
         except Exception as e:
             session.rollback()
             messagebox.showerror("Error", f"Ocurrió un error al guardar el presupuesto: {str(e)}")
-
-    
-    # def guardar_presupuesto(self):
-    #     # Obtener el cliente
-    #     cliente = self.cliente_var.get()
-
-    #     # Si no se seleccionó un cliente, mostrar un mensaje de error
-    #     if not cliente:
-    #         messagebox.showerror("Error", "Selecciona un cliente.")
-    #         return
-
-    #     try:
-    #         # Verificar si el cliente está en la base de datos
-    #         cliente_db = session.query(Clientes).filter_by(nombre=cliente).first()
-    #         if cliente_db:
-    #             id_cliente = cliente_db.id
-    #             fecha_actual = datetime.date.today()
-
-    #             # Crear un nuevo objeto Presupuesto con los datos del cliente y el total del carrito
-    #             presupuesto = Presupuestos(id_cliente=id_cliente, fecha=fecha_actual, total=sum([float(item[3]) for item in self.carrito]))
-    #             # Agregar el presupuesto a la base de datos
-    #             session.add(presupuesto)
-    #             session.flush()
-
-    #             # Agregar los detalles del presupuesto
-    #             for item in self.carrito:
-    #                 nombre_producto, cantidad, descuento, precio_unitario = item
-    #                 total_item = cantidad * precio_unitario * (1 - descuento/100)
-                    
-    #                 detalle = DetallesPresupuestos(
-    #                     id_presupuesto=presupuesto.id,
-    #                     producto=nombre_producto,
-    #                     cantidad=cantidad,
-    #                     precio_unitario=precio_unitario,
-    #                     descuento=descuento,
-    #                     total=total_item
-    #                 )
-    #                 session.add(detalle)
-    #                 # Confirmar los cambios en la base de datos
-    #                 session.commit()
-    #                 messagebox.showinfo("Éxito", "Presupuesto guardado exitosamente.")
-    #                 return
-    #     except Exception as e:
-    #         session.rollback()
-    #         messagebox.showerror("Error", f"Error al guardar el presupuesto: {str(e)}")
-    #         return
 
     def mostrar_clientes(self):
         # Limpiar el main_frame antes de agregar nuevos widgets
