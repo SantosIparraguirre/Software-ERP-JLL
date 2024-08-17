@@ -1,12 +1,13 @@
-from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey
+from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey, Date, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
+import datetime
 
 # Crear la base de datos
 Base = declarative_base()
 
 # Crear el motor de la base de datos SQLite
-engine = create_engine('sqlite:///productos.db')
+engine = create_engine('sqlite:///database.db')
 
 # Crear una sesión
 Session = sessionmaker(bind=engine)
@@ -14,9 +15,25 @@ Session = sessionmaker(bind=engine)
 # Variable de sesión para interactuar con la base de datos
 session = Session()
 
-# Tablas de la base de datos
+# Crear la clase de la tabla de productos
+class Productos(Base):
+    __tablename__ = 'PRODUCTOS'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    id_categoria = Column(Integer, ForeignKey('CATEGORIAS.id'), nullable=False)
+    codigo = Column(String)
+    linea = Column(String)
+    nombre = Column(String, nullable=False)
+    precio = Column(Float, nullable=False)
+    categoria = relationship('Categorias', back_populates='productos')
 
-# Clientes
+# Crear la clase de la tabla de categorías
+class Categorias(Base):
+    __tablename__ = 'CATEGORIAS'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    nombre = Column(String, nullable=False)
+    productos = relationship('Productos', back_populates='categoria')
+
+# Crear la clase de la tabla de clientes
 class Clientes(Base):
     __tablename__ = 'CLIENTES'
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -24,15 +41,19 @@ class Clientes(Base):
     cuit = Column(String)
     telefono = Column(String)
     direccion = Column(String)
+    presupuestos = relationship('Presupuestos', back_populates='cliente')
+    remitos = relationship('Remitos', back_populates='cliente')
+    acopios = relationship('Acopios', back_populates='cliente')
 
 # Presupuestos
 class Presupuestos(Base):
     __tablename__ = 'PRESUPUESTOS'
     id = Column(Integer, primary_key=True, autoincrement=True)
     id_cliente = Column(Integer, ForeignKey ('CLIENTES.id'), nullable=False)
-    fecha = Column(String, nullable=False)
+    fecha = Column(DateTime, nullable=False)
     total = Column(Float, nullable=False)
-    cliente = relationship('Clientes')
+    cliente = relationship('Clientes', back_populates='presupuestos')
+    detalles = relationship('DetallesPresupuestos', back_populates='presupuesto')
 
 # Detalles de presupuestos
 class DetallesPresupuestos(Base):
@@ -44,16 +65,18 @@ class DetallesPresupuestos(Base):
     precio_unitario = Column(Float, nullable=False)
     descuento = Column(Float, nullable=False)
     total = Column(Float, nullable=False)
-    presupuesto = relationship('Presupuestos')
+    presupuesto = relationship('Presupuestos', back_populates='detalles')
 
 # Remitos
 class Remitos(Base):
     __tablename__ = 'REMITOS'
     id = Column(Integer, primary_key=True, autoincrement=True)
     id_cliente = Column(Integer, ForeignKey ('CLIENTES.id'), nullable=False)
-    fecha = Column(String, nullable=False)
+    fecha = Column(DateTime, nullable=False)
     total = Column(Float, nullable=False)
-    cliente = relationship('Clientes')
+    pago = Column(String, nullable=False)
+    cliente = relationship('Clientes', back_populates='remitos')
+    detalles = relationship('DetallesRemitos', back_populates='remito')
 
 # Detalles de remitos
 class DetallesRemitos(Base):
@@ -65,99 +88,19 @@ class DetallesRemitos(Base):
     precio_unitario = Column(Float, nullable=False)
     descuento = Column(Float, nullable=False)
     total = Column(Float, nullable=False)
-    remito = relationship('Remitos')
+    remito = relationship('Remitos', back_populates='detalles')
 
-class Vasser(Base):
-    __tablename__ = 'VASSER'
+# Acopios
+class Acopios(Base):
+    __tablename__ = 'ACOPIOS'
     id = Column(Integer, primary_key=True, autoincrement=True)
-    codigo = Column(String, nullable=False)
-    linea = Column(String, nullable=False)
+    id_cliente = Column(Integer, ForeignKey('CLIENTES.id'), nullable=False)
+    fecha_creacion = Column(DateTime, default=datetime.datetime.now)
+    fecha_modificacion = Column(DateTime, default=datetime.datetime.now, onupdate=datetime.datetime.now)
     producto = Column(String, nullable=False)
-    precio = Column(Float, nullable=False)
+    cantidad = Column(Integer, nullable=False)
+    cliente = relationship('Clientes', back_populates='acopios')
 
-class Capea(Base):
-    __tablename__ = 'CAPEA'
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    producto = Column(String, nullable=False)
-    precio = Column(Float, nullable=False)
-
-class Polietileno(Base):
-    __tablename__ = 'POLIETILENO'
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    producto = Column(String, nullable=False)
-    precio = Column(Float, nullable=False)
-
-class Peirano(Base):
-    __tablename__ = 'PEIRANO'
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    producto = Column(String, nullable=False)
-    precio = Column(Float, nullable=False)
-
-class Latyn(Base):
-    __tablename__ = 'LATYN'
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    producto = Column(String, nullable=False)
-    precio = Column(Float, nullable=False)
-
-class Fusiogas(Base):
-    __tablename__ = 'FUSIOGAS'
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    producto = Column(String, nullable=False)
-    precio = Column(Float, nullable=False)
-
-class Chicote(Base):
-    __tablename__ = 'CHICOTE'
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    producto = Column(String, nullable=False)
-    precio = Column(Float, nullable=False)
-
-class H3(Base):
-    __tablename__ = 'H3'
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    producto = Column(String, nullable=False)
-    precio = Column(Float, nullable=False)
-
-class CañosPVC(Base):
-    __tablename__ = 'CAÑOS PVC'
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    producto = Column(String, nullable=False)
-    precio = Column(Float, nullable=False)
-
-class PiezasPVC(Base):
-    __tablename__ = 'PIEZAS PVC Y LOSUNG'
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    producto = Column(String, nullable=False)
-    precio = Column(Float, nullable=False)
-
-class Sigas(Base):
-    __tablename__ = 'SIGAS'
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    producto = Column(String, nullable=False)
-    precio = Column(Float, nullable=False)
-
-class PPRosca(Base):
-    __tablename__ = 'PP ROSCA'
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    producto = Column(String, nullable=False)
-    precio = Column(Float, nullable=False)
-
-class Awaduck(Base):
-    __tablename__ = 'AWADUCK'
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    producto = Column(String, nullable=False)
-    precio = Column(Float, nullable=False)
-
-class Amancofusion(Base):
-    __tablename__ = 'AMANCO FUSION'
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    producto = Column(String, nullable=False)
-    precio = Column(Float, nullable=False)
-
-class Rotoplas(Base):
-    __tablename__ = 'ROTOPLAS'
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    producto = Column(String, nullable=False)
-    precio = Column(Float, nullable=False)
 
 # Crear las tablas
 Base.metadata.create_all(engine)

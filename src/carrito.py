@@ -3,25 +3,29 @@ from tkinter import ttk, messagebox, filedialog, simpledialog
 from ttkwidgets.autocomplete import AutocompleteCombobox
 from reportlab.lib.pagesizes import letter
 from sqlalchemy.orm import sessionmaker
-from database_v2 import engine, Productos, Categorias, Clientes, Presupuestos, DetallesPresupuestos, Remitos, DetallesRemitos
+from database import engine, Productos, Categorias, Clientes, Presupuestos, DetallesPresupuestos, Remitos, DetallesRemitos
 from openpyxl import load_workbook
 import datetime
 from openpyxl.styles import Border, Side, PatternFill, Font, Alignment
 import os
 from PIL import Image, ImageTk
-from clientes_v2 import ClientesApp
+from clientes import ClientesApp
+from utils.carrito import agregar_al_carrito, actualizar_carrito, agregar_fuera_lista, eliminar_del_carrito
+from utils.precios import modificar_precios, deshacer_ultimo_aumento
+from utils.productos import update_productos, buscar_producto
+from utils.guardar_remitos import guardar_remito
 
 # Sesión de SQLAlchemy para interactuar con la base de datos
 Session = sessionmaker(bind=engine)
 session = Session()
 
 # Clase para la interfaz
-class PresupuestoApp(tk.Tk):
+class RemitosApp(tk.Tk):
     def __init__(self):
         # Inicializar la ventana principal
         super().__init__()
         # Título de la ventana
-        self.title("Sistema de Presupuestos")
+        self.title("Constructora Jose Luis Lopez")
         # Geometría de la ventana
         self.geometry("1300x700")
         # Crear los widgets con la función create_widgets
@@ -41,13 +45,17 @@ class PresupuestoApp(tk.Tk):
         # Botón para mostrar presupuestos
         # ttk.Button es un botón con un estilo mejorado
         # El botón llama a la función mostrar_presupuestos cuando se hace click 
-        self.presupuestos_button = ttk.Button(self.menu_lateral, text="Presupuestos", command=self.mostrar_presupuestos)
+        self.presupuestos_button = ttk.Button(self.menu_lateral, text="Carrito", command=self.mostrar_presupuestos)
         # Empaquetar el botón en el menú lateral
         self.presupuestos_button.pack(padx=10, pady=10)
 
         # Botón para mostrar clientes
         self.clientes_button = ttk.Button(self.menu_lateral, text="Clientes", command=self.mostrar_clientes)
         self.clientes_button.pack(padx=10, pady=10)
+
+        # Botón para mostrar listas de precios
+        self.listas_precios_button = ttk.Button(self.menu_lateral, text="Precios") #, command=self.mostrar_listas_precios)
+        self.listas_precios_button.pack(padx=10, pady=10)
 
         # Frame principal
         self.main_frame = tk.Frame(self)
@@ -273,191 +281,32 @@ class PresupuestoApp(tk.Tk):
         return [cliente[0] for cliente in clientes]
 
     def modificar_precios(self):
-        # Verificar si hay una lista seleccionada
-        if not self.tabla_var.get():
-            # Mostrar un mensaje de error si no hay una lista seleccionada
-            messagebox.showerror("Error", "Selecciona una lista de productos.")
-            return
-
-        # Solicitar el porcentaje de aumento al usuario
-        porcentaje_aumento = simpledialog.askfloat("Modificar Precios", "Ingrese el porcentaje (por ejemplo, 10 para un 10%):")
-        # Si el usuario ingresó un porcentaje
-        if porcentaje_aumento is not None:
-            # Obtener la categoría seleccionada por el usuario
-            categoria_seleccionada = self.tabla_var.get()
-
-            # Obtener el ID de la categoría seleccionada
-            categoria_seleccionada = session.query(Categorias).filter_by(nombre=categoria_seleccionada).first().id
-
-            # Obtener todos los productos de la categoría seleccionada
-            productos = session.query(Productos).filter_by(id_categoria=categoria_seleccionada).all()
-
-            # Guardar los precios anteriores antes de aumentarlos
-            self.precios_anteriores = [(producto.nombre, producto.precio) for producto in productos]
-
-            # Iterar sobre los productos y aumentar el precio según el porcentaje ingresado
-            for producto in productos:
-                producto.precio *= (1 + porcentaje_aumento / 100)
-
-            # Confirmar los cambios en la base de datos
-            session.commit()
-
-            nombre_categoria = self.tabla_var.get()
-
-            # Mostrar un mensaje de éxito al usuario con el porcentaje de aumento y la categoría seleccionada
-            messagebox.showinfo("Éxito", f"Los precios de la lista {nombre_categoria} han sido modificados en un {porcentaje_aumento}%.")
-            # Actualizar la lista de productos
-            self.update_productos(None)
+        modificar_precios(self.tabla_var, self.precios_anteriores, Categorias, Productos)
+        self.update_productos(None)
 
     def deshacer_ultimo_aumento(self):
-        # Verificar si hay precios anteriores guardados
-        if not self.precios_anteriores:
-            # Mostrar un mensaje de error si no hay precios anteriores guardados
-            messagebox.showwarning("Error", "No hay modificaciones previas para deshacer.")
-            return
-
-        # Obtener la categoría seleccionada por el usuario
-        categoria_seleccionada = self.tabla_var.get()
-
-        # Obtener el ID de la categoría seleccionada
-        categoria_seleccionada = session.query(Categorias).filter_by(nombre=categoria_seleccionada).first().id
-
-        # Iterar sobre los productos y revertir el último aumento de precio
-        for nombre_producto, precio_anterior in self.precios_anteriores:
-            # Obtener el producto por el nombre y la categoría
-            producto = session.query(Productos).filter_by(nombre=nombre_producto, id_categoria=categoria_seleccionada).first()
-            # Si el producto existe, revertir el precio al precio anterior
-            if producto:
-                producto.precio = precio_anterior
-
-        # Confirmar los cambios en la base de datos
-        session.commit()
-        # Mostrar un mensaje de éxito al usuario
-        messagebox.showinfo("Éxito", "Última modificación revertida exitosamente.")
-        # Actualizar la lista de productos
+        deshacer_ultimo_aumento(self.tabla_var, self.precios_anteriores, Categorias, Productos)
         self.update_productos(None)
-        self.precios_anteriores = []  # Limpiar la lista después de deshacer
 
     def agregar_fuera_lista(self):
-        # Obtener el nombre y precio del producto ingresados por el usuario
-        producto = self.producto_var.get()
-        # Obtener la cantidad y precio del producto ingresados por el usuario
-        cantidad = self.cantidad_fuera_lista_var.get()
-        # Obtener la cantidad y precio del producto ingresados por el usuario
-        precio = self.precio_var.get()
-
-        # Validar que el producto y el precio no estén vacíos
-        if not producto or not precio:
-            messagebox.showerror("Error", "Ingresa un producto y un precio.")
-            return
-
-        # Agregar el producto a la lista de productos del carrito
-        self.carrito.append((producto, cantidad, 0, precio))
-        # Actualizar la lista de productos del carrito
+        agregar_fuera_lista(self.carrito, self.producto_var, self.cantidad_fuera_lista_var, self.precio_var)
         self.actualizar_carrito()
 
     def update_productos(self, event=None):
-        categoria_seleccionada = self.tabla_var.get()
-        
-        # Obtener los productos de la categoría seleccionada
-        productos = (
-            session.query(Productos)
-            .join(Categorias)
-            .filter(Categorias.nombre == categoria_seleccionada)
-            .all()
-        )
-        
-        # Limpiar el treeview actual
-        for item in self.productos_tree.get_children():
-            self.productos_tree.delete(item)
-        
-        # Insertar los nuevos productos en el treeview
-        for producto in productos:
-            self.productos_tree.insert('', 'end', values=(
-                producto.codigo,
-                producto.linea,
-                producto.nombre,
-                producto.precio,
-                # Agrega aquí cualquier otra columna que quieras mostrar
-            ))
-
+        update_productos(self.tabla_var, self.productos_tree, Productos, Categorias, event)
 
     def buscar_producto(self):
-        # Obtener el término de búsqueda y convertirlo a minúsculas
-        search_term = self.busqueda_var.get().lower()
-
-        categoria_seleccionada = self.tabla_var.get()
-
-        # Obtener los productos de la categoría seleccionada
-        productos = (
-            session.query(Productos)
-            .join(Categorias)
-            .filter(Categorias.nombre == categoria_seleccionada)
-            .all()
-        )
-
-        # Limpiar la tabla de productos antes de insertar aquellos que coincidan con el término de búsqueda
-        self.productos_tree.delete(*self.productos_tree.get_children())
-
-        for producto in productos:
-            if producto.linea and producto.codigo:
-                # Si la búsqueda está contenida en el nombre del producto, insertar el producto en la tabla
-                if search_term in producto.nombre.lower():
-                    self.productos_tree.insert('', 'end', values=(producto.codigo, producto.linea, producto.nombre, producto.precio))
-                # Si la búsqueda está contenida en el código del producto, insertar el producto en la tabla
-                elif search_term in producto.codigo.lower():
-                    self.productos_tree.insert('', 'end', values=(producto.codigo, producto.linea, producto.nombre, producto.precio))
-                # Si la búsqueda está contenida en la línea del producto, insertar el producto en la tabla
-                elif search_term in producto.linea.lower():
-                    self.productos_tree.insert('', 'end', values=(producto.codigo, producto.linea, producto.nombre, producto.precio))
-            else:
-                # Si la búsqueda está contenida en el nombre del producto, insertar el producto en la tabla
-                if search_term in producto.nombre.lower():
-                    self.productos_tree.insert('', 'end', values=(producto.codigo, producto.linea, producto.nombre, producto.precio))
+        buscar_producto(self.busqueda_var, self.tabla_var, self.productos_tree, Productos, Categorias)
 
     def agregar_al_carrito(self):
-        # Obtener el producto seleccionado en la tabla de productos
-        selected_item = self.productos_tree.selection()
-
-        if not selected_item:
-            messagebox.showerror("Error", "Selecciona un producto.")
-            return
-
-        # Obtener el nombre y precio del producto seleccionado a través del índice
-        item = self.productos_tree.item(selected_item)
-        producto_nombre = item['values'][2]
-        precio = item['values'][3]
-        # Obtener la cantidad y descuento ingresados por el usuario con el método get
-        cantidad = self.cantidad_var.get()
-        descuento = self.descuento_var.get()
-
-        if cantidad <= 0:
-            messagebox.showerror("Error", "Ingresa una cantidad válida.")
-            return
-
-        # Agregar el producto al carrito y actualizar la lista de productos
-        self.carrito.append((producto_nombre, cantidad, descuento, precio))
+        agregar_al_carrito(self.carrito, self.productos_tree, self.cantidad_var, self.descuento_var)
         self.actualizar_carrito()
 
     def actualizar_carrito(self):
-        # Limpiar la lista de productos del carrito antes de insertar los productos actuales
-        self.carrito_treeview.delete(*self.carrito_treeview.get_children())
-        # Iterar sobre la lista de productos del carrito y agregarlos al treeview
-        for item in self.carrito:
-            producto, cantidad, descuento, precio = item
-            self.carrito_treeview.insert('', 'end', values=(producto, cantidad, descuento, precio))
+        actualizar_carrito(self.carrito_treeview, self.carrito)
 
     def eliminar_del_carrito(self):
-        # Obtener el índice del producto seleccionado en el treeview del carrito
-        seleccion = self.carrito_treeview.selection()
-        if not seleccion:
-            messagebox.showerror("Error", "Selecciona un producto del carrito.")
-            return
-        
-        index = self.carrito_treeview.index(seleccion)
-
-        del self.carrito[index]
-
+        eliminar_del_carrito(self.carrito, self.carrito_treeview)
         self.actualizar_carrito()
 
     def limpiar_carrito(self):
@@ -633,55 +482,7 @@ class PresupuestoApp(tk.Tk):
             messagebox.showerror("Error", f"No se pudo abrir el archivo: {str(e)}")
 
     def guardar_remito(self):
-        try:
-            # Obtener el nombre del cliente seleccionado
-            nombre_cliente = self.cliente_var.get()
-
-            # Buscar el cliente en la base de datos
-            cliente = session.query(Clientes).filter_by(nombre=nombre_cliente).first()
-
-            if not cliente:
-                messagebox.showerror("Error", "Cliente no encontrado en la base de datos.")
-                return
-
-            # Obtener la fecha actual
-            fecha_actual = datetime.date.today().strftime("%d-%m-%Y")
-
-            # Crear un nuevo remito
-            nuevo_remito = Remitos(id_cliente=cliente.id, fecha=fecha_actual, total=0)
-
-            # Agregar el remito a la base de datos
-            session.add(nuevo_remito)
-            session.commit()
-
-            total_remito = 0
-
-            # Iterar sobre los elementos del carrito para agregarlos a los detalles del remito
-            for producto, cantidad, descuento, precio in self.carrito:
-                cantidad = int(cantidad)
-                precio = float(precio)
-                descuento = float(descuento)
-                total = cantidad * precio * (1 - descuento / 100)
-                detalle = DetallesRemitos(
-                    id_remito=nuevo_remito.id,
-                    producto=producto,
-                    cantidad=cantidad,
-                    precio_unitario=precio,
-                    descuento=descuento,
-                    total=total
-                )
-                total_remito += total
-                session.add(detalle)
-
-            # Actualizar el total del remito
-            nuevo_remito.total = total_remito
-            session.commit()
-
-            messagebox.showinfo("Éxito", "El remito se ha guardado correctamente en la base de datos.")
-        
-        except Exception as e:
-            session.rollback()
-            messagebox.showerror("Error", f"Ocurrió un error al guardar el remito: {str(e)}")
+        guardar_remito(self.cliente_var, self.carrito, session, Clientes, Remitos, DetallesRemitos)
         
       
 
@@ -977,5 +778,5 @@ class PresupuestoApp(tk.Tk):
 # Función principal para ejecutar la aplicación
 # Si el script se ejecuta directamente, se crea una instancia de la clase PresupuestoApp y se llama al método mainloop
 if __name__ == "__main__":
-    app = PresupuestoApp()
+    app = RemitosApp()
     app.mainloop()
