@@ -2,7 +2,10 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from database import session, Clientes, Presupuestos, DetallesPresupuestos, Remitos, DetallesRemitos
 from PIL import Image, ImageTk
-import datetime
+from utils.clientes.gestion_clientes import buscar_cliente, agregar_cliente, actualizar_clientes, eliminar_cliente
+from utils.clientes.modificar_clientes import abrir_ventana_modificacion, guardar_cambios, modificar_cliente
+from utils.clientes.presupuestos_clientes import ver_presupuestos, abrir_ventana_presupuestos, ver_detalles_presupuesto, mostrar_detalles_presupuesto
+from utils.clientes.remitos_clientes import ver_remitos, abrir_ventana_remitos, ver_detalles_remito, mostrar_detalles_remito
 
 class ClientesApp(tk.Tk):
     def __init__(self, main_frame):
@@ -125,300 +128,50 @@ class ClientesApp(tk.Tk):
         # Actualizar la tabla de clientes
         self.actualizar_clientes()
 
-    # Función para buscar un cliente
     def buscar_cliente(self):
-        # Obtener el nombre del cliente a buscar
-        nombre = self.nombre_buscar_var.get()
-        # Buscar todos los nombres de clientes que contengan parte del nombre ingresado
-        clientes = session.query(Clientes).filter(Clientes.nombre.like(f'%{nombre}%')).all()
-        # Limpiar la tabla de clientes
-        self.clientes_tree.delete(*self.clientes_tree.get_children())
-        # Iterar sobre los clientes encontrados y agregarlos a la tabla de clientes
-        for cliente in clientes:
-            self.clientes_tree.insert('', 'end', values=(cliente.nombre, cliente.cuit, cliente.telefono, cliente.direccion))
+        buscar_cliente(self.nombre_buscar_var, self.clientes_tree, session, Clientes)
 
     def agregar_cliente(self):
-        # Obtener los datos del cliente ingresados por el usuario
-        nombre = self.nombre_var.get()
-        cuit = self.cuit_var.get()
-        telefono = self.telefono_var.get()
-        direccion = self.direccion_var.get()
-
-        # Validar que el nombre no esté vacío
-        if not nombre:
-            messagebox.showerror("Error", "Ingresa un nombre.")
-            return
-
-        # Crear una instancia de la clase Cliente con los datos ingresados
-        cliente = Clientes(nombre=nombre, cuit=cuit, telefono=telefono, direccion=direccion)
-        # Agregar el cliente a la sesión
-        session.add(cliente)
-        # Confirmar la transacción
-        session.commit()
-        # Mostrar un mensaje de éxito
-        messagebox.showinfo("Éxito", "Cliente agregado exitosamente.")
-        # Actualizar la tabla de clientes
+        agregar_cliente(self.nombre_var, self.cuit_var, self.telefono_var, self.direccion_var, session, Clientes)
         self.actualizar_clientes()
 
-    # Función para actualizar la tabla de clientes
     def actualizar_clientes(self):
-        # Limpiar la tabla de clientes
-        self.clientes_tree.delete(*self.clientes_tree.get_children())
-        # Obtener todos los clientes de la base de datos
-        clientes = session.query(Clientes).all()
-        # Iterar sobre los clientes y agregarlos a la tabla de clientes
-        for cliente in clientes:
-            self.clientes_tree.insert('', 'end', values=(cliente.nombre, cliente.cuit, cliente.telefono, cliente.direccion))
+        actualizar_clientes(self.clientes_tree, session, Clientes)
 
-    # Función para eliminar un cliente
     def eliminar_cliente(self):
-        # Obtener el cliente seleccionado en la tabla
-        seleccion = self.clientes_tree.selection()
-        if not seleccion:
-            messagebox.showerror("Error", "Selecciona un cliente.")
-            return
-        # Obtener el nombre del cliente seleccionado
-        nombre = self.clientes_tree.item(seleccion)['values'][0]
-        # Buscar el cliente en la base de datos por el nombre
-        cliente = session.query(Clientes).filter_by(nombre=nombre).first()
-        # Eliminar el cliente de la sesión
-        session.delete(cliente)
-        # Confirmar la transacción
-        session.commit()
-        # Mostrar un mensaje de éxito
-        messagebox.showinfo("Éxito", "Cliente eliminado exitosamente.")
-        # Actualizar la tabla de clientes
+        eliminar_cliente(self.clientes_tree, session, Clientes, Presupuestos)
         self.actualizar_clientes()
 
-    # Función para modificar un cliente
     def modificar_cliente(self):
-        # Obtener el cliente seleccionado en la tabla
-        seleccion = self.clientes_tree.selection()
-        # Si no se seleccionó ningún cliente, mostrar un mensaje de error
-        if not seleccion:
-            messagebox.showerror("Error", "Selecciona un cliente.")
-            return
-        
-        # Obtener los datos del cliente seleccionado
-        cliente_data = self.clientes_tree.item(seleccion)['values']
-        # Llamar a la función abrir_ventana_modificacion con los datos del cliente seleccionado
-        self.abrir_ventana_modificacion(cliente_data)
+        modificar_cliente(self.clientes_tree, lambda cliente_data: abrir_ventana_modificacion(cliente_data, self.main_frame, lambda nombre_original, nuevo_nombre, nuevo_cuit, nuevo_telefono, nueva_direccion, ventana: guardar_cambios(nombre_original, nuevo_nombre, nuevo_cuit, nuevo_telefono, nueva_direccion, ventana, session, Clientes, self.actualizar_clientes)))
 
     def abrir_ventana_modificacion(self, cliente_data):
-        # Crear una ventana secundaria para modificar el cliente
-        ventana_mod = tk.Toplevel(self.main_frame)
-        # Configurar el título y las dimensiones de la ventana
-        ventana_mod.title("Modificar Cliente")
-        ventana_mod.geometry("300x200")
-
-        # Crear etiquetas y campos de entrada para los datos del cliente
-        ttk.Label(ventana_mod, text="Nombre:").grid(row=0, column=0, padx=5, pady=5)
-        # Establecer el valor del campo de entrada con el nombre del cliente seleccionado
-        nombre_var = tk.StringVar(value=cliente_data[0])
-        # Crear un campo de entrada con el nombre del cliente seleccionado
-        ttk.Entry(ventana_mod, textvariable=nombre_var).grid(row=0, column=1, padx=5, pady=5)
-
-        # Crear etiquetas y campos de entrada para el CUIT, teléfono y dirección del cliente
-        ttk.Label(ventana_mod, text="CUIT:").grid(row=1, column=0, padx=5, pady=5)
-        # Establecer el valor del campo de entrada con el CUIT del cliente seleccionado
-        cuit_var = tk.StringVar(value=cliente_data[1])
-        # Crear un campo de entrada con el CUIT del cliente seleccionado
-        ttk.Entry(ventana_mod, textvariable=cuit_var).grid(row=1, column=1, padx=5, pady=5)
-
-        # Crear etiquetas y campos de entrada para el teléfono y dirección del cliente
-        ttk.Label(ventana_mod, text="Teléfono:").grid(row=2, column=0, padx=5, pady=5)
-        # Establecer el valor del campo de entrada con el teléfono del cliente seleccionado
-        telefono_var = tk.StringVar(value=cliente_data[2])
-        # Crear un campo de entrada con el teléfono del cliente seleccionado
-        ttk.Entry(ventana_mod, textvariable=telefono_var).grid(row=2, column=1, padx=5, pady=5)
-
-        # Crear etiquetas y campos de entrada para la dirección del cliente
-        ttk.Label(ventana_mod, text="Dirección:").grid(row=3, column=0, padx=5, pady=5)
-        # Establecer el valor del campo de entrada con la dirección del cliente seleccionado
-        direccion_var = tk.StringVar(value=cliente_data[3])
-        # Crear un campo de entrada con la dirección del cliente seleccionado
-        ttk.Entry(ventana_mod, textvariable=direccion_var).grid(row=3, column=1, padx=5, pady=5)
-
-        # Botón para guardar los cambios
-        ttk.Button(ventana_mod, text="Guardar Cambios", 
-                   # Llamar a la función guardar_cambios con los datos del cliente seleccionado y la ventana secundaria
-                command=lambda: self.guardar_cambios(cliente_data[0], nombre_var.get(), cuit_var.get(), 
-                                                        telefono_var.get(), direccion_var.get(), ventana_mod)).grid(row=4, column=1, pady=10)
+        abrir_ventana_modificacion(cliente_data, self.main_frame, lambda nombre_original, nuevo_nombre, nuevo_cuit, nuevo_telefono, nueva_direccion, ventana: guardar_cambios(nombre_original, nuevo_nombre, nuevo_cuit, nuevo_telefono, nueva_direccion, ventana, session, Clientes, self.actualizar_clientes))
 
     def guardar_cambios(self, nombre_original, nuevo_nombre, nuevo_cuit, nuevo_telefono, nueva_direccion, ventana):
-        # Buscar el cliente en la base de datos por el nombre original
-        cliente = session.query(Clientes).filter_by(nombre=nombre_original).first()
-        if cliente:
-            # Actualizar los datos del cliente con los nuevos datos ingresados
-            cliente.nombre = nuevo_nombre
-            cliente.cuit = nuevo_cuit
-            cliente.telefono = nuevo_telefono
-            cliente.direccion = nueva_direccion
-            # Confirmar la transacción
-            session.commit()
-            # Mostrar un mensaje de éxito
-            messagebox.showinfo("Éxito", "Cliente modificado exitosamente.")
-            # Actualizar la tabla de clientes
-            self.actualizar_clientes()
-            # Cerrar la ventana secundaria
-            ventana.destroy()
-        else:
-            # Mostrar un mensaje de error si no se encontró el cliente
-            messagebox.showerror("Error", "No se encontró el cliente.")
+        guardar_cambios(nombre_original, nuevo_nombre, nuevo_cuit, nuevo_telefono, nueva_direccion, ventana, session, Clientes, self.actualizar_clientes)
 
     def ver_presupuestos(self):
-        # Obtener el cliente seleccionado en la tabla
-        seleccion = self.clientes_tree.selection()
-        if not seleccion:
-            messagebox.showerror("Error", "Selecciona un cliente.")
-            return
-        
-        nombre = self.clientes_tree.item(seleccion)['values'][0]
-        self.abrir_ventana_presupuestos(nombre)
+        ver_presupuestos(self)
 
     def abrir_ventana_presupuestos(self, nombre):
-        # Crear una ventana secundaria para ver los presupuestos del cliente
-        ventana_presupuestos = tk.Toplevel(self.main_frame)
-        ventana_presupuestos.title("Presupuestos de " + nombre)
-        ventana_presupuestos.geometry("900x500")
-
-        # Crear un marco para los presupuestos
-        frame_presupuestos = tk.Frame(ventana_presupuestos)
-        frame_presupuestos.pack(fill='both', expand=True)
-
-        # Crear una tabla para mostrar los presupuestos del cliente
-        presupuestos_tree = ttk.Treeview(frame_presupuestos, columns=('ID', 'Fecha', 'Total'), show='headings')
-        presupuestos_tree.heading('ID', text='ID')
-        presupuestos_tree.heading('Fecha', text='Fecha')
-        presupuestos_tree.heading('Total', text='Total')
-        presupuestos_tree.column('ID', width=50)
-        presupuestos_tree.column('Fecha', width=200)
-        presupuestos_tree.column('Total', width=100)
-        presupuestos_tree.pack(pady=10, fill='x')
-
-        # Obtener el cliente de la base de datos por el nombre
-        cliente = session.query(Clientes).filter_by(nombre=nombre).first()
-        for presupuesto in cliente.presupuestos:
-            # Agregar los presupuestos del cliente a la tabla, formateando el total como moneda
-            presupuestos_tree.insert('', 'end', values=(presupuesto.id, presupuesto.fecha, f"${presupuesto.total:,.2f}"))
-
-        # Crear un Treeview vacío para los detalles del presupuesto seleccionado
-        detalles_tree = ttk.Treeview(frame_presupuestos, columns=('Producto', 'Cantidad', 'Precio Unitario', 'Descuento', 'Total'), show='headings')
-        detalles_tree.heading('Producto', text='Producto')
-        detalles_tree.heading('Cantidad', text='Cantidad')
-        detalles_tree.heading('Precio Unitario', text='Precio Unitario')
-        detalles_tree.heading('Descuento', text='Descuento')
-        detalles_tree.heading('Total', text='Total')
-        detalles_tree.column('Producto', width=250)
-        detalles_tree.column('Cantidad', width=50)
-        detalles_tree.column('Precio Unitario', width=150)
-        detalles_tree.column('Descuento', width=50)
-        detalles_tree.column('Total', width=150)
-        detalles_tree.pack(pady=10, fill='x')
-
-        # Vincular el evento de selección del Treeview de presupuestos a la función ver_detalles_presupuesto
-        presupuestos_tree.bind('<<TreeviewSelect>>', lambda event: self.ver_detalles_presupuesto(presupuestos_tree, detalles_tree))
+        abrir_ventana_presupuestos(self, nombre)
 
     def ver_detalles_presupuesto(self, presupuestos_tree, detalles_tree):
-        # Obtener el presupuesto seleccionado en la tabla
-        seleccion = presupuestos_tree.selection()
-        if not seleccion:
-            messagebox.showerror("Error", "Selecciona un presupuesto.")
-            return
-
-        # Obtener el ID del presupuesto seleccionado
-        ID = presupuestos_tree.item(seleccion)['values'][0]
-        # Llamar a la función mostrar_detalles_presupuesto con el ID del presupuesto y el Treeview de detalles
-        self.mostrar_detalles_presupuesto(ID, detalles_tree)
+        ver_detalles_presupuesto(self, presupuestos_tree, detalles_tree)
 
     def mostrar_detalles_presupuesto(self, ID, detalles_tree):
-        # Limpiar el Treeview de detalles previo
-        for item in detalles_tree.get_children():
-            detalles_tree.delete(item)
-
-        # Obtener el presupuesto de la base de datos por la ID
-        presupuesto = session.query(Presupuestos).filter_by(id=ID).first()
-        for detalle in presupuesto.detalles:
-            # Agregar los detalles del presupuesto a la tabla de detalles, formateando los montos como moneda (separando miles y con dos decimales)
-            detalles_tree.insert('', 'end', values=(detalle.producto, detalle.cantidad, f"${detalle.precio_unitario:,.2f}", detalle.descuento, f"${detalle.total:,.2f}"))
+        mostrar_detalles_presupuesto(self, ID, detalles_tree)
 
     def ver_remitos(self):
-        # Obtener el cliente seleccionado en la tabla
-        seleccion = self.clientes_tree.selection()
-        if not seleccion:
-            messagebox.showerror("Error", "Selecciona un cliente.")
-            return
-        
-        nombre = self.clientes_tree.item(seleccion)['values'][0]
-        self.abrir_ventana_remitos(nombre)
+        ver_remitos(self)
 
     def abrir_ventana_remitos(self, nombre):
-        # Crear una ventana secundaria para ver los remitos del cliente
-        ventana_remitos = tk.Toplevel(self.main_frame)
-        ventana_remitos.title("Remitos de " + nombre)
-        ventana_remitos.geometry("900x500")
-
-        # Crear un marco para los remitos
-        frame_remitos = tk.Frame(ventana_remitos)
-        frame_remitos.pack(fill='both', expand=True)
-
-        # Crear una tabla para mostrar los remitos del cliente
-        remitos_tree = ttk.Treeview(frame_remitos, columns=('ID', 'Fecha', 'Total', 'Pago'), show='headings')
-        remitos_tree.heading('ID', text='ID')
-        remitos_tree.heading('Fecha', text='Fecha')
-        remitos_tree.heading('Total', text='Total')
-        remitos_tree.heading('Pago', text='Pago')
-        remitos_tree.column('ID', width=30, anchor='center')
-        remitos_tree.column('Fecha', width=150, anchor='center')
-        remitos_tree.column('Total', width=100, anchor='center')
-        remitos_tree.column('Pago', width=100, anchor='center')
-        remitos_tree.pack(pady=10, fill='x')
-
-        # Obtener el cliente de la base de datos por el nombre
-        cliente = session.query(Clientes).filter_by(nombre=nombre).first()
-        for remito in cliente.remitos:
-
-            # Formatear la fecha sin los decimales de los segundos
-            fecha_formateada = remito.fecha.strftime("%d/%m/%Y %H:%M:%S")
-
-            # Insertar en el treeview los valores del remito, formateando el total como moneda
-            remitos_tree.insert('', 'end', values=(remito.id, fecha_formateada, f"${remito.total:,.2f}", remito.pago))
-
-        # Crear un Treeview vacío para los detalles del remito seleccionado
-        detalles_tree = ttk.Treeview(frame_remitos, columns=('Producto', 'Cantidad', 'Precio Unitario', 'Total'), show='headings')
-        detalles_tree.heading('Producto', text='Producto')
-        detalles_tree.heading('Cantidad', text='Cantidad')
-        detalles_tree.heading('Precio Unitario', text='Precio Unitario')
-        detalles_tree.heading('Total', text='Total')
-        detalles_tree.column('Producto', width=250, anchor='center')
-        detalles_tree.column('Cantidad', width=50, anchor='center')
-        detalles_tree.column('Precio Unitario', width=150, anchor='center')
-        detalles_tree.column('Total', width=150, anchor='center')
-        detalles_tree.pack(pady=10, fill='x')
-
-        # Vincular el evento de selección del Treeview de remitos a la función ver_detalles_remito
-        remitos_tree.bind('<<TreeviewSelect>>', lambda event: self.ver_detalles_remito(remitos_tree, detalles_tree))
+        abrir_ventana_remitos(self, nombre)
 
     def ver_detalles_remito(self, remitos_tree, detalles_tree):
-        # Obtener el remito seleccionado en la tabla
-        seleccion = remitos_tree.selection()
-        if not seleccion:
-            messagebox.showerror("Error", "Selecciona un remito.")
-            return
-
-        # Obtener el ID del remito seleccionado
-        ID = remitos_tree.item(seleccion)['values'][0]
-        # Llamar a la función mostrar_detalles_remito con el ID del remito y el Treeview de detalles
-        self.mostrar_detalles_remito(ID, detalles_tree)
+        ver_detalles_remito(self, remitos_tree, detalles_tree)
 
     def mostrar_detalles_remito(self, ID, detalles_tree):
-        # Limpiar el Treeview de detalles previo
-        for item in detalles_tree.get_children():
-            detalles_tree.delete(item)
-
-        # Obtener el remito de la base de datos por la ID
-        remito = session.query(Remitos).filter_by(id=ID).first()
-        for detalle in remito.detalles:
-            # Agregar los detalles del remito a la tabla de detalles, formateando los montos como moneda (separando miles y con dos decimales)
-            detalles_tree.insert('', 'end', values=(detalle.producto, detalle.cantidad, f"${detalle.precio_unitario:,.2f}", f"${detalle.total:,.2f}"))
+        mostrar_detalles_remito(self, ID, detalles_tree)
 

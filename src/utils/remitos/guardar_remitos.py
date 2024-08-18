@@ -3,18 +3,27 @@ from tkinter import messagebox
 
 def guardar_remito(cliente_var, carrito, session, Clientes, Remitos, DetallesRemitos):
     try:
-        # Preguntar al usuario si el remito se pagó o no
-        pago = messagebox.askyesno("Pago", "¿El remito se pagó?")
-        pago = "SI" if pago else "NO"
-
         # Obtener el nombre del cliente seleccionado
         nombre_cliente = cliente_var.get()
+
+        if not nombre_cliente:
+            messagebox.showerror("Error", "Selecciona un cliente.")
+            return
 
         # Buscar el cliente en la base de datos
         cliente = session.query(Clientes).filter_by(nombre=nombre_cliente).first()
 
         if not cliente:
             messagebox.showerror("Error", "Cliente no encontrado en la base de datos.")
+            return
+
+        # Preguntar al usuario si el remito se pagó o no
+        pago = messagebox.askyesno("Pago", "¿El remito se pagó?")
+        pago = "SI" if pago else "NO"
+
+        # Preguntar al usuario si desea guardar el remito
+        guardar = messagebox.askyesno("Guardar", "¿Deseas guardar el remito?")
+        if not guardar:
             return
 
         # Obtener la fecha actual
