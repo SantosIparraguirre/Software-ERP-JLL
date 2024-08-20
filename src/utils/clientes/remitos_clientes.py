@@ -40,9 +40,12 @@ def abrir_ventana_remitos(self, nombre):
 
         # Formatear la fecha sin los decimales de los segundos
         fecha_formateada = remito.fecha.strftime("%d/%m/%Y %H:%M:%S")
-
-        # Insertar en el treeview los valores del remito, formateando el total como moneda
-        remitos_tree.insert('', 'end', values=(remito.id, fecha_formateada, f"${remito.total:,.2f}", remito.pago))
+        # Insertar en el treeview los valores del remito, formateando el total y el pago como moneda
+        if remito.pago != "NO" and remito.pago != "SI":
+            pago_formateado = f"${float(remito.pago):,.2f}"
+        else:
+            pago_formateado = remito.pago
+        remitos_tree.insert('', 'end', values=(remito.id, fecha_formateada, f"${remito.total:,.2f}", pago_formateado))
 
     # Crear un Treeview vacío para los detalles del remito seleccionado
     detalles_tree = ttk.Treeview(frame_remitos, columns=('Producto', 'Cantidad', 'Precio Unitario', 'Total'), show='headings')

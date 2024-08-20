@@ -73,6 +73,7 @@ class Remitos(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     id_cliente = Column(Integer, ForeignKey ('CLIENTES.id'), nullable=False)
     fecha = Column(DateTime, nullable=False)
+    fecha_pago = Column(DateTime, default=datetime.datetime.now, onupdate=datetime.datetime.now)
     total = Column(Float, nullable=False)
     pago = Column(String, nullable=False)
     cliente = relationship('Clientes', back_populates='remitos')

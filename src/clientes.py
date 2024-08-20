@@ -8,6 +8,7 @@ from utils.clientes.gestion_clientes import buscar_cliente, agregar_cliente, act
 from utils.clientes.modificar_clientes import abrir_ventana_modificacion, guardar_cambios, modificar_cliente
 from utils.clientes.presupuestos_clientes import ver_presupuestos, abrir_ventana_presupuestos, ver_detalles_presupuesto, mostrar_detalles_presupuesto
 from utils.clientes.remitos_clientes import ver_remitos, abrir_ventana_remitos, ver_detalles_remito, mostrar_detalles_remito
+from utils.clientes.deudas_clientes import ver_deudas, abrir_ventana_deudas, cancelar_deuda, confirmar_cancelacion, cancelar_total, actualizar_ventana_deudas
 
 # Clase para la aplicación de gestión de clientes
 class ClientesApp(tk.Tk):
@@ -129,6 +130,11 @@ class ClientesApp(tk.Tk):
         self.ver_remitos_button = ttk.Button(self.main_frame, text="Ver Remitos", command=self.ver_remitos)
         self.ver_remitos_button.place(x=940, y=140)
 
+        # Botón para ver las deudas de un cliente
+        # El botón llama a la función ver_deudas cuando se hace click
+        self.ver_deudas_button = ttk.Button(self.main_frame, text="Ver Deudas", command=self.ver_deudas)
+        self.ver_deudas_button.place(x=940, y=170)
+
         # Actualizar la tabla de clientes
         self.actualizar_clientes()
 
@@ -181,3 +187,5 @@ class ClientesApp(tk.Tk):
     def mostrar_detalles_remito(self, ID, detalles_tree):
         mostrar_detalles_remito(self, ID, detalles_tree)
 
+    def ver_deudas(self):
+        ver_deudas(self)
