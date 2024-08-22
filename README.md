@@ -7,16 +7,18 @@ Este proyecto es una aplicación de escritorio desarrollada en Python utilizando
 - Listas de productos: Seleccionar una línea de productos/proveedores para buscar sus productos.
 - Aumento de precios: Permite aumentar los precios de los productos en la lista seleccionada por el porcentaje ingresado.
 - Gestión de Carrito: Añadir, eliminar y visualizar productos en un carrito de compras.
-- Generación de Presupuestos: Facilita la creación de presupuestos y su exportación a archivos Excel.
-- Generación de Remitos: Permite la creación de remitos y su exportación a archivos Excel.
+- Generación de Presupuestos y Remitos: Facilita la creación de presupuestos y remitos, su exportación a archivos Excel, y su almacenamiento en la base de datos.
 - Búsqueda y Filtros: Búsqueda de productos por nombre, código o línea.
 - Productos Fuera de Lista: Posibilidad de agregar productos que no están en la lista principal.
+- Lista de clientes: Añadir, modificar y eliminar clientes.
+- Visualización de Presupuestos y Remitos: Visualizar cada documento y sus detalles a través de la interfaz del cliente.
+- Sistema de deudas: Capturar todos los remitos no pagos, calcular la deuda total, actualizar los precios de los productos, cancelar deuda parcial/total.
 
 ## Características futuras
-- Finalización de la sección de clientes: Incluir la posibilidad de gestionar clientes y asociar documentos a cada uno.
 - Generación de facturas: Permitir la generación de facturas y su almacenamiento.
-- Mejoras en la interfaz: Embellecer el diseño, incorporar íconos y colores.
+- Mejoras en la interfaz: Embellecer el diseño, mejorar la UX
 - Añadir funcionalidades: Más botones para modificar listas, productos, etc.
+- Copia de seguridad: Automatizar la subida de la base de datos a la nube.
 
 ## Librerias principales
 - Tkinter
