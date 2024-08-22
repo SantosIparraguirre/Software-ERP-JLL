@@ -8,7 +8,7 @@ from utils.clientes.gestion_clientes import buscar_cliente, agregar_cliente, act
 from utils.clientes.modificar_clientes import abrir_ventana_modificacion, guardar_cambios, modificar_cliente
 from utils.clientes.presupuestos_clientes import ver_presupuestos, abrir_ventana_presupuestos, ver_detalles_presupuesto, mostrar_detalles_presupuesto
 from utils.clientes.remitos_clientes import ver_remitos, abrir_ventana_remitos, ver_detalles_remito, mostrar_detalles_remito
-from utils.clientes.deudas_clientes import ver_deudas, abrir_ventana_deudas, cancelar_deuda, confirmar_cancelacion, cancelar_total, actualizar_ventana_deudas
+from utils.clientes.deudas_clientes import ver_deudas
 
 # Clase para la aplicación de gestión de clientes
 class ClientesApp(tk.Tk):
@@ -140,52 +140,124 @@ class ClientesApp(tk.Tk):
 
     # Funciones importadas de los módulos de utilidades
 
+    # Función para buscar un cliente
     def buscar_cliente(self):
+        # Llamar a la función buscar_cliente con el nombre del cliente a buscar, la tabla de clientes, la sesión y la clase Clientes
         buscar_cliente(self.nombre_buscar_var, self.clientes_tree, session, Clientes)
 
+    # Función para agregar un cliente
     def agregar_cliente(self):
+        # Llamar a la función agregar_cliente con los datos del cliente a agregar, la sesión y la clase Clientes
         agregar_cliente(self.nombre_var, self.cuit_var, self.telefono_var, self.direccion_var, session, Clientes)
+        # Actualizar la tabla de clientes
         self.actualizar_clientes()
 
+    # Función para actualizar la tabla de clientes
     def actualizar_clientes(self):
+        # Llamar a la función actualizar_clientes con la tabla de clientes, la sesión y la clase Clientes
         actualizar_clientes(self.clientes_tree, session, Clientes)
 
+    # Función para eliminar un cliente
     def eliminar_cliente(self):
+        # Llamar a la función eliminar_cliente con la tabla de clientes, la sesión, la clase Clientes y la clase Presupuestos
         eliminar_cliente(self.clientes_tree, session, Clientes, Presupuestos)
+        # Actualizar la tabla de clientes
         self.actualizar_clientes()
 
+    # Función para modificar un cliente
     def modificar_cliente(self):
-        modificar_cliente(self.clientes_tree, lambda cliente_data: abrir_ventana_modificacion(cliente_data, self.main_frame, lambda nombre_original, nuevo_nombre, nuevo_cuit, nuevo_telefono, nueva_direccion, ventana: guardar_cambios(nombre_original, nuevo_nombre, nuevo_cuit, nuevo_telefono, nueva_direccion, ventana, session, Clientes, self.actualizar_clientes)))
+        # Llamar a la función modificar_cliente con la tabla de clientes, la función abrir_ventana_modificacion y la función guardar_cambios
+        modificar_cliente(self.clientes_tree,
+                          # Función para abrir la ventana de modificación de un cliente con los datos del cliente seleccionado y la ventana principal
+                           lambda cliente_data: abrir_ventana_modificacion(
+                               cliente_data, 
+                               self.main_frame, 
+                               lambda nombre_original, 
+                               nuevo_nombre, 
+                               nuevo_cuit, 
+                               nuevo_telefono, 
+                               nueva_direccion, 
+                # Función para guardar los cambios realizados en la ventana de modificación de un cliente con los datos del cliente seleccionado 
+                               ventana: guardar_cambios(
+                                        nombre_original,
+                                        nuevo_nombre,
+                                        nuevo_cuit,
+                                        nuevo_telefono,
+                                        nueva_direccion,
+                                        ventana,
+                                        session,
+                                        Clientes, 
+                                        self.actualizar_clientes)))
 
+    # Función abrir la ventana de modificación
     def abrir_ventana_modificacion(self, cliente_data):
-        abrir_ventana_modificacion(cliente_data, self.main_frame, lambda nombre_original, nuevo_nombre, nuevo_cuit, nuevo_telefono, nueva_direccion, ventana: guardar_cambios(nombre_original, nuevo_nombre, nuevo_cuit, nuevo_telefono, nueva_direccion, ventana, session, Clientes, self.actualizar_clientes))
-
+        # Llamar a la función abrir_ventana_modificacion con los datos del cliente seleccionado, la ventana principal y la función para guardar los cambios
+        abrir_ventana_modificacion(
+            cliente_data,
+            self.main_frame, 
+            lambda nombre_original, 
+            nuevo_nombre, 
+            nuevo_cuit, 
+            nuevo_telefono, 
+            nueva_direccion, 
+            # Función para guardar los cambios realizados en la ventana de modificación de un cliente con los datos del cliente seleccionado
+            ventana: guardar_cambios(
+                nombre_original, 
+                nuevo_nombre, 
+                nuevo_cuit, 
+                nuevo_telefono, 
+                nueva_direccion, 
+                ventana, 
+                session, 
+                Clientes, 
+                self.actualizar_clientes))
+    
+    # Función para guardar los cambios realizados en la ventana de modificación
     def guardar_cambios(self, nombre_original, nuevo_nombre, nuevo_cuit, nuevo_telefono, nueva_direccion, ventana):
+        # Llamar a la función guardar_cambios con los datos del cliente seleccionado, la ventana de modificación, la sesión, la clase Clientes y la función para actualizar la tabla de clientes
         guardar_cambios(nombre_original, nuevo_nombre, nuevo_cuit, nuevo_telefono, nueva_direccion, ventana, session, Clientes, self.actualizar_clientes)
 
+    # Funciones para ver los presupuestos, remitos y deudas de un cliente
     def ver_presupuestos(self):
+        # Llamar a la función ver_presupuestos
         ver_presupuestos(self)
 
+    # Funciones para ver los presupuestos, remitos y deudas de un cliente
     def abrir_ventana_presupuestos(self, nombre):
+        # Llamar a la función abrir_ventana_presupuestos con el nombre del cliente
         abrir_ventana_presupuestos(self, nombre)
 
+    # Funciones para ver los presupuestos, remitos y deudas de un cliente
     def ver_detalles_presupuesto(self, presupuestos_tree, detalles_tree):
+        # Llamar a la función ver_detalles_presupuesto con la tabla de presupuestos y la tabla de detalles
         ver_detalles_presupuesto(self, presupuestos_tree, detalles_tree)
 
+    # Funciones para ver los presupuestos, remitos y deudas de un cliente
     def mostrar_detalles_presupuesto(self, ID, detalles_tree):
+        # Llamar a la función mostrar_detalles_presupuesto con el ID del presupuesto y la tabla de detalles
         mostrar_detalles_presupuesto(self, ID, detalles_tree)
 
+    # Funciones para ver los presupuestos, remitos y deudas de un cliente
     def ver_remitos(self):
+        # Llamar a la función ver_remitos
         ver_remitos(self)
 
+    # Funciones para ver los presupuestos, remitos y deudas de un cliente
     def abrir_ventana_remitos(self, nombre):
+        # Llamar a la función abrir_ventana_remitos con el nombre del cliente
         abrir_ventana_remitos(self, nombre)
 
+    # Funciones para ver los presupuestos, remitos y deudas de un cliente
     def ver_detalles_remito(self, remitos_tree, detalles_tree):
+        # Llamar a la función ver_detalles_remito con la tabla de remitos y la tabla de detalles
         ver_detalles_remito(self, remitos_tree, detalles_tree)
 
+    # Funciones para ver los presupuestos, remitos y deudas de un cliente
     def mostrar_detalles_remito(self, ID, detalles_tree):
+        # Llamar a la función mostrar_detalles_remito con el ID del remito y la tabla de detalles
         mostrar_detalles_remito(self, ID, detalles_tree)
 
+    # Funciones para ver los presupuestos, remitos y deudas de un cliente
     def ver_deudas(self):
+        # Llamar a la función ver_deudas
         ver_deudas(self)

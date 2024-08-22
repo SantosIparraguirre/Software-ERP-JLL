@@ -50,6 +50,10 @@ def eliminar_cliente(clientes_tree, session, Clientes, Presupuestos):
             return
         # Obtener el nombre del cliente seleccionado
         nombre = clientes_tree.item(seleccion)['values'][0]
+        # Preguntar al usuario si está seguro de eliminar el cliente
+        confirmacion = messagebox.askyesno("Confirmación", f"¿Estás seguro de eliminar al cliente {nombre}?")
+        if not confirmacion:
+            return
         # Buscar el cliente en la base de datos por el nombre
         cliente = session.query(Clientes).filter_by(nombre=nombre).first()
         

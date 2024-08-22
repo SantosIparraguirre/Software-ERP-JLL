@@ -275,57 +275,89 @@ class RemitosApp(tk.Tk):
 
     # Funciones para interactuar con la base de datos y la interfaz
 
+    # Obtener los nombres de los clientes de la base de datos
     def obtener_nombres_clientes(self):
         clientes = session.query(Clientes.nombre).all()
         return [cliente[0] for cliente in clientes]
 
+    # Funciones para interactuar con la base de datos y la interfaz
     def modificar_precios(self):
+        # Llamar a la función modificar_precios con la tabla seleccionada, los precios anteriores y las clases de Productos y Categorias
         modificar_precios(self.tabla_var, self.precios_anteriores, Categorias, Productos)
+        # Actualizar la lista de productos
         self.update_productos(None)
 
+    # Función para deshacer el último aumento de precios
     def deshacer_ultimo_aumento(self):
+        # Llamar a la función deshacer_ultimo_aumento con la tabla seleccionada, los precios anteriores y las clases de Productos y Categorias
         deshacer_ultimo_aumento(self.tabla_var, self.precios_anteriores, Categorias, Productos)
+        # Actualizar la lista de productos
         self.update_productos(None)
 
+    # Función para agregar productos fuera de lista al carrito
     def agregar_fuera_lista(self):
+        # Llamar a la función agregar_fuera_lista con el carrito, el nombre del producto, la cantidad, y el precio
         agregar_fuera_lista(self.carrito, self.producto_var, self.cantidad_fuera_lista_var, self.precio_var)
+        # Actualizar la lista de productos del carrito
         self.actualizar_carrito()
 
+    # Función para actualizar la lista de productos
     def update_productos(self, event=None):
+        # Llamar a la función update_productos con la tabla seleccionada, la tabla de productos, las clases de Productos y Categorias, y el evento
         update_productos(self.tabla_var, self.productos_tree, Productos, Categorias, event)
 
+    # Función para buscar un producto en la lista de productos
     def buscar_producto(self):
+        # Llamar a la función buscar_producto con el término de búsqueda, la tabla seleccionada, la tabla de productos, las clases de Productos y Categorias
         buscar_producto(self.busqueda_var, self.tabla_var, self.productos_tree, Productos, Categorias)
 
+    # Funciones para interactuar con el carrito
     def agregar_al_carrito(self):
+        # Llamar a la función agregar_al_carrito con el carrito, la tabla de productos, la cantidad y el descuento
         agregar_al_carrito(self.carrito, self.productos_tree, self.cantidad_var, self.descuento_var)
+        # Actualizar la lista de productos del carrito
         self.actualizar_carrito()
 
+    # Función para actualizar la lista de productos del carrito
     def actualizar_carrito(self):
+        # Llamar a la función actualizar_carrito con el treeview del carrito y la lista de productos del carrito
         actualizar_carrito(self.carrito_treeview, self.carrito)
 
+    # Funciones para interactuar con el carrito
     def eliminar_del_carrito(self):
+        # Llamar a la función eliminar_del_carrito con el carrito y el treeview del carrito
         eliminar_del_carrito(self.carrito, self.carrito_treeview)
+        # Actualizar la lista de productos del carrito
         self.actualizar_carrito()
 
+    # Función para limpiar el carrito
     def limpiar_carrito(self):
         # Limpiar la lista de productos del carrito
         self.carrito = []
         # Actualizar la lista de productos del carrito
         self.actualizar_carrito()
-        
+    
+    # Funciones para guardar y generar presupuestos y remitos
     def generar_remito_excel(self):
+        # Llamar a la función generar_remito_excel con el cliente seleccionado, el carrito, la sesión y las clases de Clientes
         generar_remito_excel(self.cliente_var, self.carrito, session, Clientes)
 
+    # Función para guardar el remito en la base de datos
     def guardar_remito(self):
+        # Llamar a la función guardar_remito con el cliente seleccionado, el carrito, la sesión y las clases de Clientes, Remitos y DetallesRemitos
         guardar_remito(self.cliente_var, self.carrito, session, Clientes, Remitos, DetallesRemitos) 
 
+    # Función para generar un presupuesto en Excel
     def generar_presupuesto_excel(self):
+        # Llamar a la función generar_presupuesto_excel con el cliente seleccionado, el carrito, la sesión y las clases de Clientes
         generar_presupuesto_excel(self.cliente_var, self.carrito, session, Clientes)
 
+    # Función para guardar el presupuesto en la base de datos
     def guardar_presupuesto(self):
+        # Llamar a la función guardar_presupuesto con el cliente seleccionado, el carrito, la sesión y las clases de Clientes, Presupuestos y DetallesPresupuestos
         guardar_presupuesto(self.cliente_var, self.carrito, session, Clientes, Presupuestos, DetallesPresupuestos)
 
+    # Función para mostrar los clientes
     def mostrar_clientes(self):
         # Limpiar el main_frame antes de agregar nuevos widgets
         for widget in self.main_frame.winfo_children():
