@@ -41,8 +41,11 @@ def guardar_remito(cliente_var, carrito, session, Clientes, Remitos, DetallesRem
         # Iterar sobre los elementos del carrito para agregarlos a los detalles del remito
         for producto, cantidad, descuento, precio in carrito:
             cantidad = int(cantidad)
-            precio = float(precio)
-            descuento = float(descuento)
+            # Quitamos el signo de pesos y las comas
+            precio = precio[1:].replace(',', '') if precio else 0
+            precio = float(precio) if precio else 0
+            # Quitar el signo de porcentaje y convertir a flotante el descuento
+            descuento = float(descuento[:-1]) if descuento else 0
             total = cantidad * precio * (1 - descuento / 100)
             detalle = DetallesRemitos(
                 id_remito=nuevo_remito.id,

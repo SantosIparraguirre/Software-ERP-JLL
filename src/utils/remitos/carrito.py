@@ -14,7 +14,7 @@ def agregar_al_carrito(carrito, productos_tree, cantidad_var, descuento_var):
     precio = item['values'][3]
     # Obtener la cantidad y descuento ingresados por el usuario con el método get
     cantidad = cantidad_var.get()
-    descuento = descuento_var.get()
+    descuento = f'{descuento_var.get()}%'
 
     if cantidad <= 0:
         messagebox.showerror("Error", "Ingresa una cantidad válida.")
@@ -36,8 +36,8 @@ def agregar_fuera_lista(carrito, producto_var, cantidad_fuera_lista_var, precio_
     producto = producto_var.get()
     # Obtener la cantidad y precio del producto ingresados por el usuario
     cantidad = cantidad_fuera_lista_var.get()
-    # Obtener la cantidad y precio del producto ingresados por el usuario
-    precio = precio_var.get()
+    # Obtener la cantidad y precio del producto ingresados por el usuario y formatearlo como moneda
+    precio = f'${precio_var.get():,.2f}'
 
     # Validar que el producto y el precio no estén vacíos
     if not producto or not precio:
@@ -45,7 +45,7 @@ def agregar_fuera_lista(carrito, producto_var, cantidad_fuera_lista_var, precio_
         return
 
     # Agregar el producto a la lista de productos del carrito
-    carrito.append((producto, cantidad, 0, precio))
+    carrito.append((producto, cantidad, '0.0%', precio))
 
 def eliminar_del_carrito(carrito, carrito_treeview):
     # Obtener el índice del producto seleccionado en el treeview del carrito

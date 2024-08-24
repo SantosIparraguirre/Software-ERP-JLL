@@ -8,11 +8,6 @@ def generar_presupuesto_excel(cliente_var, carrito, session, Clientes):
     # Obtener el cliente
     cliente = cliente_var.get()
 
-    # Si no se seleccionó un cliente, mostrar un mensaje de error
-    if not cliente:
-        messagebox.showerror("Error", "Selecciona un cliente.")
-        return
-
     # Solicitar ubicación para guardar el archivo Excel
     file_path = filedialog.asksaveasfilename(defaultextension=".xlsx", filetypes=[("Excel files", "*.xlsx")])
     if not file_path:
@@ -60,7 +55,12 @@ def generar_presupuesto_excel(cliente_var, carrito, session, Clientes):
         producto, cantidad, descuento, precio = item
         # Convertir la cantidad y el precio a entero y flotante
         cantidad = int(cantidad)
-        precio = float(precio)
+        # Quitarle el signo $ al precio y la coma
+        precio = precio[1:].replace(',', '') if precio else 0
+        # Convertir el precio a float
+        precio = float(precio) if precio else 0
+        # Quitarle el signo % al descuento y convertirlo a float
+        descuento = float(descuento[:-1]) if descuento else 0
         # Calcular el precio total con descuento y sin IVA del producto
         precio_total = cantidad * precio * (1 - descuento / 100)
         precio_sin_iva = precio_total / 1.21
@@ -173,7 +173,11 @@ def generar_presupuesto_excel(cliente_var, carrito, session, Clientes):
             producto, cantidad, descuento, precio = item
             # Convertir la cantidad y el precio a entero y flotante
             cantidad = int(cantidad)
-            precio = float(precio)
+            # Quitarle el signo $ al precio y la coma
+            precio = precio[1:].replace(',', '') if precio else 0
+            precio = float(precio) if precio else 0
+            # Quitar el signo de porcentaje y convertir a flotante el descuento
+            descuento = float(descuento[:-1]) if descuento else 0
             # Calcular el precio total con descuento y sin IVA del producto
             precio_total = cantidad * precio * (1 - descuento / 100)
             precio_sin_iva = precio_total / 1.21

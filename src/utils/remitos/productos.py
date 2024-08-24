@@ -17,12 +17,12 @@ def update_productos(tabla_var, productos_tree, Productos, Categorias, event=Non
     
     # Insertar los nuevos productos en el treeview
     for producto in productos:
+        precio = f'${producto.precio:,.2f}' if producto.precio else ''
         productos_tree.insert('', 'end', values=(
             producto.codigo,
             producto.linea,
             producto.nombre,
-            producto.precio,
-            # Agrega aquí cualquier otra columna que quieras mostrar
+            precio
         ))
 
 def buscar_producto(busqueda_var, tabla_var, productos_tree, Productos, Categorias):
@@ -50,4 +50,5 @@ def buscar_producto(busqueda_var, tabla_var, productos_tree, Productos, Categori
         
         # Si la búsqueda está contenida en el nombre del producto, insertar el producto en la tabla
         if search_term in nombre or search_term in codigo or search_term in linea:
-            productos_tree.insert('', 'end', values=(producto.codigo, producto.linea, producto.nombre, producto.precio))
+            precio = f'${producto.precio:,.2f}' if producto.precio else ''
+            productos_tree.insert('', 'end', values=(producto.codigo, producto.linea, producto.nombre, precio))

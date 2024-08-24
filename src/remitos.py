@@ -134,17 +134,17 @@ class RemitosApp(tk.Tk):
 
         # Tabla de productos
         # Treeview con las columnas Producto y Precio
-        self.productos_tree = ttk.Treeview(self.main_frame, columns=('Codigo', 'Linea', 'Producto', 'Precio'), show='headings')
+        self.productos_tree = ttk.Treeview(self.main_frame, columns=('Codigo', 'Linea', 'Producto', 'Precio UD'), show='headings')
         # Encabezados de las columnas
         self.productos_tree.heading('Codigo', text='Codigo')
         self.productos_tree.heading('Linea', text='Linea')
         self.productos_tree.heading('Producto', text='Producto')
-        self.productos_tree.heading('Precio', text='Precio')
+        self.productos_tree.heading('Precio UD', text='Precio UD')
         # Ancho de las columnas
-        self.productos_tree.column('Codigo', width=50)
-        self.productos_tree.column('Linea', width=70)
+        self.productos_tree.column('Codigo', anchor='center', width=50)
+        self.productos_tree.column('Linea', anchor='center', width=70)
         self.productos_tree.column('Producto', width=300)
-        self.productos_tree.column('Precio', width=100)
+        self.productos_tree.column('Precio UD', anchor='center', width=100)
         self.productos_tree.place(x=10, y=160)
 
         # Scrollbar para la tabla de productos
@@ -233,17 +233,17 @@ class RemitosApp(tk.Tk):
         self.clear_button.place(x=950, y=130)
 
         # Treeview para mostrar los productos del carrito
-        self.carrito_treeview = ttk.Treeview(self.main_frame, columns=('Producto', 'Cantidad', 'Descuento', 'Precio'), show='headings')
+        self.carrito_treeview = ttk.Treeview(self.main_frame, columns=('Producto', 'Cantidad', 'Descuento', 'Precio UD'), show='headings')
         # Encabezados de las columnas
         self.carrito_treeview.heading('Producto', text='Producto')
         self.carrito_treeview.heading('Cantidad', text='Cantidad')
         self.carrito_treeview.heading('Descuento', text='Descuento')
-        self.carrito_treeview.heading('Precio', text='Precio')
+        self.carrito_treeview.heading('Precio UD', text='Precio UD')
         # Ancho de las columnas
         self.carrito_treeview.column('Producto', width=350)
-        self.carrito_treeview.column('Cantidad', width=75)
-        self.carrito_treeview.column('Descuento', width=75)
-        self.carrito_treeview.column('Precio', width=100)
+        self.carrito_treeview.column('Cantidad', anchor='center', width=75)
+        self.carrito_treeview.column('Descuento', anchor='center', width=75)
+        self.carrito_treeview.column('Precio UD', anchor='center', width=100)
         self.carrito_treeview.place(x=552, y=160)
 
         self.actualizar_carrito()
@@ -255,23 +255,13 @@ class RemitosApp(tk.Tk):
         self.carrito_treeview.configure(yscroll=scrollbar.set)
         scrollbar.place(x=1155, y=160, relheight=0.31)
 
-        # Botón para generar el presupuesto
-        # El botón llama a la función generar_presupuesto_excel cuando se hace click
-        self.generate_button = ttk.Button(self.main_frame, text="Generar Presupuesto", command=self.generar_presupuesto_excel)
-        self.generate_button.place(x=560, y=400)
-
         # Botón para guardar el presupuesto en la base de datos
         self.save_presupuesto_button = ttk.Button(self.main_frame, text="Guardar Presupuesto", command=self.guardar_presupuesto)
         self.save_presupuesto_button.place(x=700, y=400)
 
-        # Botón para generar el remito
-        # El botón llama a la función generar_remito_excel cuando se hace click
-        self.generate_button = ttk.Button(self.main_frame, text="Generar Remito", command=self.generar_remito_excel)
-        self.generate_button.place(x=850, y=400)
-
         # Botón para guardar el remito en la base de datos
         self.save_remito_button = ttk.Button(self.main_frame, text="Guardar Remito", command=self.guardar_remito)
-        self.save_remito_button.place(x=1000, y=400)
+        self.save_remito_button.place(x=850, y=400)
 
     # Funciones para interactuar con la base de datos y la interfaz
 
@@ -336,26 +326,20 @@ class RemitosApp(tk.Tk):
         self.carrito = []
         # Actualizar la lista de productos del carrito
         self.actualizar_carrito()
-    
-    # Funciones para guardar y generar presupuestos y remitos
-    def generar_remito_excel(self):
-        # Llamar a la función generar_remito_excel con el cliente seleccionado, el carrito, la sesión y las clases de Clientes
-        generar_remito_excel(self.cliente_var, self.carrito, session, Clientes)
 
     # Función para guardar el remito en la base de datos
     def guardar_remito(self):
         # Llamar a la función guardar_remito con el cliente seleccionado, el carrito, la sesión y las clases de Clientes, Remitos y DetallesRemitos
         guardar_remito(self.cliente_var, self.carrito, session, Clientes, Remitos, DetallesRemitos) 
-
-    # Función para generar un presupuesto en Excel
-    def generar_presupuesto_excel(self):
-        # Llamar a la función generar_presupuesto_excel con el cliente seleccionado, el carrito, la sesión y las clases de Clientes
-        generar_presupuesto_excel(self.cliente_var, self.carrito, session, Clientes)
+        # Llamar a la función generar_remito_excel con el cliente seleccionado, el carrito, la sesión y las clases de Clientes
+        generar_remito_excel(self.cliente_var, self.carrito, session, Clientes)
 
     # Función para guardar el presupuesto en la base de datos
     def guardar_presupuesto(self):
         # Llamar a la función guardar_presupuesto con el cliente seleccionado, el carrito, la sesión y las clases de Clientes, Presupuestos y DetallesPresupuestos
         guardar_presupuesto(self.cliente_var, self.carrito, session, Clientes, Presupuestos, DetallesPresupuestos)
+        # Llamar a la función generar_presupuesto_excel con el cliente seleccionado, el carrito, la sesión y las clases de Clientes
+        generar_presupuesto_excel(self.cliente_var, self.carrito, session, Clientes)
 
     # Función para mostrar los clientes
     def mostrar_clientes(self):

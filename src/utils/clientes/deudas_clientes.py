@@ -1,299 +1,257 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-from database import Clientes, Remitos, Productos, session 
+from database import Clientes, Remitos, Productos, session
+
+ventana_deudas = None
+
+def obtener_cliente_por_nombre(nombre):
+    return session.query(Clientes).filter_by(nombre=nombre).first()
+
+def formatear_fecha(fecha):
+    return fecha.strftime("%d/%m/%Y %H:%M:%S")
+
+def insertar_remitos_no_pagos(treeview, remitos_no_pagos):
+    for deuda in remitos_no_pagos:
+        # Formatear la fecha
+        fecha_formateada = formatear_fecha(deuda.fecha)
+        fecha_pago_formateada = formatear_fecha(deuda.fecha_pago)
+        # Si el pago no es "NO" ni "SI", formatear el monto de pago como moneda
+        if deuda.pago not in ["NO", "SI"]:
+            total_formateado = f'${deuda.total:,.2f}'
+            pago_formateado = f"${float(deuda.pago):,.2f}"
+            deuda_formateado = f"${(deuda.total - float(deuda.pago)):,.2f}"
+        # Si el pago es "NO", mostrar "NO" en lugar de un monto
+        else:
+            total_formateado = f"${deuda.total:,.2f}"
+            pago_formateado = deuda.pago
+            deuda_formateado = total_formateado
+        # Insertar los datos en el Treeview
+        treeview.insert('', 'end', values=(
+            deuda.id, 
+            fecha_formateada, 
+            fecha_pago_formateada,
+            total_formateado, 
+            pago_formateado,
+            deuda_formateado
+        ))
+
+def crear_treeview(parent):
+    # Crear un Treeview con las columnas ID, Fecha, Fecha Pago, Total, Pago y Deuda
+    treeview = ttk.Treeview(parent, columns=('ID', 'Fecha', 'Fecha Pago', 'Total', 'Pago', 'Deuda'), show='headings')
+    # Propiedades de las columnas
+    column_properties = {
+        'ID': {'width': 30, 'anchor': 'center'},
+        'Fecha': {'width': 150, 'anchor': 'center'},
+        'Fecha Pago': {'width': 150, 'anchor': 'center'},
+        'Total': {'width': 100, 'anchor': 'center'},
+        'Pago': {'width': 100, 'anchor': 'center'},
+        'Deuda': {'width': 100, 'anchor': 'center'}
+    }
+    # Configurar las cabeceras y las columnas
+    for col in ['ID', 'Fecha', 'Fecha Pago', 'Total', 'Pago', 'Deuda']:
+        treeview.heading(col, text=col)
+        treeview.column(col, **column_properties.get(col, {}))
+    # Empaquetar el Treeview
+    treeview.pack(pady=10, fill='x')
+    # Crear una scrollbar para el Treeview
+    scrollbar = ttk.Scrollbar(parent, orient='vertical', command=treeview.yview)
+    treeview.configure(yscroll=scrollbar.set)
+    # Posicionar el Treeview y la scrollbar en el marco
+    treeview.grid(row=0, column=0, sticky='nsew')
+    scrollbar.grid(row=0, column=1, sticky='ns')
+    # Configurar el marco para que se expanda con la ventana
+    parent.grid_rowconfigure(0, weight=1)
+    parent.grid_columnconfigure(0, weight=1)
+    # Retornar el Treeview
+    return treeview
 
 def ver_deudas(self):
     # Obtener el cliente seleccionado en la tabla
     seleccion = self.clientes_tree.selection()
+    # Si no se seleccionó ningún cliente, mostrar un mensaje de error
     if not seleccion:
         messagebox.showerror("Error", "Selecciona un cliente.")
         return
-    
     # Obtener el nombre del cliente seleccionado
     nombre = self.clientes_tree.item(seleccion)['values'][0]
-    # Llamar a la función para abrir la ventana de deudas
+    # Llamar a la función
     abrir_ventana_deudas(self, nombre)
 
 def abrir_ventana_deudas(self, nombre):
+    global ventana_deudas
+    # Verificar si la ventana ya está abierta
+    if ventana_deudas and tk.Toplevel.winfo_exists(ventana_deudas):
+        # Mostrar la ventana y llevarla al frente
+        ventana_deudas.lift()
+        # Desiconificar la ventana si está minimizada
+        ventana_deudas.deiconify()
+        # Focus en la ventana
+        ventana_deudas.focus_force()
+        return
     # Obtener el cliente de la base de datos por el nombre
-    cliente = session.query(Clientes).filter_by(nombre=nombre).first()
-    
-    # Filtrar los remitos que no estén pagos
+    cliente = obtener_cliente_por_nombre(nombre)
+    # Filtrar los remitos del cliente que no han sido pagados
     remitos_no_pagos = [deuda for deuda in cliente.remitos if deuda.pago != 'SI']
-    
     # Calcular el total de la deuda
     total_deuda = sum(deuda.total - (float(deuda.pago) if deuda.pago not in ["SI", "NO"] else 0) for deuda in remitos_no_pagos)
-
-    # Verificar que el cliente tenga deudas
+    # Si el cliente no tiene deudas, mostrar un mensaje informativo y retornar
     if not remitos_no_pagos:
         messagebox.showinfo("Información", "El cliente no tiene deudas.")
         return
-    
-    # Crear una nueva ventana para mostrar las deudas
-    self.ventana_deudas = tk.Toplevel()
-    self.ventana_deudas.title("Deudas de " + nombre)
-
-    frame_deudas = tk.Frame(self.ventana_deudas)
+    # Crear una ventana secundaria para mostrar las deudas del cliente
+    ventana_deudas = tk.Toplevel()
+    # Configurar el título de la ventana
+    ventana_deudas.title("Deudas de " + nombre)
+    # Configurar las dimensiones de la ventana
+    frame_deudas = tk.Frame(ventana_deudas)
     frame_deudas.pack(fill='both', expand=True)
-    
+    # Crear un marco para la tabla de deudas y su scrollbar
     frame_deudas_tree = tk.Frame(frame_deudas)
     frame_deudas_tree.pack(fill='x', pady=10)
-    
-    # Crear un Treeview para mostrar los remitos no pagos
-    self.deudas_tree = ttk.Treeview(frame_deudas_tree, columns=('ID', 'Fecha', 'Fecha Pago', 'Total', 'Pago'), show='headings')
-    self.deudas_tree.heading('ID', text='ID')
-    self.deudas_tree.heading('Fecha', text='Fecha')
-    self.deudas_tree.heading('Fecha Pago', text='Fecha Pago')
-    self.deudas_tree.heading('Total', text='Total')
-    self.deudas_tree.heading('Pago', text='Pago')
-    self.deudas_tree.column('ID', width=30, anchor='center')
-    self.deudas_tree.column('Fecha', width=150, anchor='center')
-    self.deudas_tree.column('Fecha Pago', width=150, anchor='center')
-    self.deudas_tree.column('Total', width=100, anchor='center')
-    self.deudas_tree.column('Pago', width=100, anchor='center')
-    self.deudas_tree.pack(pady=10, fill='x')
-    
-    # Scrollbar para el Treeview
-    scrollbar = ttk.Scrollbar(frame_deudas_tree, orient='vertical', command=self.deudas_tree.yview)
-    self.deudas_tree.configure(yscroll=scrollbar.set)
-
-    # Usar grid para organizar el Treeview y el Scrollbar
-    self.deudas_tree.grid(row=0, column=0, sticky='nsew')
-    scrollbar.grid(row=0, column=1, sticky='ns')
-
-    # Configurar el frame para expandir el Treeview
-    frame_deudas_tree.grid_rowconfigure(0, weight=1)
-    frame_deudas_tree.grid_columnconfigure(0, weight=1)
-    
-    # Insertar los remitos no pagos en la tabla
-    for deuda in remitos_no_pagos:
-        # Formatear la fecha del remito
-        fecha_formateada = deuda.fecha.strftime("%d/%m/%Y %H:%M:%S")
-        fecha_pago_formateada = deuda.fecha_pago.strftime("%d/%m/%Y %H:%M:%S")
-        # Si el pago ya tiene un monto, restar el pago al total y formatear ambos
-        if deuda.pago != "NO" and deuda.pago != "SI":
-            pago_formateado = f"${float(deuda.pago):,.2f}"
-            total_formateado = deuda.total - float(deuda.pago)
-            total_formateado = f"${total_formateado:,.2f}"
-        # Si el pago no tiene un monto, mostrar el total y el pago tal cual
-        else:
-            pago_formateado = deuda.pago
-            total_formateado = f"${deuda.total:,.2f}"    
-        # Insertar los valores en el Treeview
-        self.deudas_tree.insert('', 'end', values=(
-            deuda.id, 
-            fecha_formateada, 
-            fecha_pago_formateada,
-            total_formateado, 
-            pago_formateado
-        ))
-
-    
+    # Crear un Treeview para mostrar las deudas del cliente
+    self.deudas_tree = crear_treeview(frame_deudas_tree)
+    # Insertar los remitos no pagos en el Treeview
+    insertar_remitos_no_pagos(self.deudas_tree, remitos_no_pagos)
     # Crear una etiqueta para mostrar el total de la deuda
-    self.etiqueta_total = tk.Label(self.ventana_deudas, text=f"Total de la Deuda: ${total_deuda:,.2f}")
+    self.etiqueta_total = tk.Label(ventana_deudas, text=f"Total de la Deuda: ${total_deuda:,.2f}")
     self.etiqueta_total.pack(pady=10)
-
-    frame_botones = tk.Frame(self.ventana_deudas)
+    # Crear un marco para los botones
+    frame_botones = tk.Frame(ventana_deudas)
     frame_botones.pack(pady=10)
+    # Crear botones para actualizar precios, cancelar parcial y cancelar total
+    ttk.Button(frame_botones, text="Actualizar Precios", command=lambda: actualizar_precios(self, nombre, ventana_deudas)).grid(row=0, column=0, padx=10)
+    ttk.Button(frame_botones, text="Cancelar Parcial", command=lambda: cancelar_deuda(self, nombre, ventana_deudas)).grid(row=0, column=1, padx=10)
+    ttk.Button(frame_botones, text="Cancelar Total", command=lambda: cancelar_total(self, nombre, ventana_deudas)).grid(row=0, column=2, padx=10)
 
-    # Crear un botón para actualizar los precios de los productos
-    actualizar_deudas_button = ttk.Button(frame_botones, text="Actualizar Precios", command=lambda: actualizar_precios(self, nombre))
-    actualizar_deudas_button.grid(row=0, column=0, padx=10)
-
-    # Crear un botón para cancelar la deuda parcialmente
-    cancelar_deuda_button = ttk.Button(frame_botones, text="Cancelar Parcial", command=lambda: cancelar_deuda(self, nombre))
-    cancelar_deuda_button.grid(row=0, column=1, padx=10)
-
-    # Crear un botón para cancelar el total de la deuda
-    cancelar_total_button = ttk.Button(frame_botones, text="Cancelar Total", command=lambda: cancelar_total(self, nombre))
-    cancelar_total_button.grid(row=0, column=2, padx=10)
-
-# Función para actualizar los precios de los productos
-def actualizar_precios(self, nombre):
-    # Verificar que se haya seleccionado una deuda
+def actualizar_precios(self, nombre, ventana_deudas):
+    # Obtener la selección del Treeview
     seleccion = self.deudas_tree.selection()
+    # Si no se seleccionó ninguna deuda, mostrar un mensaje de error
     if not seleccion:
-        messagebox.showerror("Error", "Selecciona una deuda.", parent=self.ventana_deudas)
+        messagebox.showerror("Error", "Selecciona una deuda.", parent=ventana_deudas)
         return
-    
-    # Solicitar confirmación para actualizar los precios de los productos
-    confirmacion = messagebox.askyesno("Confirmar", "¿Estás seguro de actualizar los precios de los productos?", parent=self.ventana_deudas)
+    # Preguntar al usuario si está seguro de actualizar los precios
+    confirmacion = messagebox.askyesno("Confirmar", "¿Estás seguro de actualizar los precios de los productos?", parent=ventana_deudas)
+    # Si el usuario no confirma, retornar
     if not confirmacion:
         return
-    
-    # Obtener el ID del remito seleccionado
+    # Obtener el ID de la deuda seleccionada
     id_deuda = self.deudas_tree.item(seleccion)['values'][0]
-    
-    # Obtener el remito de la base de datos por el ID
+    # Buscar la deuda en la base de datos por el ID
     deuda = session.query(Remitos).get(id_deuda)
-
-    # Obtener los nombres de los productos en los detalles del remito
+    # Obtener los nombres de los productos de la deuda
     productos = [detalle.producto for detalle in deuda.detalles]
-
-    # Obtener los productos de la base de datos por el nombre
+    # Buscar los productos en la base de datos por el nombre
     productos_db = session.query(Productos).filter(Productos.nombre.in_(productos)).all()
-
-    # Crear un diccionario con los nombres de los productos y sus precios
+    # Crear un diccionario con los precios de los productos
     precios = {producto.nombre: producto.precio for producto in productos_db}
-
-    # Actualizar los precios de los productos en los detalles del remito
+    # Iterar sobre los detalles de la deuda
     for detalle in deuda.detalles:
-        nombre_producto = detalle.producto  # Capturar el nombre del producto
-        if isinstance(nombre_producto, Productos):  # Si devuelve un objeto de Productos
-            nombre_producto = nombre_producto.nombre  # Acceder al nombre real
-
-        # Verificar si el producto se encuentra en la base de datos
+        # Obtener el nombre del producto
+        nombre_producto = detalle.producto if isinstance(detalle.producto, str) else detalle.producto.nombre
+        # Si el producto está en el diccionario de precios, actualizar el precio unitario y el total
         if nombre_producto in precios:
-            # Actualizar el precio unitario y el total del detalle
             detalle.precio_unitario = precios[nombre_producto]
             detalle.total = detalle.cantidad * detalle.precio_unitario * (1 - detalle.descuento / 100)
-        # Si el producto no se encuentra en la base de datos, mostrar un mensaje de advertencia
+        # Si el producto no está en la base de datos, mostrar un mensaje de advertencia
         else:
-            messagebox.showwarning("Advertencia", f"El producto '{nombre_producto}' no se encuentra en la base de datos.", parent=self.ventana_deudas)
+            messagebox.showwarning("Advertencia", f"El producto '{nombre_producto}' no se encuentra en la base de datos.", parent=ventana_deudas)
             continue
-
-        # Calcular y actualizar el total del remito
+        # Actualizar el total de la deuda
         deuda.total = sum(detalle.total for detalle in deuda.detalles)
-
     # Confirmar la transacción
     session.commit()
     # Mostrar un mensaje de éxito
-    messagebox.showinfo("Éxito", "Los precios se han actualizado correctamente.", parent=self.ventana_deudas)
+    messagebox.showinfo("Éxito", "Los precios se han actualizado correctamente.", parent=ventana_deudas)
     # Actualizar la ventana de deudas
     actualizar_ventana_deudas(self, nombre)
 
-def cancelar_deuda(self, nombre):
-    # Verificar que se haya seleccionado una deuda
+def cancelar_deuda(self, nombre, ventana_deudas):
+    # Obtener la selección del Treeview
     seleccion = self.deudas_tree.selection()
+    # Si no se seleccionó ninguna deuda, mostrar un mensaje de error
     if not seleccion:
-        messagebox.showerror("Error", "Selecciona una deuda.", parent=self.ventana_deudas)
+        messagebox.showerror("Error", "Selecciona una deuda.", parent=ventana_deudas)
         return
-    
-    # Obtener el ID del remito seleccionado
+    # Obtener el ID de la deuda seleccionada
     id_deuda = self.deudas_tree.item(seleccion)['values'][0]
-    
-    # Obtener el remito de la base de datos por el ID
+    # Buscar la deuda en la base de datos por el ID
     deuda = session.query(Remitos).get(id_deuda)
-
-    # Abrir una nueva ventana para solicitar el monto a cancelar
+    # Crear una ventana secundaria para cancelar la deuda
     self.ventana_cancelar_deuda = tk.Toplevel()
     self.ventana_cancelar_deuda.title("Cancelar Deuda")
-
-    # Crear una etiqueta para solicitar el monto a cancelar
-    etiqueta_monto = tk.Label(self.ventana_cancelar_deuda, text="Monto a Cancelar:")
-    etiqueta_monto.pack(pady=10)
-
-    # Crear una entrada para ingresar el monto a cancelar
+    # Tamaño de la ventana
+    self.ventana_cancelar_deuda.geometry("300x200")
+    # Etiqueta y campo de entrada para el monto a cancelar
+    tk.Label(self.ventana_cancelar_deuda, text="Monto a Cancelar:").pack(pady=10)
     monto_entry = ttk.Entry(self.ventana_cancelar_deuda)
     monto_entry.pack(pady=10)
-
-    # Crear un botón para confirmar la cancelación de la deuda
-    confirmar_cancelacion_button = ttk.Button(self.ventana_cancelar_deuda, text="Confirmar", command=lambda: confirmar_cancelacion(self, deuda, monto_entry, nombre))
-    confirmar_cancelacion_button.pack(pady=10)
+    # Botón para confirmar la cancelación
+    ttk.Button(self.ventana_cancelar_deuda, text="Confirmar", command=lambda: confirmar_cancelacion(self, deuda, monto_entry, nombre)).pack(pady=10)
 
 def actualizar_ventana_deudas(self, nombre):
-    # Limpiar el Treeview
+    # Limpiar el Treeview de deudas
     for item in self.deudas_tree.get_children():
         self.deudas_tree.delete(item)
-    
     # Obtener el cliente de la base de datos por el nombre
-    cliente = session.query(Clientes).filter_by(nombre=nombre).first()
-
-    # Filtrar los remitos que no estén pagos
+    cliente = obtener_cliente_por_nombre(nombre)
+    # Filtrar los remitos del cliente que no han sido pagados
     remitos_no_pagos = [deuda for deuda in cliente.remitos if deuda.pago != 'SI']
-
     # Calcular el total de la deuda
     total_deuda = sum(deuda.total - (float(deuda.pago) if deuda.pago not in ["SI", "NO"] else 0) for deuda in remitos_no_pagos)
-
-    # Insertar los remitos no pagos en la tabla
-    for deuda in remitos_no_pagos:
-        # Formatear la fecha del remito
-        fecha_formateada = deuda.fecha.strftime("%d/%m/%Y %H:%M:%S")
-        fecha_pago_formateada = deuda.fecha_pago.strftime("%d/%m/%Y %H:%M:%S")
-        # Si el pago ya tiene un monto, restar el pago al total y formatear ambos
-        if deuda.pago != "NO" and deuda.pago != "SI":
-            pago_formateado = f"${float(deuda.pago):,.2f}"
-            total_formateado = deuda.total - float(deuda.pago)
-            total_formateado = f"${total_formateado:,.2f}"
-        # Si el pago no tiene un monto, mostrar el total y el pago tal cual
-        else:
-            pago_formateado = deuda.pago
-            total_formateado = f"${deuda.total:,.2f}"
-        # Insertar los valores en el Treeview
-        self.deudas_tree.insert('', 'end', values=(
-            deuda.id, 
-            fecha_formateada, 
-            fecha_pago_formateada,
-            total_formateado, 
-            pago_formateado
-        ))
-
-    # Actualizar la etiqueta del total de la deuda
+    # Insertar los remitos no pagos en el Treeview
+    insertar_remitos_no_pagos(self.deudas_tree, remitos_no_pagos)
+    # Actualizar la etiqueta con el total de la deuda
     self.etiqueta_total.config(text=f"Total de la Deuda: ${total_deuda:,.2f}")
 
-def cancelar_total(self, nombre):
-    # Obtener el ID del remito seleccionado
+def cancelar_total(self, nombre, ventana_deudas):
+    # Obtener la selección del Treeview
     seleccion = self.deudas_tree.selection()
+    # Si no se seleccionó ninguna deuda, mostrar un mensaje de error
     if not seleccion:
-        messagebox.showerror("Error", "Selecciona una deuda.", parent=self.ventana_deudas)
+        messagebox.showerror("Error", "Selecciona una deuda.", parent=ventana_deudas)
         return
-    
-    # Obtener el ID del remito seleccionado
+    # Obtener el ID de la deuda seleccionada
     id_deuda = self.deudas_tree.item(seleccion)['values'][0]
-    
-    # Obtener el remito de la base de datos por el ID
+    # Buscar la deuda en la base de datos por el ID
     deuda = session.query(Remitos).get(id_deuda)
-
-    # Solicitar confirmación para cancelar el total de la deuda
-    confirmacion = messagebox.askyesno("Confirmar", "¿Estás seguro de cancelar el total de la deuda?", parent=self.ventana_deudas)  
+    # Mostrar un mensaje de confirmación para cancelar la deuda
+    confirmacion = messagebox.askyesno("Confirmar", "¿Estás seguro de cancelar el total de la deuda?", parent=ventana_deudas)
+    # Si el usuario no confirma, retornar
     if not confirmacion:
         return
-
-    # Cancelar el total de la deuda
+    # Actualizar el monto de pago de la deuda
     deuda.pago = 'SI'
+    # Confirmar la transacción
     session.commit()
-
     # Mostrar un mensaje de éxito
-    messagebox.showinfo("Éxito", "Deuda cancelada exitosamente.", parent=self.ventana_deudas)
-
+    messagebox.showinfo("Éxito", "Deuda cancelada exitosamente.", parent=ventana_deudas)
     # Actualizar la ventana de deudas
     actualizar_ventana_deudas(self, nombre)
-    
+
 def confirmar_cancelacion(self, deuda, monto_entry, nombre):
-    # Obtener el monto a cancelar
+    # Obtener el monto ingresado por el usuario
     try:
         monto = float(monto_entry.get())
     except ValueError:
         messagebox.showerror("Error", "Monto inválido.", parent=self.ventana_cancelar_deuda)
         return
-    
-    # Verificar que el monto a cancelar no sea mayor al total de la deuda
+    # Validar que el monto a cancelar no sea mayor al total de la deuda
     if monto > deuda.total - (float(deuda.pago) if deuda.pago not in ["SI", "NO"] else 0):
         messagebox.showerror("Error", "El monto a cancelar no puede ser mayor al total de la deuda.", parent=self.ventana_cancelar_deuda)
         return
-    
-    # Solicitar confirmación para cancelar la deuda parcialmente
+    # Mostrar un mensaje de confirmación para cancelar la deuda
     confirmacion = messagebox.askyesno("Confirmar", f"¿Estás seguro de cancelar ${monto:,.2f} de la deuda?", parent=self.ventana_cancelar_deuda)
+    # Si el usuario no confirma, retornar
     if not confirmacion:
         return
-
-    # Si el pago ya tiene un monto, sumar el monto a cancelar al pago actual
-    if deuda.pago != "NO":
-        monto = float(deuda.pago) + monto
-        deuda.pago = monto
-
-    # Si el pago no tiene un monto, asignar el monto a cancelar al pago
-    else:
-        deuda.pago = monto
-
+    # Actualizar el monto de pago de la deuda
+    deuda.pago = float(deuda.pago) + monto if deuda.pago != "NO" else monto
     # Confirmar la transacción
     session.commit()
-
     # Mostrar un mensaje de éxito
     messagebox.showinfo("Éxito", "Deuda cancelada exitosamente.", parent=self.ventana_cancelar_deuda)
-    
     # Actualizar la ventana de deudas
     actualizar_ventana_deudas(self, nombre)
-
-    # Cerrar la ventana de cancelar deuda
+    # Cerrar la ventana secundaria
     self.ventana_cancelar_deuda.destroy()

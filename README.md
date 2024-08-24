@@ -16,6 +16,7 @@ Este proyecto es una aplicación de escritorio desarrollada en Python utilizando
 
 ## Características futuras
 - Generación de facturas: Permitir la generación de facturas y su almacenamiento.
+- Sistema de acopios: Permitir guardar los materiales que el cliente ya haya pagado y posea en acopio para retirar.
 - Mejoras en la interfaz: Embellecer el diseño, mejorar la UX
 - Añadir funcionalidades: Más botones para modificar listas, productos, etc.
 - Copia de seguridad: Automatizar la subida de la base de datos a la nube.

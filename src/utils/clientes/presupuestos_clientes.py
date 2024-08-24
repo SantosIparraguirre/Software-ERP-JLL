@@ -2,6 +2,8 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from database import Clientes, Presupuestos, DetallesPresupuestos, session
 
+ventana_presupuestos = None
+
 def ver_presupuestos(self):
     # Obtener el cliente seleccionado en la tabla
     seleccion = self.clientes_tree.selection()
@@ -13,8 +15,18 @@ def ver_presupuestos(self):
     self.ventana_presupuestos = abrir_ventana_presupuestos(self, nombre)
 
 def abrir_ventana_presupuestos(self, nombre):
+    global ventana_presupuestos
+    if ventana_presupuestos and ventana_presupuestos.winfo_exists():
+        # Si la ventana ya está abierta, traerla al frente
+        ventana_presupuestos.lift()
+        # Focus en la ventana
+        ventana_presupuestos.focus_force()
+        # Deiconify en caso de que esté iconificada
+        ventana_presupuestos.deiconify()
+        return
+
     # Crear una ventana secundaria para ver los presupuestos del cliente
-    ventana_presupuestos = tk.Toplevel(self.main_frame)
+    ventana_presupuestos = tk.Toplevel()
     ventana_presupuestos.title("Presupuestos de " + nombre)
     ventana_presupuestos.geometry("900x550")
 

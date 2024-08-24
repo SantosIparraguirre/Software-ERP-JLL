@@ -9,11 +9,6 @@ def generar_remito_excel(cliente_var, carrito, session, Clientes):
     # Obtener el cliente
     cliente = cliente_var.get()
 
-    # Si no se seleccionó un cliente, mostrar un mensaje de error
-    if not cliente:
-        messagebox.showerror("Error", "Selecciona un cliente.")
-        return
-
     # Solicitar al usuario la ubicación donde guardar el remito
     file_path = filedialog.asksaveasfilename(defaultextension=".xlsx", filetypes=[("Excel files", "*.xlsx")])
     if not file_path:
@@ -50,10 +45,16 @@ def generar_remito_excel(cliente_var, carrito, session, Clientes):
 
     # Iterar sobre los productos en el carrito y hacer los cálculos necesarios
     for item in carrito:
-        producto, cantidad, _, precio = item
+        producto, cantidad, descuento, precio = item
         # Convertir la cantidad y el precio a entero y flotante
         cantidad = int(cantidad)
-        precio = float(precio)
+        # Quitamos el signo de pesos y las comas
+        precio = precio[1:].replace(',', '') if precio else 0
+        precio = float(precio) if precio else 0
+        # Quitar el signo de porcentaje y convertir a flotante el descuento
+        descuento = float(descuento[:-1]) if descuento else 0
+        # Calcular el precio con descuento
+        precio = precio * (1 - descuento / 100)
         # Calcular el precio total del producto
         precio_total = cantidad * precio
 
@@ -134,10 +135,16 @@ def generar_remito_excel(cliente_var, carrito, session, Clientes):
 
         # Imputar los datos del carrito
         for item in carrito:
-            producto, cantidad, _, precio = item
+            producto, cantidad, descuento, precio = item
             # Convertir la cantidad y el precio a entero y flotante
             cantidad = int(cantidad)
-            precio = float(precio)
+            # Quitamos el signo de pesos y las comas
+            precio = precio[1:].replace(',', '') if precio else 0
+            precio = float(precio) if precio else 0
+            # Quitar el signo de porcentaje y convertir a flotante el descuento
+            descuento = float(descuento[:-1]) if descuento else 0
+            # Calcular el precio con descuento
+            precio = precio * (1 - descuento / 100)
             # Calcular el precio total del producto
             precio_total = cantidad * precio
 

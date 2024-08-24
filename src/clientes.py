@@ -6,8 +6,8 @@ from database import session, Clientes, Presupuestos, DetallesPresupuestos, Remi
 from PIL import Image, ImageTk
 from utils.clientes.gestion_clientes import buscar_cliente, agregar_cliente, actualizar_clientes, eliminar_cliente
 from utils.clientes.modificar_clientes import abrir_ventana_modificacion, guardar_cambios, modificar_cliente
-from utils.clientes.presupuestos_clientes import ver_presupuestos, abrir_ventana_presupuestos, ver_detalles_presupuesto, mostrar_detalles_presupuesto
-from utils.clientes.remitos_clientes import ver_remitos, abrir_ventana_remitos, ver_detalles_remito, mostrar_detalles_remito
+from utils.clientes.presupuestos_clientes import ver_presupuestos
+from utils.clientes.remitos_clientes import ver_remitos
 from utils.clientes.deudas_clientes import ver_deudas
 
 # Clase para la aplicación de gestión de clientes
@@ -223,39 +223,9 @@ class ClientesApp(tk.Tk):
         ver_presupuestos(self)
 
     # Funciones para ver los presupuestos, remitos y deudas de un cliente
-    def abrir_ventana_presupuestos(self, nombre):
-        # Llamar a la función abrir_ventana_presupuestos con el nombre del cliente
-        abrir_ventana_presupuestos(self, nombre)
-
-    # Funciones para ver los presupuestos, remitos y deudas de un cliente
-    def ver_detalles_presupuesto(self, presupuestos_tree, detalles_tree):
-        # Llamar a la función ver_detalles_presupuesto con la tabla de presupuestos y la tabla de detalles
-        ver_detalles_presupuesto(self, presupuestos_tree, detalles_tree)
-
-    # Funciones para ver los presupuestos, remitos y deudas de un cliente
-    def mostrar_detalles_presupuesto(self, ID, detalles_tree):
-        # Llamar a la función mostrar_detalles_presupuesto con el ID del presupuesto y la tabla de detalles
-        mostrar_detalles_presupuesto(self, ID, detalles_tree)
-
-    # Funciones para ver los presupuestos, remitos y deudas de un cliente
     def ver_remitos(self):
         # Llamar a la función ver_remitos
         ver_remitos(self)
-
-    # Funciones para ver los presupuestos, remitos y deudas de un cliente
-    def abrir_ventana_remitos(self, nombre):
-        # Llamar a la función abrir_ventana_remitos con el nombre del cliente
-        abrir_ventana_remitos(self, nombre)
-
-    # Funciones para ver los presupuestos, remitos y deudas de un cliente
-    def ver_detalles_remito(self, remitos_tree, detalles_tree):
-        # Llamar a la función ver_detalles_remito con la tabla de remitos y la tabla de detalles
-        ver_detalles_remito(self, remitos_tree, detalles_tree)
-
-    # Funciones para ver los presupuestos, remitos y deudas de un cliente
-    def mostrar_detalles_remito(self, ID, detalles_tree):
-        # Llamar a la función mostrar_detalles_remito con el ID del remito y la tabla de detalles
-        mostrar_detalles_remito(self, ID, detalles_tree)
 
     # Funciones para ver los presupuestos, remitos y deudas de un cliente
     def ver_deudas(self):
