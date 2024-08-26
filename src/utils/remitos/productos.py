@@ -1,5 +1,19 @@
 from database import session
 
+# Llenar treeview con todos los productos
+def llenar_treeview_productos(productos_tree, Productos):
+    # Obtener todos los productos
+    productos = session.query(Productos).all()
+    
+    # Limpiar el treeview antes de insertar los productos
+    for item in productos_tree.get_children():
+        productos_tree.delete(item)
+    
+    # Insertar los productos en el treeview
+    for producto in productos:
+        precio = f'${producto.precio:,.2f}' if producto.precio else ''
+        productos_tree.insert('', 'end', values=(producto.codigo, producto.linea, producto.nombre, precio))
+
 def update_productos(tabla_var, productos_tree, Productos, Categorias, event=None):
     categoria_seleccionada = tabla_var.get()
     
@@ -29,15 +43,21 @@ def buscar_producto(busqueda_var, tabla_var, productos_tree, Productos, Categori
     # Obtener el término de búsqueda y convertirlo a minúsculas
     search_term = busqueda_var.get().lower()
 
+    # Obtener la categoría seleccionada
     categoria_seleccionada = tabla_var.get()
 
-    # Obtener los productos de la categoría seleccionada
-    productos = (
-        session.query(Productos)
-        .join(Categorias)
-        .filter(Categorias.nombre == categoria_seleccionada)
-        .all()
-    )
+    # Si no se seleccionó una categoría, buscar en todos los productos
+    if not categoria_seleccionada:
+        productos = session.query(Productos).all()
+    # Si se seleccionó una categoría, buscar solo en los productos de esa categoría
+    else:
+        # Obtener los productos de la categoría seleccionada
+        productos = (
+            session.query(Productos)
+            .join(Categorias)
+            .filter(Categorias.nombre == categoria_seleccionada)
+            .all()
+        )
 
     # Limpiar la tabla de productos antes de insertar aquellos que coincidan con el término de búsqueda
     productos_tree.delete(*productos_tree.get_children())

@@ -8,7 +8,7 @@ from PIL import Image, ImageTk
 from clientes import ClientesApp
 from utils.remitos.carrito import agregar_al_carrito, actualizar_carrito, agregar_fuera_lista, eliminar_del_carrito
 from utils.remitos.precios import modificar_precios, deshacer_ultimo_aumento
-from utils.remitos.productos import update_productos, buscar_producto
+from utils.remitos.productos import update_productos, buscar_producto, llenar_treeview_productos
 from utils.remitos.guardar_remitos import guardar_remito
 from utils.remitos.generar_remitos import generar_remito_excel
 from utils.remitos.guardar_presupuestos import guardar_presupuesto
@@ -153,6 +153,9 @@ class RemitosApp(tk.Tk):
         # Configurar la scrollbar para que se mueva junto con la tabla de productos en el eje y (vertical)
         self.productos_tree.configure(yscroll=scrollbar.set)
         scrollbar.place(x=532, y=160, relheight=0.31)
+
+        # Llamar a la función llenar_treeview_productos para mostrar los productos en la tabla
+        llenar_treeview_productos(self.productos_tree, Productos)
 
         # Etiqueta de cantidad
         self.cantidad_label = ttk.Label(self.main_frame, text="Cantidad:")
