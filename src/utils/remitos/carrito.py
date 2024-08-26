@@ -28,8 +28,18 @@ def actualizar_carrito(carrito_treeview, carrito):
     carrito_treeview.delete(*carrito_treeview.get_children())
     # Iterar sobre la lista de productos del carrito y agregarlos al treeview
     for item in carrito:
+        # Desempaquetar los valores del producto
         producto, cantidad, descuento, precio = item
-        carrito_treeview.insert('', 'end', values=(producto, cantidad, descuento, precio))
+        # Calcular el total del producto con descuento
+        total = float(precio.replace('$', '').replace(',', '')) * int(cantidad) * (1 - float(descuento.replace('%', '')) / 100)
+        # Insertar el producto en el treeview del carrito
+        carrito_treeview.insert('', 'end', values=(producto, cantidad, descuento, precio, f'${total:,.2f}'))
+    
+    # Calcular el total del remito/presupuesto
+    total_carrito = sum(float(item[3].replace('$', '').replace(',', '')) * int(item[1]) * (1 - float(item[2].replace('%', '')) / 100) for item in carrito)
+    # Añadir el total al treeview del carrito
+    carrito_treeview.insert('', 'end', values=('', '', '', 'Total:', f'${total_carrito:,.2f}'))
+        
 
 def agregar_fuera_lista(carrito, producto_var, cantidad_fuera_lista_var, precio_var):
     # Obtener el nombre y precio del producto ingresados por el usuario
@@ -46,6 +56,10 @@ def agregar_fuera_lista(carrito, producto_var, cantidad_fuera_lista_var, precio_
 
     # Agregar el producto a la lista de productos del carrito
     carrito.append((producto, cantidad, '0.0%', precio))
+    # Limpiar los campos de entrada después de agregar el producto
+    producto_var.set('')
+    cantidad_fuera_lista_var.set('')
+    precio_var.set('')
 
 def eliminar_del_carrito(carrito, carrito_treeview):
     # Obtener el índice del producto seleccionado en el treeview del carrito

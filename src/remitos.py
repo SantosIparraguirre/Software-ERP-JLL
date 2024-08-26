@@ -35,31 +35,29 @@ class RemitosApp(tk.Tk):
         self.precios_anteriores = []
 
     def create_widgets(self):
-        # Menú lateral
-        # Frame para el menú lateral con un ancho de 200 y color de fondo gris
-        self.menu_lateral = tk.Frame(self, width=200, bg='gray')
-        # Empaquetar el frame en la ventana principal a la izquierda y que se expanda en el eje y
-        self.menu_lateral.pack(side='left', fill='y')
+        # Menú superior
+        # Frame para el menú superior con un alto de 50 y color de fondo gris
+        self.menu_superior = tk.Frame(self, height=50, bg='gray')
+        # Empaquetar el frame en la ventana principal en la parte superior y que se expanda en el eje x
+        self.menu_superior.pack(side='top', fill='x')
 
-        # Botón para mostrar presupuestos
-        # ttk.Button es un botón con un estilo mejorado
-        # El botón llama a la función mostrar_presupuestos cuando se hace click 
-        self.presupuestos_button = ttk.Button(self.menu_lateral, text="Remitos", command=self.mostrar_remitos)
-        # Empaquetar el botón en el menú lateral
-        self.presupuestos_button.pack(padx=10, pady=10)
+        # Botón para mostrar remitos
+        self.remitos_button = ttk.Button(self.menu_superior, text="Remitos", command=self.mostrar_remitos)
+        self.remitos_button.pack(side='left', padx=10, pady=10)
 
         # Botón para mostrar clientes
-        self.clientes_button = ttk.Button(self.menu_lateral, text="Clientes", command=self.mostrar_clientes)
-        self.clientes_button.pack(padx=10, pady=10)
+        self.clientes_button = ttk.Button(self.menu_superior, text="Clientes", command=self.mostrar_clientes)
+        self.clientes_button.pack(side='left', padx=10, pady=10)
 
         # Botón para mostrar listas de precios de productos
-        self.listas_precios_button = ttk.Button(self.menu_lateral, text="Productos") #, command=self.mostrar_listas_productos)
-        self.listas_precios_button.pack(padx=10, pady=10)
+        self.listas_precios_button = ttk.Button(self.menu_superior, text="Productos") #, command=self.mostrar_listas_productos)
+        self.listas_precios_button.pack(side='left', padx=10, pady=10)
 
         # Frame principal
         self.main_frame = tk.Frame(self)
         # Empaquetar el frame principal en la ventana principal
-        self.main_frame.pack(side='right', fill='both', expand=True)
+        self.main_frame.pack(side='top', fill='both', expand=True)
+
 
     def mostrar_remitos(self):
         # Limpiar el main_frame antes de agregar nuevos widgets para evitar superposiciones
@@ -143,7 +141,7 @@ class RemitosApp(tk.Tk):
         # Ancho de las columnas
         self.productos_tree.column('Codigo', anchor='center', width=50)
         self.productos_tree.column('Linea', anchor='center', width=70)
-        self.productos_tree.column('Producto', width=300)
+        self.productos_tree.column('Producto', width=350)
         self.productos_tree.column('Precio UD', anchor='center', width=100)
         self.productos_tree.place(x=10, y=160)
 
@@ -152,7 +150,7 @@ class RemitosApp(tk.Tk):
         scrollbar = ttk.Scrollbar(self.main_frame, orient=tk.VERTICAL, command=self.productos_tree.yview)
         # Configurar la scrollbar para que se mueva junto con la tabla de productos en el eje y (vertical)
         self.productos_tree.configure(yscroll=scrollbar.set)
-        scrollbar.place(x=532, y=160, relheight=0.31)
+        scrollbar.place(x=582, y=160, relheight=0.35)
 
         # Llamar a la función llenar_treeview_productos para mostrar los productos en la tabla
         llenar_treeview_productos(self.productos_tree, Productos)
@@ -236,18 +234,20 @@ class RemitosApp(tk.Tk):
         self.clear_button.place(x=950, y=130)
 
         # Treeview para mostrar los productos del carrito
-        self.carrito_treeview = ttk.Treeview(self.main_frame, columns=('Producto', 'Cantidad', 'Descuento', 'Precio UD'), show='headings')
+        self.carrito_treeview = ttk.Treeview(self.main_frame, columns=('Producto', 'Cantidad', 'Descuento', 'Precio UD', 'Total'), show='headings')
         # Encabezados de las columnas
         self.carrito_treeview.heading('Producto', text='Producto')
         self.carrito_treeview.heading('Cantidad', text='Cantidad')
         self.carrito_treeview.heading('Descuento', text='Descuento')
         self.carrito_treeview.heading('Precio UD', text='Precio UD')
+        self.carrito_treeview.heading('Total', text='Total')
         # Ancho de las columnas
         self.carrito_treeview.column('Producto', width=350)
-        self.carrito_treeview.column('Cantidad', anchor='center', width=75)
-        self.carrito_treeview.column('Descuento', anchor='center', width=75)
+        self.carrito_treeview.column('Cantidad', anchor='center', width=60)
+        self.carrito_treeview.column('Descuento', anchor='center', width=60)
         self.carrito_treeview.column('Precio UD', anchor='center', width=100)
-        self.carrito_treeview.place(x=552, y=160)
+        self.carrito_treeview.column('Total', anchor='center', width=100)
+        self.carrito_treeview.place(x=600, y=160)
 
         self.actualizar_carrito()
 
@@ -256,7 +256,7 @@ class RemitosApp(tk.Tk):
         scrollbar = ttk.Scrollbar(self.main_frame, orient=tk.VERTICAL, command=self.carrito_treeview.yview)
         # Configurar la scrollbar para que se mueva junto con la lista de productos del carrito en el eje y (vertical)
         self.carrito_treeview.configure(yscroll=scrollbar.set)
-        scrollbar.place(x=1155, y=160, relheight=0.31)
+        scrollbar.place(x=1273, y=160, relheight=0.35)
 
         # Botón para guardar el presupuesto en la base de datos
         self.save_presupuesto_button = ttk.Button(self.main_frame, text="Guardar Presupuesto", command=self.guardar_presupuesto)
