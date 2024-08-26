@@ -20,6 +20,9 @@ def generar_remito_excel(cliente_var, carrito, session, Clientes):
 
     # Rellenar los datos del remito
 
+    # Obtener la fecha actual
+    fecha_actual = datetime.date.today().strftime("%d-%m-%Y")
+
     # Si el cliente es "Consumidor Final", no imputamos datos de cliente
     if cliente != "Consumidor Final":
         # Verificar si el cliente está en la base de datos
@@ -30,17 +33,18 @@ def generar_remito_excel(cliente_var, carrito, session, Clientes):
             domicilio_cliente = cliente_db.direccion
 
             # Escribir los datos del cliente en las celdas correspondientes
-            sheet.cell(row=6, column=4, value=f"CLIENTE: {nombre_cliente}").font = Font(name='Arial')
-            sheet.cell(row=8, column=4, value=f"DOMICILIO: {domicilio_cliente}").font = Font(name='Arial')
-            sheet.cell(row=8, column=6, value=f"CUIT: {cuit_cliente}").font = Font(name='Arial')
+            sheet.cell(row=5, column=4, value=f"CLIENTE: {nombre_cliente}").font = Font(name='Arial')
+            sheet.cell(row=7, column=4, value=f"DOMICILIO: {domicilio_cliente}").font = Font(name='Arial')
+            sheet.cell(row=7, column=6, value=f"CUIT: {cuit_cliente}").font = Font(name='Arial')
+            sheet.cell(row=5, column=6, value=f"Fecha de entrega: {fecha_actual}").font = Font(name='Arial')
 
-    # Obtener la fecha actual
-    fecha_actual = datetime.date.today().strftime("%d-%m-%Y")
+    
+    else:
+        sheet.cell(row=4, column=4, value="CONSUMIDOR FINAL").font = Font(name='Arial')
+        sheet.cell(row=4, column=7, value=f"Fecha de entrega: {fecha_actual}").font = Font(name='Arial')
 
-    # Escribir la fecha actual en la celda correspondiente
-    sheet.cell(row=4, column=4, value=fecha_actual)
 
-    fila_inicial = 11
+    fila_inicial = 10
     total = 0
 
     # Iterar sobre los productos en el carrito y hacer los cálculos necesarios
@@ -82,7 +86,7 @@ def generar_remito_excel(cliente_var, carrito, session, Clientes):
         # Fusionar celdas para el título
         sheet.merge_cells(start_row=fila_inicial, start_column=7, end_row=fila_inicial +2, end_column=8)
         # Titulo "REMITO" con fuente 'Arial' de tamaño 20 y negrita
-        sheet.cell(row=fila_inicial, column=7, value="REMITO").font = Font(name='Arial', size=20, bold=True, color="4f81bd")
+        sheet.cell(row=fila_inicial, column=7, value="REMITO").font = Font(name='Arial', size=26, bold=True, color="4f81bd")
         # Alinear a la derecha
         sheet.cell(row=fila_inicial, column=7).alignment = Alignment(horizontal='right', vertical='top')
 

@@ -81,18 +81,23 @@ def abrir_ventana_remitos(self, nombre):
     frame_botones.pack(pady=10)
 
     # Botón para eliminar remitos
-    eliminar_remito_button = ttk.Button(frame_botones, text="Eliminar Remito", command=lambda: eliminar_remito(self, remitos_tree, ventana_remitos))
+    eliminar_remito_button = ttk.Button(frame_botones, text="Eliminar Remito", command=lambda: eliminar_remito(remitos_tree, ventana_remitos))
     eliminar_remito_button.grid(row=0, column=0, padx=5)
 
     # Botón para modificar un detalle del remito
     # El botón toma como argumento la fila seleccionada en el Treeview de detalles
-    modificar_detalle_button = ttk.Button(frame_botones, text="Modificar Detalle", command=lambda: modificar_detalle(self, remitos_tree, detalles_tree, ventana_remitos))
+    modificar_detalle_button = ttk.Button(frame_botones, text="Modificar Detalle", command=lambda: modificar_detalle(remitos_tree, detalles_tree, ventana_remitos))
     modificar_detalle_button.grid(row=0, column=1, padx=5)
 
     # Botón para agregar un detalle al remito
     # El botón toma como argumento el ID del remito seleccionado
-    agregar_detalle_button = ttk.Button(frame_botones, text="Agregar Detalle", command=lambda: agregar_detalle(self, remitos_tree, ventana_remitos))
+    agregar_detalle_button = ttk.Button(frame_botones, text="Agregar Detalle", command=lambda: agregar_detalle(remitos_tree, ventana_remitos, detalles_tree))
     agregar_detalle_button.grid(row=0, column=2, padx=5)
+
+    # Botón para eliminar un detalle del remito
+    # El botón toma como argumento la fila seleccionada en el Treeview de detalles
+    eliminar_detalle_button = ttk.Button(frame_botones, text="Eliminar Detalle", command=lambda: eliminar_detalle(remitos_tree, detalles_tree, ventana_remitos))
+    eliminar_detalle_button.grid(row=0, column=3, padx=5)
 
     # Crear un marco para los detalles del remito
     frame_detalles = tk.Frame(ventana_remitos)
@@ -102,12 +107,14 @@ def abrir_ventana_remitos(self, nombre):
     scrollbar_detalles = ttk.Scrollbar(frame_detalles, orient="vertical")
 
     # Crear un Treeview vacío para los detalles del remito seleccionado
-    detalles_tree = ttk.Treeview(frame_detalles, columns=('Producto', 'Cantidad', 'Precio Unitario', 'Descuento', 'Total'), show='headings', yscrollcommand=scrollbar_detalles.set)
+    detalles_tree = ttk.Treeview(frame_detalles, columns=('ID', 'Producto', 'Cantidad', 'Precio Unitario', 'Descuento', 'Total'), show='headings', yscrollcommand=scrollbar_detalles.set)
+    detalles_tree.heading('ID', text='ID')
     detalles_tree.heading('Producto', text='Producto')
     detalles_tree.heading('Cantidad', text='Cantidad')
     detalles_tree.heading('Precio Unitario', text='Precio Unitario')
     detalles_tree.heading('Descuento', text='Descuento')
     detalles_tree.heading('Total', text='Total')
+    detalles_tree.column('ID', width=5, anchor='center')
     detalles_tree.column('Producto', width=250, anchor='center')
     detalles_tree.column('Cantidad', width=50, anchor='center')
     detalles_tree.column('Precio Unitario', width=150, anchor='center')
@@ -126,9 +133,9 @@ def abrir_ventana_remitos(self, nombre):
     frame_detalles.grid_columnconfigure(0, weight=1)
 
     # Vincular el evento de selección del Treeview de remitos a la función ver_detalles_remito
-    remitos_tree.bind('<<TreeviewSelect>>', lambda event: ver_detalles_remito(self, remitos_tree, detalles_tree))
+    remitos_tree.bind('<<TreeviewSelect>>', lambda event: ver_detalles_remito(remitos_tree, detalles_tree))
 
-def ver_detalles_remito(self, remitos_tree, detalles_tree):
+def ver_detalles_remito(remitos_tree, detalles_tree):
     # Obtener el remito seleccionado en la tabla
     seleccion = remitos_tree.selection()
     if not seleccion:
@@ -137,9 +144,9 @@ def ver_detalles_remito(self, remitos_tree, detalles_tree):
     # Obtener el ID del remito seleccionado
     ID = remitos_tree.item(seleccion)['values'][0]
     # Llamar a la función mostrar_detalles_remito con el ID del remito y el Treeview de detalles
-    mostrar_detalles_remito(self, ID, detalles_tree)
+    mostrar_detalles_remito(ID, detalles_tree)
 
-def mostrar_detalles_remito(self, ID, detalles_tree):
+def mostrar_detalles_remito(ID, detalles_tree):
     # Limpiar el Treeview de detalles previo
     for item in detalles_tree.get_children():
         detalles_tree.delete(item)
@@ -148,10 +155,10 @@ def mostrar_detalles_remito(self, ID, detalles_tree):
     remito = session.query(Remitos).filter_by(id=ID).first()
     for detalle in remito.detalles:
         # Agregar los detalles del remito a la tabla de detalles, formateando los montos como moneda (separando miles y con dos decimales)
-        detalles_tree.insert('', 'end', values=(detalle.producto, detalle.cantidad, f"${detalle.precio_unitario:,.2f}", detalle.descuento, f"${detalle.total:,.2f}"))
+        detalles_tree.insert('', 'end', values=(detalle.id, detalle.producto, detalle.cantidad, f"${detalle.precio_unitario:,.2f}", detalle.descuento, f"${detalle.total:,.2f}"))
         
 
-def eliminar_remito(self, remitos_tree, ventana_remitos):
+def eliminar_remito(remitos_tree, ventana_remitos):
     # Obtener el remito seleccionado en la tabla
     seleccion = remitos_tree.selection()
     if not seleccion:
@@ -179,12 +186,12 @@ def eliminar_remito(self, remitos_tree, ventana_remitos):
     # Confirmar la transacción
     session.commit()
 
-    actualizar_remitos(self, remitos_tree, nombre_cliente)
+    actualizar_remitos(remitos_tree, nombre_cliente)
 
     # Mostrar un mensaje de éxito
     messagebox.showinfo("Éxito", "Remito eliminado exitosamente.", parent=ventana_remitos)
 
-def actualizar_remitos(self, remitos_tree, nombre):
+def actualizar_remitos(remitos_tree, nombre):
     # Limpiar el Treeview de remitos previo
     for item in remitos_tree.get_children():
         remitos_tree.delete(item)
@@ -202,7 +209,7 @@ def actualizar_remitos(self, remitos_tree, nombre):
             pago_formateado = remito.pago
         remitos_tree.insert('', 'end', values=(remito.id, fecha_formateada, fecha_pago_formateada, f"${remito.total:,.2f}", pago_formateado))
 
-def modificar_detalle(self, remitos_tree, detalles_tree, ventana_remitos):
+def modificar_detalle(remitos_tree, detalles_tree, ventana_remitos):
     # Obtener el remito seleccionado en la tabla
     seleccion_remito = remitos_tree.selection()
     if not seleccion_remito:
@@ -250,9 +257,9 @@ def modificar_detalle(self, remitos_tree, detalles_tree, ventana_remitos):
     # Botón para guardar los cambios
 
     ttk.Button(ventana_mod_detalle, text="Guardar Cambios", 
-               command=lambda: guardar_cambios_detalle(self, ID, ID_detalle, producto_var.get(), cantidad_var.get(), precio_var.get(), descuento_var.get(), ventana_mod_detalle)).grid(row=4, column=1, pady=10)
+               command=lambda: guardar_cambios_detalle(ID, ID_detalle, producto_var.get(), cantidad_var.get(), precio_var.get(), descuento_var.get(), remitos_tree, ventana_mod_detalle, detalles_tree)).grid(row=4, column=1, pady=10)
     
-def guardar_cambios_detalle(self, ID_remito, ID_detalle, producto, cantidad, precio, descuento, ventana_mod_detalle):
+def guardar_cambios_detalle(ID_remito, ID_detalle, producto, cantidad, precio, descuento, remitos_tree, ventana_mod_detalle, detalles_tree):
     # Buscar el remito en la base de datos por la ID
     remito = session.query(Remitos).filter_by(id=ID_remito).first()
     # Buscar el detalle en la base de datos por la ID
@@ -271,19 +278,19 @@ def guardar_cambios_detalle(self, ID_remito, ID_detalle, producto, cantidad, pre
     # Confirmar la transacción
     session.commit()
 
+    # Mostrar un mensaje de éxito
+    messagebox.showinfo("Éxito", "Detalle modificado exitosamente.", parent=ventana_mod_detalle)
+
     # Cerrar la ventana secundaria
     ventana_mod_detalle.destroy()
 
-    # Mostrar un mensaje de éxito
-    messagebox.showinfo("Éxito", "Detalle modificado exitosamente.")
+    # Actualizar los remitos
+    actualizar_remitos(remitos_tree, remito.cliente.nombre)
 
     # Actualizar los detalles del remito
-    mostrar_detalles_remito(ID_remito, self.detalles_tree)
+    mostrar_detalles_remito(ID_remito, detalles_tree)
 
-    # Actualizar los remitos
-    actualizar_remitos(self, self.remitos_tree, remito.cliente.nombre)
-
-def agregar_detalle(self, remitos_tree, ventana_remitos):
+def agregar_detalle(remitos_tree, ventana_remitos, detalles_tree):
     # Obtener el remito seleccionado en la tabla
     seleccion = remitos_tree.selection()
     if not seleccion:
@@ -292,8 +299,6 @@ def agregar_detalle(self, remitos_tree, ventana_remitos):
 
     # Obtener el ID del remito seleccionado
     ID = remitos_tree.item(seleccion)['values'][0]
-    # Buscar el remito en la base de datos por la ID
-    remito = session.query(Remitos).filter_by(id=ID).first()
 
     # Crear una ventana secundaria para agregar un detalle al remito
     ventana_agregar_detalle = tk.Toplevel()
@@ -320,9 +325,9 @@ def agregar_detalle(self, remitos_tree, ventana_remitos):
     # Botón para guardar el detalle
     ttk.Button(ventana_agregar_detalle, text="Guardar Detalle", 
                command=lambda:
-                guardar_detalle(self, ID, producto_var.get(), cantidad_var.get(), precio_var.get(), descuento_var.get(), ventana_agregar_detalle)).grid(row=4, column=1, pady=10)
+                guardar_detalle(ID, producto_var.get(), cantidad_var.get(), precio_var.get(), descuento_var.get(), ventana_remitos, ventana_agregar_detalle, detalles_tree, remitos_tree)).grid(row=4, column=1, pady=10)
     
-def guardar_detalle(self, ID, producto, cantidad, precio, descuento, ventana_agregar_detalle):
+def guardar_detalle(ID, producto, cantidad, precio, descuento, ventana_remitos, ventana_agregar_detalle, detalles_tree, remitos_tree):
     # Buscar el remito en la base de datos por la ID
     remito = session.query(Remitos).filter_by(id=ID).first()
 
@@ -345,15 +350,53 @@ def guardar_detalle(self, ID, producto, cantidad, precio, descuento, ventana_agr
     # Confirmar la transacción
     session.commit()
 
+    # Mostrar un mensaje de éxito
+    messagebox.showinfo("Éxito", "Detalle agregado exitosamente.", parent=ventana_remitos)
+
     # Cerrar la ventana secundaria
     ventana_agregar_detalle.destroy()
 
-    # Mostrar un mensaje de éxito
-    messagebox.showinfo("Éxito", "Detalle agregado exitosamente.")
-
     # Actualizar los detalles del remito
-    mostrar_detalles_remito(ID, self.detalles_tree)
+    mostrar_detalles_remito(ID, detalles_tree)
 
     # Actualizar los remitos
-    actualizar_remitos(self, self.remitos_tree, remito.cliente.nombre)
+    actualizar_remitos(remitos_tree, remito.cliente.nombre)
+
+def eliminar_detalle(remitos_tree, detalles_tree, ventana_remitos):
+    # Obtener el detalle seleccionado en la tabla
+    seleccion_detalle = detalles_tree.selection()
+
+    if not seleccion_detalle:
+        messagebox.showerror("Error", "Selecciona un detalle.", parent=ventana_remitos)
+        return
+    
+    # Obtener el ID del detalle seleccionado
+    ID_detalle = detalles_tree.item(seleccion_detalle)['values'][0]
+    # Buscar el detalle en la base de datos por la ID
+    detalle = session.query(DetallesRemitos).filter_by(id=ID_detalle).first()
+    # Buscar el remito en la base de datos por la ID del detalle
+    remito = session.query(Remitos).filter_by(id=detalle.id_remito).first()
+
+    # Preguntar al usuario si está seguro de eliminar el detalle
+    confirmacion = messagebox.askyesno("Confirmación", "¿Estás seguro de eliminar el detalle?", parent=ventana_remitos)
+    if not confirmacion:
+        return
+    
+    # Eliminar el detalle
+    session.delete(detalle)
+
+    # Actualizar el total del remito
+    remito.total = sum([detalle.total for detalle in remito.detalles])
+
+    # Confirmar la transacción
+    session.commit()
+
+    # Mostrar un mensaje de éxito
+    messagebox.showinfo("Éxito", "Detalle eliminado exitosamente.", parent=ventana_remitos)
+
+    # Actualizar los detalles del remito
+    mostrar_detalles_remito(remito.id, detalles_tree)
+
+    # Actualizar los remitos
+    actualizar_remitos(remitos_tree, remito.cliente.nombre)
 

@@ -35,6 +35,9 @@ def actualizar_carrito(carrito_treeview, carrito):
         # Insertar el producto en el treeview del carrito
         carrito_treeview.insert('', 'end', values=(producto, cantidad, descuento, precio, f'${total:,.2f}'))
     
+    # Si hay productos en el carrito, calcular el total del remito/presupuesto
+    if carrito.__len__() == 0:
+        return
     # Calcular el total del remito/presupuesto
     total_carrito = sum(float(item[3].replace('$', '').replace(',', '')) * int(item[1]) * (1 - float(item[2].replace('%', '')) / 100) for item in carrito)
     # Añadir el total al treeview del carrito
