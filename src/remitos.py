@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker
 from database import engine, Productos, Categorias, Clientes, Presupuestos, DetallesPresupuestos, Remitos, DetallesRemitos
 from PIL import Image, ImageTk
 from clientes import ClientesApp
-from utils.remitos.carrito import agregar_al_carrito, actualizar_carrito, agregar_fuera_lista, eliminar_del_carrito
+from utils.remitos.carrito import agregar_al_carrito, actualizar_carrito, agregar_fuera_lista, eliminar_del_carrito, editar_celda
 from utils.remitos.precios import modificar_precios, deshacer_ultimo_aumento
 from utils.remitos.productos import update_productos, buscar_producto, llenar_treeview_productos
 from utils.remitos.guardar_remitos import guardar_remito
@@ -26,7 +26,7 @@ class RemitosApp(tk.Tk):
         # Título de la ventana
         self.title("Constructora Jose Luis Lopez")
         # Geometría de la ventana
-        self.geometry("1300x700")
+        self.geometry("1300x600")
         # Crear los widgets con la función create_widgets
         self.create_widgets()
         # Lista para almacenar los productos del carrito
@@ -96,6 +96,8 @@ class RemitosApp(tk.Tk):
         self.tabla_combobox.set_completion_list(tablas)
         # Llamar a la función update_productos cuando se selecciona una tabla
         self.tabla_combobox.bind("<<ComboboxSelected>>", self.update_productos)
+        # Llamar a la función update_productos cuando se presiona Enter
+        self.tabla_combobox.bind("<Return>", self.update_productos)
         # Colocar el combobox en el main_frame
         self.tabla_combobox.place(x=135, y=70)
 
@@ -119,6 +121,9 @@ class RemitosApp(tk.Tk):
         # Entry para ingresar el término de búsqueda, textvariable es la variable que almacena el valor ingresado
         self.busqueda_entry = ttk.Entry(self.main_frame, textvariable=self.busqueda_var)
         self.busqueda_entry.place(x=135, y=130)
+
+        # Vincular la tecla Enter con la función buscar_producto
+        self.busqueda_entry.bind("<Return>", self.buscar_producto)
 
         # Botón para buscar productos
         # Cargar la imagen de búsqueda y redimensionarla
@@ -150,7 +155,7 @@ class RemitosApp(tk.Tk):
         scrollbar = ttk.Scrollbar(self.main_frame, orient=tk.VERTICAL, command=self.productos_tree.yview)
         # Configurar la scrollbar para que se mueva junto con la tabla de productos en el eje y (vertical)
         self.productos_tree.configure(yscroll=scrollbar.set)
-        scrollbar.place(x=582, y=160, relheight=0.35)
+        scrollbar.place(x=582, y=162, relheight=0.40)
 
         # Llamar a la función llenar_treeview_productos para mostrar los productos en la tabla
         llenar_treeview_productos(self.productos_tree, Productos)
@@ -165,6 +170,8 @@ class RemitosApp(tk.Tk):
         # Entry para ingresar la cantidad, textvariable es la variable que almacena el valor ingresado
         self.cantidad_entry = ttk.Entry(self.main_frame, textvariable=self.cantidad_var)
         self.cantidad_entry.place(x=115, y=400)
+        # Llamar a la función agregar_al_carrito cuando se presiona Enter
+        self.cantidad_entry.bind("<Return>", self.agregar_al_carrito)
 
         # Etiqueta de descuento
         self.descuento_label = ttk.Label(self.main_frame, text="Descuento (%):")
@@ -176,6 +183,8 @@ class RemitosApp(tk.Tk):
         # Entry para ingresar el descuento, textvariable es la variable que almacena el valor ingresado
         self.descuento_entry = ttk.Entry(self.main_frame, textvariable=self.descuento_var)
         self.descuento_entry.place(x=115, y=430)
+        # Llamar a la función agregar_al_carrito cuando se presiona Enter
+        self.descuento_entry.bind("<Return>", self.agregar_al_carrito)
 
         # Botón para agregar al carrito
         # El botón llama a la función agregar_al_carrito cuando se hace click
@@ -216,6 +225,9 @@ class RemitosApp(tk.Tk):
         self.precio_entry = ttk.Entry(self.main_frame, textvariable=self.precio_var)
         self.precio_entry.place(x=815, y=100)
 
+        # Llamar a la función agregar_fuera_lista cuando se presiona Enter
+        self.precio_entry.bind("<Return>", self.agregar_fuera_lista)
+
         # Botón para agregar productos fuera de lista
         self.add_fuera_lista_button = ttk.Button(self.main_frame, text="Agregar al Carrito", command=self.agregar_fuera_lista)
         self.add_fuera_lista_button.place(x=960, y=68)
@@ -242,21 +254,24 @@ class RemitosApp(tk.Tk):
         self.carrito_treeview.heading('Precio UD', text='Precio UD')
         self.carrito_treeview.heading('Total', text='Total')
         # Ancho de las columnas
-        self.carrito_treeview.column('Producto', width=350)
+        self.carrito_treeview.column('Producto', width=340)
         self.carrito_treeview.column('Cantidad', anchor='center', width=60)
-        self.carrito_treeview.column('Descuento', anchor='center', width=60)
+        self.carrito_treeview.column('Descuento', anchor='center', width=70)
         self.carrito_treeview.column('Precio UD', anchor='center', width=100)
         self.carrito_treeview.column('Total', anchor='center', width=100)
         self.carrito_treeview.place(x=600, y=160)
 
         self.actualizar_carrito()
 
+
+        self.carrito_treeview.bind("<Double-1>", self.editar_celda)
+
         # Scrollbar para la lista de productos del carrito
         # Scrollbar en el eje vertical que se conecta con la lista de productos del carrito y se mueve con ella
         scrollbar = ttk.Scrollbar(self.main_frame, orient=tk.VERTICAL, command=self.carrito_treeview.yview)
         # Configurar la scrollbar para que se mueva junto con la lista de productos del carrito en el eje y (vertical)
         self.carrito_treeview.configure(yscroll=scrollbar.set)
-        scrollbar.place(x=1273, y=160, relheight=0.35)
+        scrollbar.place(x=1273, y=162, relheight=0.40)
 
         # Botón para guardar el presupuesto en la base de datos
         self.save_presupuesto_button = ttk.Button(self.main_frame, text="Guardar Presupuesto", command=self.guardar_presupuesto)
@@ -288,7 +303,7 @@ class RemitosApp(tk.Tk):
         self.update_productos(None)
 
     # Función para agregar productos fuera de lista al carrito
-    def agregar_fuera_lista(self):
+    def agregar_fuera_lista(self, event=None):
         # Llamar a la función agregar_fuera_lista con el carrito, el nombre del producto, la cantidad, y el precio
         agregar_fuera_lista(self.carrito, self.producto_var, self.cantidad_fuera_lista_var, self.precio_var)
         # Actualizar la lista de productos del carrito
@@ -300,12 +315,12 @@ class RemitosApp(tk.Tk):
         update_productos(self.tabla_var, self.productos_tree, Productos, Categorias, event)
 
     # Función para buscar un producto en la lista de productos
-    def buscar_producto(self):
+    def buscar_producto(self, event=None):
         # Llamar a la función buscar_producto con el término de búsqueda, la tabla seleccionada, la tabla de productos, las clases de Productos y Categorias
         buscar_producto(self.busqueda_var, self.tabla_var, self.productos_tree, Productos, Categorias)
 
     # Funciones para interactuar con el carrito
-    def agregar_al_carrito(self):
+    def agregar_al_carrito(self, event=None):
         # Llamar a la función agregar_al_carrito con el carrito, la tabla de productos, la cantidad y el descuento
         agregar_al_carrito(self.carrito, self.productos_tree, self.cantidad_var, self.descuento_var)
         # Actualizar la lista de productos del carrito
@@ -329,6 +344,11 @@ class RemitosApp(tk.Tk):
         self.carrito = []
         # Actualizar la lista de productos del carrito
         self.actualizar_carrito()
+    
+    # Función para editar una celda del carrito
+    def editar_celda(self, event=None):
+        # Llamar a la función editar_celda con el evento
+        editar_celda(self, event)
 
     # Función para guardar el remito en la base de datos
     def guardar_remito(self):

@@ -1,4 +1,5 @@
 from tkinter import messagebox
+import tkinter as tk
 
 def agregar_al_carrito(carrito, productos_tree, cantidad_var, descuento_var):
     # Obtener el producto seleccionado en la tabla de productos
@@ -35,15 +36,21 @@ def actualizar_carrito(carrito_treeview, carrito):
         # Insertar el producto en el treeview del carrito
         carrito_treeview.insert('', 'end', values=(producto, cantidad, descuento, precio, f'${total:,.2f}'))
     
-    # Si hay productos en el carrito, calcular el total del remito/presupuesto
-    if carrito.__len__() == 0:
-        return
     # Calcular el total del remito/presupuesto
-    total_carrito = sum(float(item[3].replace('$', '').replace(',', '')) * int(item[1]) * (1 - float(item[2].replace('%', '')) / 100) for item in carrito)
-    # Añadir el total al treeview del carrito
-    carrito_treeview.insert('', 'end', values=('', '', '', 'Total:', f'${total_carrito:,.2f}'))
-        
+    calcular_total(carrito, carrito_treeview)
 
+# Función para calcular el total del remito/presupuesto
+def calcular_total(carrito, carrito_treeview):
+    # Si hay productos en el carrito, calcular el total del remito/presupuesto
+    if carrito.__len__() > 0:
+        # Verificar si el total ya está en el treeview
+        if carrito_treeview.item(carrito_treeview.get_children()[-1])['values'][3] == 'Total:':
+            carrito_treeview.delete(carrito_treeview.get_children()[-1])
+        # Calcular el total del remito/presupuesto
+        total_carrito = sum(float(item[3].replace('$', '').replace(',', '')) * int(item[1]) * (1 - float(item[2].replace('%', '')) / 100) for item in carrito)
+        # Añadir el total al treeview del carrito
+        carrito_treeview.insert('', 'end', values=('', '', '', 'Total:', f'${total_carrito:,.2f}'))
+        
 def agregar_fuera_lista(carrito, producto_var, cantidad_fuera_lista_var, precio_var):
     # Obtener el nombre y precio del producto ingresados por el usuario
     producto = producto_var.get()
@@ -74,3 +81,67 @@ def eliminar_del_carrito(carrito, carrito_treeview):
     index = carrito_treeview.index(seleccion)
 
     del carrito[index]
+
+def editar_celda(self, event):
+    # Obtener la posición del clic y el ítem correspondiente
+    row_id = self.carrito_treeview.identify_row(event.y)
+    column_id = self.carrito_treeview.identify_column(event.x)
+
+    if not row_id or not column_id:
+        return
+
+    # Obtener valores actuales
+    item = self.carrito_treeview.item(row_id)['values']
+    column = int(column_id[1:]) - 1
+
+    # Crear un Entry temporal
+    x, y, width, height = self.carrito_treeview.bbox(row_id, column_id)
+    entry = tk.Entry(self.carrito_treeview)
+    entry.place(x=x, y=y, width=width, height=height)
+    entry.insert(0, item[column])
+    entry.focus()
+
+    def guardar_edicion(event=None):
+        # Obtener los valores actuales
+        values = list(self.carrito_treeview.item(row_id, "values"))
+
+        # Obtener el nuevo valor del entry
+        new_value = entry.get()
+
+        # Actualizar solo la columna seleccionada
+        values[column] = new_value
+
+        # Si se cambia la cantidad, el descuento o el precio, recalcular el total
+        if column in [1, 2, 3]:  # Índices correspondientes a cantidad, descuento y precio
+            cantidad = float(values[1])
+            # Formatear el descuento para eliminar el signo de porcentaje
+            descuento = float(values[2][:-1])
+            # Formatear el precio para eliminar el signo de dólar y las comas
+            precio_unitario = float(values[3][1:].replace(",", ""))
+            total = cantidad * precio_unitario * (1 - descuento / 100)
+            values[4] = f"${total:,.2f}"  # Actualizar el total en la lista de valores
+        
+        # Si se cambia el total, recalcular el precio unitario
+        elif column == 4:
+            total = float(values[4][1:].replace(",", ""))
+            cantidad = float(values[1])
+            # Formatear el descuento para eliminar el signo de porcentaje
+            descuento = float(values[2][:-1])
+            precio_unitario = total / (cantidad * (1 - descuento / 100))
+            values[3] = f"${precio_unitario:,.2f}"  # Actualizar el precio unitario en la lista de valores
+
+        # Actualizar el treeview con los nuevos valores
+        self.carrito_treeview.item(row_id, values=values)
+
+        # Actualizar la lista original 'self.carrito' con los nuevos valores excepto el total
+        index = int(self.carrito_treeview.index(row_id))
+        self.carrito[index] = tuple(values[:4])  # No incluir el total en 'self.carrito'
+
+        # Ocultar el entry después de guardar la edición
+        entry.place_forget()
+
+        # Calcular el total del remito/presupuesto
+        calcular_total(self.carrito, self.carrito_treeview)
+
+    entry.bind('<Return>', guardar_edicion)
+    entry.bind('<FocusOut>', lambda event: entry.destroy())
