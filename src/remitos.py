@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
 from ttkwidgets.autocomplete import AutocompleteCombobox
 from reportlab.lib.pagesizes import letter
 from sqlalchemy.orm import sessionmaker
@@ -196,54 +196,55 @@ class RemitosApp(tk.Tk):
         # Agregar productos fuera de lista
         # Etiqueta de productos fuera de lista
         self.productos_fuera_lista_label = ttk.Label(self.main_frame, text="PRODUCTOS FUERA DE LISTA")
-        self.productos_fuera_lista_label.place(x=765, y=10)
+        self.productos_fuera_lista_label.place(x=990, y=10)
 
         # Etiqueta para nombre del producto
         self.producto_label = ttk.Label(self.main_frame, text="Producto:")
-        self.producto_label.place(x=750, y=40)
+        self.producto_label.place(x=970, y=40)
 
         # Campo para ingresar el nombre del producto
         self.producto_var = tk.StringVar()
         self.producto_entry = ttk.Entry(self.main_frame, textvariable=self.producto_var)
-        self.producto_entry.place(x=815, y=40)
+        self.producto_entry.place(x=1035, y=40)
 
         # Etiqueta para cantidad del producto
         self.cantidad_fuera_lista_label = ttk.Label(self.main_frame, text="Cantidad:")
-        self.cantidad_fuera_lista_label.place(x=750, y=70)
+        self.cantidad_fuera_lista_label.place(x=970, y=70)
 
         # Campo para ingresar la cantidad del producto
         self.cantidad_fuera_lista_var = tk.IntVar()
         self.cantidad_fuera_lista_entry = ttk.Entry(self.main_frame, textvariable=self.cantidad_fuera_lista_var)
-        self.cantidad_fuera_lista_entry.place(x=815, y=70)
+        self.cantidad_fuera_lista_entry.place(x=1035, y=70)
 
         # Etiqueta para precio del producto
         self.precio_label = ttk.Label(self.main_frame, text="Precio:")
-        self.precio_label.place(x=750, y=100)
+        self.precio_label.place(x=970, y=100)
 
         # Campo para ingresar el precio del producto
         self.precio_var = tk.DoubleVar()
         self.precio_entry = ttk.Entry(self.main_frame, textvariable=self.precio_var)
-        self.precio_entry.place(x=815, y=100)
+        self.precio_entry.place(x=1035, y=100)
 
         # Llamar a la función agregar_fuera_lista cuando se presiona Enter
         self.precio_entry.bind("<Return>", self.agregar_fuera_lista)
 
         # Botón para agregar productos fuera de lista
         self.add_fuera_lista_button = ttk.Button(self.main_frame, text="Agregar al Carrito", command=self.agregar_fuera_lista)
-        self.add_fuera_lista_button.place(x=960, y=68)
+        self.add_fuera_lista_button.place(x=1170, y=68)
+
+        # Etiqueta "CARRITO"
+        self.carrito_label = ttk.Label(self.main_frame, text="CARRITO")
+        self.carrito_label.place(x=875, y=133)
 
         # Botón para borrar del carrito
         # El botón llama a la función eliminar_del_carrito cuando se hace click
         self.delete_button = ttk.Button(self.main_frame, text="Eliminar Producto", command=self.eliminar_del_carrito)
-        self.delete_button.place(x=625, y=130)
+        self.delete_button.place(x=975, y=130)
 
-        # Etiqueta "CARRITO"
-        self.carrito_label = ttk.Label(self.main_frame, text="CARRITO")
-        self.carrito_label.place(x=810, y=133)
 
         # Botón para limpiar el carrito
         self.clear_button = ttk.Button(self.main_frame, text="Limpiar Carrito", command=self.limpiar_carrito)
-        self.clear_button.place(x=950, y=130)
+        self.clear_button.place(x=1100, y=130)
 
         # Treeview para mostrar los productos del carrito
         self.carrito_treeview = ttk.Treeview(self.main_frame, columns=('Producto', 'Cantidad', 'Descuento', 'Precio UD', 'Total'), show='headings')
@@ -261,10 +262,13 @@ class RemitosApp(tk.Tk):
         self.carrito_treeview.column('Total', anchor='center', width=100)
         self.carrito_treeview.place(x=600, y=160)
 
+        # Actualizar la lista de productos del carrito
         self.actualizar_carrito()
 
-
+        # Vincular el evento Double-1 (doble clic) con la función editar_celda
         self.carrito_treeview.bind("<Double-1>", self.editar_celda)
+        # Vincular la tecla suprimir con la función eliminar_del_carrito
+        self.carrito_treeview.bind("<Delete>", self.eliminar_del_carrito)
 
         # Scrollbar para la lista de productos del carrito
         # Scrollbar en el eje vertical que se conecta con la lista de productos del carrito y se mueve con ella
@@ -275,11 +279,11 @@ class RemitosApp(tk.Tk):
 
         # Botón para guardar el presupuesto en la base de datos
         self.save_presupuesto_button = ttk.Button(self.main_frame, text="Guardar Presupuesto", command=self.guardar_presupuesto)
-        self.save_presupuesto_button.place(x=700, y=400)
+        self.save_presupuesto_button.place(x=815, y=400)
 
         # Botón para guardar el remito en la base de datos
         self.save_remito_button = ttk.Button(self.main_frame, text="Guardar Remito", command=self.guardar_remito)
-        self.save_remito_button.place(x=850, y=400)
+        self.save_remito_button.place(x=940, y=400)
 
     # Funciones para interactuar con la base de datos y la interfaz
 
@@ -332,7 +336,7 @@ class RemitosApp(tk.Tk):
         actualizar_carrito(self.carrito_treeview, self.carrito)
 
     # Funciones para interactuar con el carrito
-    def eliminar_del_carrito(self):
+    def eliminar_del_carrito(self, event=None):
         # Llamar a la función eliminar_del_carrito con el carrito y el treeview del carrito
         eliminar_del_carrito(self.carrito, self.carrito_treeview)
         # Actualizar la lista de productos del carrito
@@ -340,6 +344,10 @@ class RemitosApp(tk.Tk):
 
     # Función para limpiar el carrito
     def limpiar_carrito(self):
+        # Mostrar un mensaje de confirmación antes de limpiar el carrito
+        confirmacion = messagebox.askyesno("Confirmar", "¿Estás seguro de limpiar el carrito?")
+        if not confirmacion:
+            return
         # Limpiar la lista de productos del carrito
         self.carrito = []
         # Actualizar la lista de productos del carrito

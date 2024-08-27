@@ -74,12 +74,24 @@ def agregar_fuera_lista(carrito, producto_var, cantidad_fuera_lista_var, precio_
 def eliminar_del_carrito(carrito, carrito_treeview):
     # Obtener el índice del producto seleccionado en el treeview del carrito
     seleccion = carrito_treeview.selection()
+
+    # Si no se selecciona un producto, mostrar un mensaje de error
     if not seleccion:
         messagebox.showerror("Error", "Selecciona un producto del carrito.")
         return
-    
-    index = carrito_treeview.index(seleccion)
 
+    # Obtener el nombre del producto seleccionado
+    producto = carrito_treeview.item(seleccion)['values'][0]
+
+    # Mostrar un mensaje de confirmación antes de eliminar el producto
+    confirmacion = messagebox.askyesno("Confirmar", f"¿Estás seguro de eliminar '{producto}' del carrito?")
+    if not confirmacion:
+        return
+    
+    # Obtener el índice del producto seleccionado
+    index = carrito_treeview.index(seleccion)
+    
+    # Eliminar el producto del carrito
     del carrito[index]
 
 def editar_celda(self, event):

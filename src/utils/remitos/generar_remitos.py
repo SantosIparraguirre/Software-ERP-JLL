@@ -31,17 +31,19 @@ def generar_remito_excel(cliente_var, carrito, session, Clientes):
             nombre_cliente = cliente_db.nombre
             cuit_cliente = cliente_db.cuit
             domicilio_cliente = cliente_db.direccion
+            telefono_cliente = cliente_db.telefono
 
             # Escribir los datos del cliente en las celdas correspondientes
-            sheet.cell(row=5, column=4, value=f"CLIENTE: {nombre_cliente}").font = Font(name='Arial')
-            sheet.cell(row=7, column=4, value=f"DOMICILIO: {domicilio_cliente}").font = Font(name='Arial')
-            sheet.cell(row=7, column=6, value=f"CUIT: {cuit_cliente}").font = Font(name='Arial')
-            sheet.cell(row=5, column=6, value=f"Fecha de entrega: {fecha_actual}").font = Font(name='Arial')
+            sheet.cell(row=5, column=4, value=f"CLIENTE: {nombre_cliente}").font = Font(name='Arial', size=12)
+            sheet.cell(row=7, column=4, value=f"DOMICILIO: {domicilio_cliente}").font = Font(name='Arial', size=12)
+            sheet.cell(row=7, column=6, value=f"CUIT: {cuit_cliente}").font = Font(name='Arial', size=12)
+            sheet.cell(row=5, column=6, value=f"TELÉFONO: {telefono_cliente}").font = Font(name='Arial', size=12)
+            sheet.cell(row=3, column=4, value=f"Fecha de entrega: {fecha_actual}").font = Font(name='Arial', size=12)
 
     
     else:
-        sheet.cell(row=4, column=4, value="CONSUMIDOR FINAL").font = Font(name='Arial')
-        sheet.cell(row=4, column=7, value=f"Fecha de entrega: {fecha_actual}").font = Font(name='Arial')
+        sheet.cell(row=4, column=4, value="CONSUMIDOR FINAL").font = Font(name='Arial', size=12)
+        sheet.cell(row=4, column=7, value=f"Fecha de entrega: {fecha_actual}").font = Font(name='Arial', size=12)
 
 
     fila_inicial = 10
@@ -73,11 +75,11 @@ def generar_remito_excel(cliente_var, carrito, session, Clientes):
         fila_inicial += 1
     
     # Imputar el total
-    sheet.cell(row=fila_inicial, column=8, value=total).font = Font(name='Arial', bold=True)
+    sheet.cell(row=fila_inicial, column=8, value=total).font = Font(name='Arial', size=12, bold=True)
 
     # Firma del cliente y observaciones
-    sheet.cell(row=fila_inicial + 1, column=1, value="FIRMA DEL CLIENTE:").font = Font(name='Arial', bold=True)
-    sheet.cell(row=fila_inicial + 1, column=5, value="OBSERVACIONES:").font = Font(name='Arial', bold=True)
+    sheet.cell(row=fila_inicial + 2, column=1, value="FIRMA DEL CLIENTE:").font = Font(name='Arial', bold=True)
+    sheet.cell(row=fila_inicial + 2, column=5, value="OBSERVACIONES:").font = Font(name='Arial', bold=True)
 
     # Copia para la empresa
 
@@ -95,17 +97,23 @@ def generar_remito_excel(cliente_var, carrito, session, Clientes):
 
         # Si el cliente no es consumidor final, rellenar
         if cliente != "Consumidor Final":
-        # Rellenar los datos del cliente
-            sheet.cell(row=fila_inicial + 1, column=1, value=f"CLIENTE: {nombre_cliente}").font = Font(name='Arial')
-            sheet.cell(row=fila_inicial + 1, column=3, value=f"CUIT: {cuit_cliente}").font = Font(name='Arial')
-            sheet.cell(row=fila_inicial + 3, column=1, value=f"DOMICILIO: {domicilio_cliente}").font = Font(name='Arial')
-            sheet.cell(row=fila_inicial + 3, column=3, value="DNI:").font = Font(name='Arial')
+            # Rellenar con los datos del cliente
+            sheet.cell(row=fila_inicial + 1, column=1, value=f"CLIENTE: {nombre_cliente}").font = Font(name='Arial', size=12)
+            sheet.cell(row=fila_inicial + 1, column=3, value=f"CUIT: {cuit_cliente}").font = Font(name='Arial', size=12)
+            sheet.cell(row=fila_inicial + 3, column=1, value=f"DOMICILIO: {domicilio_cliente}").font = Font(name='Arial', size=12)
+            sheet.cell(row=fila_inicial + 3, column=3, value=f"TELÉFONO: {telefono_cliente}").font = Font(name='Arial', size=12)
+            # Alinear a la izquierda Cliente y Domicilio
+            sheet.cell(row=fila_inicial + 1, column=1).alignment = Alignment(horizontal='left')
+            sheet.cell(row=fila_inicial + 3, column=1).alignment = Alignment(horizontal='left')
 
         else:
-            sheet.cell(row=fila_inicial + 1, column=1, value="CLIENTE: CONSUMIDOR FINAL").font = Font(name='Arial')
+            sheet.cell(row=fila_inicial + 1, column=1, value="CLIENTE: CONSUMIDOR FINAL").font = Font(name='Arial', size=12)
+            # Alinear a la izquierda 
+            sheet.cell(row=fila_inicial + 1, column=1).alignment = Alignment(horizontal='left')
+            fila_inicial -= 2
+
         
-        # Alinear a la izquierda Fecha de entrega, Cliente y Domicilio
-        sheet.cell(row=fila_inicial, column=1).alignment = Alignment(horizontal='left')
+        # Alinear a la izquierda Cliente y Domicilio
         sheet.cell(row=fila_inicial + 1, column=1).alignment = Alignment(horizontal='left')
         sheet.cell(row=fila_inicial + 3, column=1).alignment = Alignment(horizontal='left')
 
@@ -130,10 +138,10 @@ def generar_remito_excel(cliente_var, carrito, session, Clientes):
         sheet.cell(row=fila_inicial + 5, column=8, value="TOTAL").border = borde_total
 
         # Aplicar negrita a la fila de los encabezados
-        sheet.cell(row=fila_inicial + 5, column=1).font = Font(name='Arial', bold=True)
-        sheet.cell(row=fila_inicial + 5, column=2).font = Font(name='Arial', bold=True)
-        sheet.cell(row=fila_inicial + 5, column=7).font = Font(name='Arial', bold=True)
-        sheet.cell(row=fila_inicial + 5, column=8).font = Font(name='Arial', bold=True)
+        sheet.cell(row=fila_inicial + 5, column=1).font = Font(name='Arial', size=12, bold=True)
+        sheet.cell(row=fila_inicial + 5, column=2).font = Font(name='Arial', size=12, bold=True)
+        sheet.cell(row=fila_inicial + 5, column=7).font = Font(name='Arial', size=12, bold=True)
+        sheet.cell(row=fila_inicial + 5, column=8).font = Font(name='Arial', size=12, bold=True)
 
         fila_inicial += 6
 
@@ -163,11 +171,11 @@ def generar_remito_excel(cliente_var, carrito, session, Clientes):
             fila_inicial += 1
         
         # Imputar el total
-        sheet.cell(row=fila_inicial, column=8, value=total).font = Font(name='Arial', bold=True)    
+        sheet.cell(row=fila_inicial, column=8, value=total).font = Font(name='Arial', size=12, bold=True)    
 
         # Firma del cliente y observaciones
-        sheet.cell(row=fila_inicial + 1, column=1, value="FIRMA DEL CLIENTE:").font = Font(name='Arial', bold=True)     
-        sheet.cell(row=fila_inicial + 1, column=5, value="OBSERVACIONES:").font = Font(name='Arial', bold=True)
+        sheet.cell(row=fila_inicial + 2, column=1, value="FIRMA DEL CLIENTE:").font = Font(name='Arial', bold=True)     
+        sheet.cell(row=fila_inicial + 2, column=5, value="OBSERVACIONES:").font = Font(name='Arial', bold=True)
 
     # Guardar el archivo Excel
     wb.save(file_path)
