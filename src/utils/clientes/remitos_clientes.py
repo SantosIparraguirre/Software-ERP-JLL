@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 from database import Clientes, Remitos, DetallesRemitos, session  
+from datetime import datetime
 
 ventana_remitos = None
 
@@ -80,24 +81,28 @@ def abrir_ventana_remitos(self, nombre):
     frame_botones = tk.Frame(ventana_remitos)
     frame_botones.pack(pady=10)
 
+    # Botón para unir remitos
+    unir_remitos_button = ttk.Button(frame_botones, text="Remito General", command=lambda: unir_remitos(remitos_tree, detalles_tree, ventana_remitos))
+    unir_remitos_button.grid(row=0, column=0, padx=5)
+
     # Botón para eliminar remitos
     eliminar_remito_button = ttk.Button(frame_botones, text="Eliminar Remito", command=lambda: eliminar_remito(remitos_tree, ventana_remitos))
-    eliminar_remito_button.grid(row=0, column=0, padx=5)
+    eliminar_remito_button.grid(row=0, column=1, padx=5)
 
     # Botón para modificar un detalle del remito
     # El botón toma como argumento la fila seleccionada en el Treeview de detalles
     modificar_detalle_button = ttk.Button(frame_botones, text="Modificar Detalle", command=lambda: modificar_detalle(remitos_tree, detalles_tree, ventana_remitos))
-    modificar_detalle_button.grid(row=0, column=1, padx=5)
+    modificar_detalle_button.grid(row=0, column=2, padx=5)
 
     # Botón para agregar un detalle al remito
     # El botón toma como argumento el ID del remito seleccionado
     agregar_detalle_button = ttk.Button(frame_botones, text="Agregar Detalle", command=lambda: agregar_detalle(remitos_tree, ventana_remitos, detalles_tree))
-    agregar_detalle_button.grid(row=0, column=2, padx=5)
+    agregar_detalle_button.grid(row=0, column=3, padx=5)
 
     # Botón para eliminar un detalle del remito
     # El botón toma como argumento la fila seleccionada en el Treeview de detalles
     eliminar_detalle_button = ttk.Button(frame_botones, text="Eliminar Detalle", command=lambda: eliminar_detalle(remitos_tree, detalles_tree, ventana_remitos))
-    eliminar_detalle_button.grid(row=0, column=3, padx=5)
+    eliminar_detalle_button.grid(row=0, column=4, padx=5)
 
     # Crear un marco para los detalles del remito
     frame_detalles = tk.Frame(ventana_remitos)
@@ -135,10 +140,58 @@ def abrir_ventana_remitos(self, nombre):
     # Vincular el evento de selección del Treeview de remitos a la función ver_detalles_remito
     remitos_tree.bind('<<TreeviewSelect>>', lambda event: ver_detalles_remito(remitos_tree, detalles_tree))
 
+def unir_remitos(remitos_tree, detalles_tree, ventana_remitos):
+    # Obtener los IDs de los remitos seleccionados
+    selected_items = remitos_tree.selection()
+
+    if not selected_items:
+        messagebox.showerror("Error", "Por favor, seleccione uno o más remitos para unir.", parent=ventana_remitos)
+        return
+
+    remitos_unidos = []
+    total_general = 0
+
+    for item in selected_items:
+        remito_id = remitos_tree.item(item, 'values')[0]
+        remito = session.query(Remitos).filter_by(id=remito_id).first()
+        if remito:
+            remitos_unidos.extend(remito.detalles)
+            total_general += remito.total
+
+    # Crear un nuevo remito con los detalles combinados
+    remito_general = Remitos(
+        id_cliente=remito.id_cliente,
+        fecha=datetime.now(),
+        fecha_pago=None,
+        total=total_general,
+        pago="NO",
+    )
+    session.add(remito_general)
+    session.commit()
+
+    # Agregar los detalles al nuevo remito general
+    for detalle in remitos_unidos:
+        nuevo_detalle = DetallesRemitos(
+            id_remito=remito_general.id,
+            producto=detalle.producto,
+            cantidad=detalle.cantidad,
+            precio_unitario=detalle.precio_unitario,
+            descuento=detalle.descuento,
+            total=detalle.total,
+        )
+        session.add(nuevo_detalle)
+
+    session.commit()
+
+    messagebox.showinfo("Éxito", f"Remito general creado con un total de ${total_general:,.2f}", parent=ventana_remitos)
+
+    # Actualizar los remitos
+    actualizar_remitos(remitos_tree, remito.cliente.nombre)
+
 def ver_detalles_remito(remitos_tree, detalles_tree):
     # Obtener el remito seleccionado en la tabla
     seleccion = remitos_tree.selection()
-    if not seleccion:
+    if not seleccion or len(seleccion) > 1:
         return
 
     # Obtener el ID del remito seleccionado

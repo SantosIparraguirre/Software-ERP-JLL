@@ -191,6 +191,15 @@ class RemitosApp(tk.Tk):
         self.add_button = ttk.Button(self.main_frame, text="Agregar al Carrito", command=self.agregar_al_carrito)
         self.add_button.place(x=260, y=398)
 
+        # Logo de la empresa
+        # Cargar la imagen del logo y redimensionarla
+        original_logo = Image.open("./icons/logo.png")
+        resized_logo = original_logo.resize((400, 100), Image.LANCZOS)
+        self.logo = ImageTk.PhotoImage(resized_logo)
+        # Etiqueta para mostrar el logo
+        self.logo_label = ttk.Label(self.main_frame, image=self.logo)
+        self.logo_label.place(x=500, y=10)
+
         # Carrito
 
         # Agregar productos fuera de lista
@@ -234,17 +243,17 @@ class RemitosApp(tk.Tk):
 
         # Etiqueta "CARRITO"
         self.carrito_label = ttk.Label(self.main_frame, text="CARRITO")
-        self.carrito_label.place(x=875, y=133)
+        self.carrito_label.place(x=890, y=133)
 
         # Botón para borrar del carrito
         # El botón llama a la función eliminar_del_carrito cuando se hace click
         self.delete_button = ttk.Button(self.main_frame, text="Eliminar Producto", command=self.eliminar_del_carrito)
-        self.delete_button.place(x=975, y=130)
+        self.delete_button.place(x=965, y=130)
 
 
         # Botón para limpiar el carrito
         self.clear_button = ttk.Button(self.main_frame, text="Limpiar Carrito", command=self.limpiar_carrito)
-        self.clear_button.place(x=1100, y=130)
+        self.clear_button.place(x=1080, y=130)
 
         # Treeview para mostrar los productos del carrito
         self.carrito_treeview = ttk.Treeview(self.main_frame, columns=('Producto', 'Cantidad', 'Descuento', 'Precio UD', 'Total'), show='headings')
