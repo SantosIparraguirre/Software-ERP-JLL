@@ -1,11 +1,10 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 from ttkwidgets.autocomplete import AutocompleteCombobox
-from reportlab.lib.pagesizes import letter
-from sqlalchemy.orm import sessionmaker
-from database import engine, Productos, Categorias, Clientes, Presupuestos, DetallesPresupuestos, Remitos, DetallesRemitos
+from database import session, Productos, Categorias, Clientes, Presupuestos, DetallesPresupuestos, Remitos, DetallesRemitos
 from PIL import Image, ImageTk
-from clientes import ClientesApp
+from clientes import ClientesWidget
+from productos import ProductosWidget
 from utils.remitos.carrito import agregar_al_carrito, actualizar_carrito, agregar_fuera_lista, eliminar_del_carrito, editar_celda
 from utils.remitos.precios import modificar_precios, deshacer_ultimo_aumento
 from utils.remitos.productos import update_productos, buscar_producto, llenar_treeview_productos
@@ -14,9 +13,6 @@ from utils.remitos.generar_remitos import generar_remito_excel
 from utils.remitos.guardar_presupuestos import guardar_presupuesto
 from utils.remitos.generar_presupuestos import generar_presupuesto_excel
 
-# Sesión de SQLAlchemy para interactuar con la base de datos
-Session = sessionmaker(bind=engine)
-session = Session()
 
 # Clase para la interfaz
 class RemitosApp(tk.Tk):
@@ -50,7 +46,7 @@ class RemitosApp(tk.Tk):
         self.clientes_button.pack(side='left', padx=10, pady=10)
 
         # Botón para mostrar listas de precios de productos
-        self.listas_precios_button = ttk.Button(self.menu_superior, text="Productos") #, command=self.mostrar_listas_productos)
+        self.listas_precios_button = ttk.Button(self.menu_superior, text="Productos", command=self.mostrar_productos)
         self.listas_precios_button.pack(side='left', padx=10, pady=10)
 
         # Frame principal
@@ -100,16 +96,6 @@ class RemitosApp(tk.Tk):
         self.tabla_combobox.bind("<Return>", self.update_productos)
         # Colocar el combobox en el main_frame
         self.tabla_combobox.place(x=135, y=70)
-
-        # Botón para aumentar precios
-        # El botón llama a la función aumentar_precios cuando se hace click
-        self.aumentar_precios_button = ttk.Button(self.main_frame, text="Modificar Precios", command=self.modificar_precios)
-        self.aumentar_precios_button.place(x=300, y=68)
-
-        # Botón para deshacer el último aumento
-        # El botón llama a la función deshacer_ultimo_aumento cuando se hace click
-        self.deshacer_aumento_button = ttk.Button(self.main_frame, text="Deshacer", command=self.deshacer_ultimo_aumento)
-        self.deshacer_aumento_button.place(x=420, y=68)
 
         # Etiqueta de búsqueda
         self.busqueda_label = ttk.Label(self.main_frame, text="Buscar un producto:")
@@ -387,11 +373,20 @@ class RemitosApp(tk.Tk):
         for widget in self.main_frame.winfo_children():
             widget.destroy()
 
-        # Crear una instancia de ClientesApp y agregar sus widgets al main_frame
-        self.clientes_app = ClientesApp(self.main_frame)         
+        # Crear una instancia de ClientesWidget y agregar sus widgets al main_frame
+        self.clientes_app = ClientesWidget(self.main_frame)     
+
+    # Función para mostrar las listas de precios de productos
+    def mostrar_productos(self):
+        # Limpiar el main_frame antes de agregar nuevos widgets
+        for widget in self.main_frame.winfo_children():
+            widget.destroy()
+
+        # Crear una instancia de ProductosWidget y agregar sus widgets al main_frame
+        self.productos_app = ProductosWidget(self.main_frame)
 
 # Función principal para ejecutar la aplicación
-# Si el script se ejecuta directamente, se crea una instancia de la clase PresupuestoApp y se llama al método mainloop
+# Si el script se ejecuta directamente, se crea una instancia de la clase RemitosApp y se llama al método mainloop
 if __name__ == "__main__":
     app = RemitosApp()
     app.mainloop()

@@ -1,8 +1,8 @@
 # Interfaz gráfica para la gestión de clientes
 
 import tkinter as tk
-from tkinter import ttk, messagebox
-from database import session, Clientes, Presupuestos, DetallesPresupuestos, Remitos, DetallesRemitos
+from tkinter import ttk
+from database import session, Clientes, Presupuestos
 from PIL import Image, ImageTk
 from utils.clientes.gestion_clientes import buscar_cliente, agregar_cliente, actualizar_clientes, eliminar_cliente
 from utils.clientes.modificar_clientes import abrir_ventana_modificacion, guardar_cambios, modificar_cliente
@@ -11,7 +11,7 @@ from utils.clientes.remitos_clientes import ver_remitos
 from utils.clientes.deudas_clientes import ver_deudas
 
 # Clase para la aplicación de gestión de clientes
-class ClientesApp(tk.Tk):
+class ClientesWidget(tk.Tk):
     def __init__(self, main_frame):
         # Inicializar la ventana de la aplicación
         self.main_frame = main_frame
