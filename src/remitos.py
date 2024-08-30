@@ -23,6 +23,8 @@ class RemitosApp(tk.Tk):
         self.title("Constructora Jose Luis Lopez")
         # Geometría de la ventana
         self.geometry("1300x600")
+        # Bloquear el tamaño de la ventana
+        self.resizable(False, False)
         # Crear los widgets con la función create_widgets
         self.create_widgets()
         # Lista para almacenar los productos del carrito
@@ -73,7 +75,7 @@ class RemitosApp(tk.Tk):
         self.cliente_combobox.place(x=135, y=10)
 
         # Menú de selección de tablas (listas de precios)
-        self.tabla_label = ttk.Label(self.main_frame, text="Seleccionar una lista:")
+        self.tabla_label = ttk.Label(self.main_frame, text="Filtrar por categoría:")
         # Empaquetar la etiqueta en el main_frame con place
         self.tabla_label.place(x=10, y=70)
 
@@ -179,12 +181,13 @@ class RemitosApp(tk.Tk):
 
         # Logo de la empresa
         # Cargar la imagen del logo y redimensionarla
-        original_logo = Image.open("./icons/logo.png")
-        resized_logo = original_logo.resize((400, 100), Image.LANCZOS)
-        self.logo = ImageTk.PhotoImage(resized_logo)
+        # original_logo = Image.open("./icons/logo.png")
+        # resized_logo = original_logo.resize((600, 100), Image.LANCZOS)
+        # self.logo = ImageTk.PhotoImage(resized_logo)
         # Etiqueta para mostrar el logo
+        self.logo = ImageTk.PhotoImage(file="./icons/logo.png")
         self.logo_label = ttk.Label(self.main_frame, image=self.logo)
-        self.logo_label.place(x=500, y=10)
+        self.logo_label.place(x=375, y=30)
 
         # Carrito
 

@@ -12,7 +12,12 @@ def llenar_treeview_productos(productos_tree, Productos):
     # Insertar los productos en el treeview
     for producto in productos:
         precio = f'${producto.precio:,.2f}' if producto.precio else ''
-        productos_tree.insert('', 'end', values=(producto.codigo, producto.linea, producto.nombre, precio))
+        # Si el treeview tiene 5 columnas, insertamos el ID del producto en la última columna
+        if len(productos_tree.cget('columns')) == 5:
+            productos_tree.insert('', 'end', values=(producto.codigo, producto.linea, producto.nombre, precio, producto.id))
+        # Si el treeview tiene 4 columnas, no insertamos el ID del producto
+        else:
+            productos_tree.insert('', 'end', values=(producto.codigo, producto.linea, producto.nombre, precio))
 
 def update_productos(tabla_var, productos_tree, Productos, Categorias, event=None):
     # Limpiar el treeview actual
@@ -39,12 +44,12 @@ def update_productos(tabla_var, productos_tree, Productos, Categorias, event=Non
         # Insertar los nuevos productos en el treeview
         for producto in productos:
             precio = f'${producto.precio:,.2f}' if producto.precio else ''
-            productos_tree.insert('', 'end', values=(
-                producto.codigo,
-                producto.linea,
-                producto.nombre,
-                precio
-            ))
+            # Si el treeview tiene 5 columnas, insertamos el ID del producto en la última columna
+            if len(productos_tree.cget('columns')) == 5:
+                productos_tree.insert('', 'end', values=(producto.codigo, producto.linea, producto.nombre, precio, producto.id))
+            # Si el treeview tiene 4 columnas, no insertamos el ID del producto
+            else:
+                productos_tree.insert('', 'end', values=(producto.codigo, producto.linea, producto.nombre, precio))
 
 def buscar_producto(busqueda_var, tabla_var, productos_tree, Productos, Categorias):
     # Obtener el término de búsqueda y convertirlo a minúsculas
@@ -81,4 +86,9 @@ def buscar_producto(busqueda_var, tabla_var, productos_tree, Productos, Categori
         # Si la búsqueda está contenida en el nombre del producto, insertar el producto en la tabla
         if all(term in nombre or term in codigo or term in linea for term in search_terms):
             precio = f'${producto.precio:,.2f}' if producto.precio else ''
-            productos_tree.insert('', 'end', values=(producto.codigo, producto.linea, producto.nombre, precio))
+            # Si el treeview tiene 5 columnas, insertamos el ID del producto en la última columna
+            if len(productos_tree.cget('columns')) == 5:
+                productos_tree.insert('', 'end', values=(producto.codigo, producto.linea, producto.nombre, precio, producto.id))
+            # Si el treeview tiene 4 columnas, no insertamos el ID del producto
+            else:
+                productos_tree.insert('', 'end', values=(producto.codigo, producto.linea, producto.nombre, precio))

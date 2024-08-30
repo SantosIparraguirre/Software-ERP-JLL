@@ -108,7 +108,7 @@ class ClientesWidget(tk.Tk):
         scrollbar = ttk.Scrollbar(self.main_frame, orient=tk.VERTICAL, command=self.clientes_tree.yview)
         # Configurar la scrollbar para que se mueva junto con la tabla de clientes en el eje y (vertical)
         self.clientes_tree.configure(yscroll=scrollbar.set)
-        scrollbar.place(x=903, y=40, relheight=0.32)
+        scrollbar.place(x=903, y=40, relheight=0.40)
 
         # Botón para eliminar un cliente
         # El botón llama a la función eliminar_cliente cuando se hace click
