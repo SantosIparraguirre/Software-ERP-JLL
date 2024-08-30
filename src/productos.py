@@ -8,6 +8,7 @@ from utils.remitos.productos import llenar_treeview_productos, update_productos,
 from utils.productos.editar_celda import editar_celda
 from utils.productos.agregar_producto import agregar_producto
 from utils.productos.eliminar_producto import eliminar_producto
+from utils.productos.precios import modificar_precios
 from PIL import Image, ImageTk
 
 
@@ -99,16 +100,14 @@ class ProductosWidget(tk.Tk):
         add_producto_button = ttk.Button(self.main_frame, text="Agregar Producto", command=lambda: agregar_producto(self))
         add_producto_button.place(x=250, y=400)
 
-        # # Botón para modificar un producto
-        # modify_producto_button = ttk.Button(self.productos_tab, text="Modificar Producto", command=self.modificar_producto)
-        # modify_producto_button.pack(pady=10)
-
         # Botón para eliminar un producto
         delete_producto_button = ttk.Button(self.main_frame, text="Eliminar Producto", command=lambda: eliminar_producto(self))
-        delete_producto_button.place(x=350, y=400)
+        delete_producto_button.place(x=370, y=400)
 
-        # # Actualizar la tabla de productos
-        # self.actualizar_productos()
+        # Botón para modificar los precios de los productos
+        modificar_precios_button = ttk.Button(self.main_frame, text="Modificar Precios", command=lambda: modificar_precios(self.tabla_var, Productos, Categorias, self.update_productos))
+        modificar_precios_button.place(x=500, y=400)
+
 
     def buscar_producto(self, event=None):
         buscar_producto(self.busqueda_producto, self.tabla_var, self.productos_treeview, Productos, Categorias)

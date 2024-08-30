@@ -81,11 +81,11 @@ def generar_remito_excel(cliente_var, carrito, observaciones, session, Clientes)
         fila_inicial += 1
     
     # Imputar el total
-    sheet.cell(row=fila_inicial, column=8, value=total).font = Font(name='Arial', size=12, bold=True)
+    sheet.cell(row=fila_inicial +1, column=8, value=total).font = Font(name='Arial', size=12, bold=True)
 
     # Firma del cliente y observaciones
-    sheet.cell(row=fila_inicial + 2, column=1, value="FIRMA DEL CLIENTE:").font = Font(name='Arial', bold=True)
-    sheet.cell(row=fila_inicial + 2, column=5, value=f"OBSERVACIONES: {observaciones}").font = Font(name='Arial', bold=True)
+    sheet.cell(row=fila_inicial + 3, column=1, value="FIRMA DEL CLIENTE:").font = Font(name='Arial', bold=True)
+    sheet.cell(row=fila_inicial + 3, column=5, value=f"OBSERVACIONES: {observaciones}").font = Font(name='Arial', bold=True)
 
     # Copia para la empresa
 
@@ -177,11 +177,11 @@ def generar_remito_excel(cliente_var, carrito, observaciones, session, Clientes)
             fila_inicial += 1
         
         # Imputar el total
-        sheet.cell(row=fila_inicial, column=8, value=total).font = Font(name='Arial', size=12, bold=True)    
+        sheet.cell(row=fila_inicial + 1, column=8, value=total).font = Font(name='Arial', size=12, bold=True)    
 
         # Firma del cliente y observaciones
-        sheet.cell(row=fila_inicial + 2, column=1, value="FIRMA DEL CLIENTE:").font = Font(name='Arial', bold=True)     
-        sheet.cell(row=fila_inicial + 2, column=5, value=f"OBSERVACIONES: {observaciones}").font = Font(name='Arial', bold=True)
+        sheet.cell(row=fila_inicial + 3, column=1, value="FIRMA DEL CLIENTE:").font = Font(name='Arial', bold=True)     
+        sheet.cell(row=fila_inicial + 3, column=5, value=f"OBSERVACIONES: {observaciones}").font = Font(name='Arial', bold=True)
 
     # Guardar el archivo Excel
     wb.save(file_path)

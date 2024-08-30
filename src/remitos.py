@@ -6,7 +6,6 @@ from PIL import Image, ImageTk
 from clientes import ClientesWidget
 from productos import ProductosWidget
 from utils.remitos.carrito import agregar_al_carrito, actualizar_carrito, agregar_fuera_lista, eliminar_del_carrito, editar_celda
-from utils.remitos.precios import modificar_precios, deshacer_ultimo_aumento
 from utils.remitos.productos import update_productos, buscar_producto, llenar_treeview_productos
 from utils.remitos.guardar_remitos import guardar_remito
 from utils.remitos.generar_remitos import generar_remito_excel
@@ -302,19 +301,12 @@ class RemitosApp(tk.Tk):
         clientes = session.query(Clientes.nombre).all()
         return [cliente[0] for cliente in clientes]
 
-    # Funciones para interactuar con la base de datos y la interfaz
-    def modificar_precios(self):
-        # Llamar a la función modificar_precios con la tabla seleccionada, los precios anteriores y las clases de Productos y Categorias
-        modificar_precios(self.tabla_var, self.precios_anteriores, Categorias, Productos)
-        # Actualizar la lista de productos
-        self.update_productos(None)
-
-    # Función para deshacer el último aumento de precios
-    def deshacer_ultimo_aumento(self):
-        # Llamar a la función deshacer_ultimo_aumento con la tabla seleccionada, los precios anteriores y las clases de Productos y Categorias
-        deshacer_ultimo_aumento(self.tabla_var, self.precios_anteriores, Categorias, Productos)
-        # Actualizar la lista de productos
-        self.update_productos(None)
+    # # Funciones para interactuar con la base de datos y la interfaz
+    # def modificar_precios(self):
+    #     # Llamar a la función modificar_precios con la tabla seleccionada, los precios anteriores y las clases de Productos y Categorias
+    #     modificar_precios(self.tabla_var, self.precios_anteriores, Categorias, Productos)
+    #     # Actualizar la lista de productos
+    #     self.update_productos(None)
 
     # Función para agregar productos fuera de lista al carrito
     def agregar_fuera_lista(self, event=None):
