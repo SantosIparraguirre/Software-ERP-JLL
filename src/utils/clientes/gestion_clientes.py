@@ -22,6 +22,12 @@ def agregar_cliente(nombre_var, cuit_var, telefono_var, direccion_var, session, 
     if not nombre:
         messagebox.showerror("Error", "Ingresa un nombre.")
         return
+    
+    # Validar que el nombre no esté repetido
+    cliente = session.query(Clientes).filter_by(nombre=nombre).first()
+    if cliente:
+        messagebox.showerror("Error", "Ya existe un cliente con el mismo nombre.")
+        return
 
     # Crear una instancia de la clase Cliente con los datos ingresados
     cliente = Clientes(nombre=nombre, cuit=cuit, telefono=telefono, direccion=direccion)

@@ -4,10 +4,16 @@ from tkinter import filedialog, messagebox
 from openpyxl import load_workbook
 from openpyxl.styles import Font, Alignment, Border, Side
 
-def generar_remito_excel(cliente_var, carrito, session, Clientes):
- 
+def generar_remito_excel(cliente_var, carrito, observaciones, session, Clientes):
     # Obtener el cliente
     cliente = cliente_var.get()
+
+    # Verificar si se seleccionó un cliente
+    if not cliente:
+        return
+
+    # Obtener la observación
+    observaciones = observaciones.get()
 
     # Solicitar al usuario la ubicación donde guardar el remito
     file_path = filedialog.asksaveasfilename(defaultextension=".xlsx", filetypes=[("Excel files", "*.xlsx")])
@@ -79,12 +85,12 @@ def generar_remito_excel(cliente_var, carrito, session, Clientes):
 
     # Firma del cliente y observaciones
     sheet.cell(row=fila_inicial + 2, column=1, value="FIRMA DEL CLIENTE:").font = Font(name='Arial', bold=True)
-    sheet.cell(row=fila_inicial + 2, column=5, value="OBSERVACIONES:").font = Font(name='Arial', bold=True)
+    sheet.cell(row=fila_inicial + 2, column=5, value=f"OBSERVACIONES: {observaciones}").font = Font(name='Arial', bold=True)
 
     # Copia para la empresa
 
-    if fila_inicial <= 40:
-        fila_inicial = 40
+    if fila_inicial <= 44:
+        fila_inicial = 44
         # Fusionar celdas para el título
         sheet.merge_cells(start_row=fila_inicial, start_column=7, end_row=fila_inicial +2, end_column=8)
         # Titulo "REMITO" con fuente 'Arial' de tamaño 20 y negrita
@@ -175,7 +181,7 @@ def generar_remito_excel(cliente_var, carrito, session, Clientes):
 
         # Firma del cliente y observaciones
         sheet.cell(row=fila_inicial + 2, column=1, value="FIRMA DEL CLIENTE:").font = Font(name='Arial', bold=True)     
-        sheet.cell(row=fila_inicial + 2, column=5, value="OBSERVACIONES:").font = Font(name='Arial', bold=True)
+        sheet.cell(row=fila_inicial + 2, column=5, value=f"OBSERVACIONES: {observaciones}").font = Font(name='Arial', bold=True)
 
     # Guardar el archivo Excel
     wb.save(file_path)

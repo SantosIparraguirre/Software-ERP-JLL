@@ -8,6 +8,10 @@ def generar_presupuesto_excel(cliente_var, carrito, session, Clientes):
     # Obtener el cliente
     cliente = cliente_var.get()
 
+    # Verificar si se seleccionó un cliente
+    if not cliente:
+        return
+
     # Solicitar ubicación para guardar el archivo Excel
     file_path = filedialog.asksaveasfilename(defaultextension=".xlsx", filetypes=[("Excel files", "*.xlsx")])
     if not file_path:
@@ -110,8 +114,8 @@ def generar_presupuesto_excel(cliente_var, carrito, session, Clientes):
 
     # Copia para la empresa
 
-    if fila_inicial <= 40:
-        fila_inicial = 40
+    if fila_inicial <= 44:
+        fila_inicial = 44
         # Fusionar celdas para el título
         sheet.merge_cells(start_row=fila_inicial, start_column=4, end_row=fila_inicial +1, end_column=6)
         # Titulo "PRESUPUESTO" con fuente 'Arial' de tamaño 27 y negrita

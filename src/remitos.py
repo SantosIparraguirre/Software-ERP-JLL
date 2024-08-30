@@ -275,13 +275,25 @@ class RemitosApp(tk.Tk):
         self.carrito_treeview.configure(yscroll=scrollbar.set)
         scrollbar.place(x=1273, y=162, relheight=0.40)
 
+        # Combobox de observaciones
+        # Tres opciones para las observaciones
+        observaciones = ["Retirado", "A retirar", "Devolución"]
+        # Etiqueta para seleccionar la observación
+        self.observaciones_label = ttk.Label(self.main_frame, text="Observaciones:")
+        self.observaciones_label.place(x=600, y=402)
+        # StringVar para almacenar la observación seleccionada
+        self.observaciones_var = tk.StringVar()
+        # Combobox para seleccionar la observación, textvariable es la variable que almacena la observación seleccionada
+        self.observaciones_combobox = ttk.Combobox(self.main_frame, textvariable=self.observaciones_var, values=observaciones, width=12)
+        self.observaciones_combobox.place(x=690, y=402)
+
         # Botón para guardar el presupuesto en la base de datos
         self.save_presupuesto_button = ttk.Button(self.main_frame, text="Guardar Presupuesto", command=self.guardar_presupuesto)
-        self.save_presupuesto_button.place(x=815, y=400)
+        self.save_presupuesto_button.place(x=860, y=400)
 
         # Botón para guardar el remito en la base de datos
         self.save_remito_button = ttk.Button(self.main_frame, text="Guardar Remito", command=self.guardar_remito)
-        self.save_remito_button.place(x=940, y=400)
+        self.save_remito_button.place(x=990, y=400)
 
     # Funciones para interactuar con la base de datos y la interfaz
 
@@ -361,7 +373,7 @@ class RemitosApp(tk.Tk):
         # Llamar a la función guardar_remito con el cliente seleccionado, el carrito, la sesión y las clases de Clientes, Remitos y DetallesRemitos
         guardar_remito(self.cliente_var, self.carrito, session, Clientes, Remitos, DetallesRemitos) 
         # Llamar a la función generar_remito_excel con el cliente seleccionado, el carrito, la sesión y las clases de Clientes
-        generar_remito_excel(self.cliente_var, self.carrito, session, Clientes)
+        generar_remito_excel(self.cliente_var, self.carrito, self.observaciones_var, session, Clientes)
 
     # Función para guardar el presupuesto en la base de datos
     def guardar_presupuesto(self):

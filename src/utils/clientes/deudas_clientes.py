@@ -148,7 +148,7 @@ def actualizar_precios(self, nombre, ventana_deudas):
     # Iterar sobre los detalles de la deuda
     for detalle in deuda.detalles:
         # Obtener el nombre del producto
-        nombre_producto = detalle.producto if isinstance(detalle.producto, str) else detalle.producto.nombre
+        nombre_producto = detalle.producto
         # Si el producto está en el diccionario de precios, actualizar el precio unitario y el total
         if nombre_producto in precios:
             detalle.precio_unitario = precios[nombre_producto]
