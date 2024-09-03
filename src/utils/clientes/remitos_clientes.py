@@ -18,15 +18,9 @@ def ver_remitos(self):
 def abrir_ventana_remitos(self, nombre):
     global ventana_remitos
 
-    # Si la ventana de remitos ya está abierta, llevarla al frente
+    # Si la ventana de remitos ya está abierta, destruir la ventana actual y crear una nueva
     if ventana_remitos and tk.Toplevel.winfo_exists(ventana_remitos):
-        # Llevar la ventana al frente
-        ventana_remitos.lift()
-        # Desiconificar la ventana si está minimizada
-        ventana_remitos.deiconify()
-        # Enfocar la ventana
-        ventana_remitos.focus_force()
-        return
+        ventana_remitos.destroy()
 
     # Crear una ventana secundaria para ver los remitos del cliente
     ventana_remitos = tk.Toplevel()
@@ -68,8 +62,8 @@ def abrir_ventana_remitos(self, nombre):
     cliente = session.query(Clientes).filter_by(nombre=nombre).first()
     for remito in cliente.remitos:
         # Formatear la fecha sin los decimales de los segundos
-        fecha_formateada = remito.fecha.strftime("%d/%m/%Y %H:%M:%S")
-        fecha_pago_formateada = remito.fecha_pago.strftime("%d/%m/%Y %H:%M:%S")
+        fecha_formateada = remito.fecha.strftime("%d/%m/%Y %H:%M:%S") if remito.fecha else ""
+        fecha_pago_formateada = remito.fecha_pago.strftime("%d/%m/%Y %H:%M:%S") if remito.fecha_pago else ""
         # Insertar en el treeview los valores del remito, formateando el total y el pago como moneda
         if remito.pago != "NO" and remito.pago != "SI":
             pago_formateado = f"${float(remito.pago):,.2f}"
@@ -254,8 +248,8 @@ def actualizar_remitos(remitos_tree, nombre):
 
     # Insertar en el Treeview los valores actualizados del remito
     for remito in cliente.remitos:
-        fecha_formateada = remito.fecha.strftime("%d/%m/%Y %H:%M:%S")
-        fecha_pago_formateada = remito.fecha_pago.strftime("%d/%m/%Y %H:%M:%S")
+        fecha_formateada = remito.fecha.strftime("%d/%m/%Y %H:%M:%S") if remito.fecha else ""
+        fecha_pago_formateada = remito.fecha_pago.strftime("%d/%m/%Y %H:%M:%S") if remito.fecha_pago else ""
         if remito.pago != "NO" and remito.pago != "SI":
             pago_formateado = f"${float(remito.pago):,.2f}"
         else:
@@ -323,7 +317,7 @@ def guardar_cambios_detalle(ID_remito, ID_detalle, producto, cantidad, precio, d
     detalle.cantidad = cantidad
     detalle.precio_unitario = precio
     detalle.descuento = descuento
-    detalle.total = int(cantidad) * float(precio) * (1 - float(descuento) / 100)
+    detalle.total = float(cantidad) * float(precio) * (1 - float(descuento) / 100)
 
     # Actualizar el total del remito
     remito.total = sum([detalle.total for detalle in remito.detalles])

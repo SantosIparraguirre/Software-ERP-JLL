@@ -60,24 +60,24 @@ def generar_presupuesto_excel(cliente_var, carrito, session, Clientes):
         # Desempaquetar los datos de la lista del carrito en variables separadas 
         producto, cantidad, descuento, precio = item
         # Convertir la cantidad y el precio a entero y flotante
-        cantidad = int(cantidad)
+        cantidad = float(cantidad)
         # Quitarle el signo $ al precio y la coma
         precio = precio[1:].replace(',', '') if precio else 0
         # Convertir el precio a float
         precio = float(precio) if precio else 0
         # Quitarle el signo % al descuento y convertirlo a float
-        descuento = float(descuento[:-1]) if descuento else 0
+        descuento = float(descuento[:-1]) if descuento else ''
         # Calcular el precio total con descuento y sin IVA del producto
-        precio_total = cantidad * precio * (1 - descuento / 100)
+        precio_total = cantidad * precio * (1 - descuento / 100 if descuento else 1)
         precio_sin_iva = precio_total / 1.21
-        # Convertir el descuento a porcentaje
-        descuento_porcentaje = float(descuento) / 100
-
+        # Convertir el descuento a string y agregarle el signo de porcentaje
+        descuento = f'{descuento}%' if descuento else ''
+        
         # Escribir los datos en las celdas correspondientes
         sheet.cell(row=fila_inicial, column=2, value=cantidad)
         sheet.cell(row=fila_inicial, column=3, value=producto)
         sheet.cell(row=fila_inicial, column=4, value=precio)
-        sheet.cell(row=fila_inicial, column=5, value=descuento_porcentaje).number_format = '0.00%'
+        sheet.cell(row=fila_inicial, column=5, value=descuento)
         sheet.cell(row=fila_inicial, column=6, value=precio_total)
 
         # Aplicar borde a las celdas de la fila actual
@@ -114,8 +114,8 @@ def generar_presupuesto_excel(cliente_var, carrito, session, Clientes):
 
     # Copia para la empresa
 
-    if fila_inicial <= 44:
-        fila_inicial = 44
+    if fila_inicial <= 37:
+        fila_inicial = 40
         # Fusionar celdas para el título
         sheet.merge_cells(start_row=fila_inicial, start_column=4, end_row=fila_inicial +1, end_column=6)
         # Titulo "PRESUPUESTO" con fuente 'Arial' de tamaño 27 y negrita
@@ -182,23 +182,23 @@ def generar_presupuesto_excel(cliente_var, carrito, session, Clientes):
             # Desempaquetar los datos de la lista del carrito en variables separadas 
             producto, cantidad, descuento, precio = item
             # Convertir la cantidad y el precio a entero y flotante
-            cantidad = int(cantidad)
+            cantidad = float(cantidad)
             # Quitarle el signo $ al precio y la coma
             precio = precio[1:].replace(',', '') if precio else 0
             precio = float(precio) if precio else 0
             # Quitar el signo de porcentaje y convertir a flotante el descuento
-            descuento = float(descuento[:-1]) if descuento else 0
+            descuento = float(descuento[:-1]) if descuento else ''
             # Calcular el precio total con descuento y sin IVA del producto
-            precio_total = cantidad * precio * (1 - descuento / 100)
+            precio_total = cantidad * precio * (1 - descuento / 100 if descuento else 1)
             precio_sin_iva = precio_total / 1.21
-            # Convertir el descuento a porcentaje
-            descuento_porcentaje = float(descuento) / 100
-
+            # Convertir el descuento a string y agregarle el signo de porcentaje
+            descuento = f'{descuento}%' if descuento else ''
+            
             # Escribir los datos en las celdas correspondientes
             sheet.cell(row=fila_inicial, column=2, value=cantidad)
             sheet.cell(row=fila_inicial, column=3, value=producto)
             sheet.cell(row=fila_inicial, column=4, value=precio)
-            sheet.cell(row=fila_inicial, column=5, value=descuento_porcentaje).number_format = '0.00%'
+            sheet.cell(row=fila_inicial, column=5, value=descuento)
             sheet.cell(row=fila_inicial, column=6, value=precio_total)
 
             # Aplicar borde a las celdas de la fila actual

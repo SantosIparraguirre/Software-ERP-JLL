@@ -104,9 +104,12 @@ class ProductosWidget(tk.Tk):
         delete_producto_button = ttk.Button(self.main_frame, text="Eliminar Producto", command=lambda: eliminar_producto(self))
         delete_producto_button.place(x=370, y=400)
 
+        # Vincular la tecla suprimir con la función de eliminar productos
+        self.productos_treeview.bind("<Delete>", lambda event: eliminar_producto(self))
+
         # Botón para modificar los precios de los productos
         modificar_precios_button = ttk.Button(self.main_frame, text="Modificar Precios", command=lambda: modificar_precios(self.tabla_var, Productos, Categorias, self.update_productos))
-        modificar_precios_button.place(x=500, y=400)
+        modificar_precios_button.place(x=950, y=400)
 
 
     def buscar_producto(self, event=None):

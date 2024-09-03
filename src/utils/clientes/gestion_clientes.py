@@ -1,4 +1,5 @@
 import tkinter.messagebox as messagebox
+from sqlalchemy import func
 
 def buscar_cliente(nombre_buscar_var, clientes_tree, session, Clientes):
     # Obtener el nombre del cliente a buscar
@@ -13,7 +14,7 @@ def buscar_cliente(nombre_buscar_var, clientes_tree, session, Clientes):
 
 def agregar_cliente(nombre_var, cuit_var, telefono_var, direccion_var, session, Clientes):
     # Obtener los datos del cliente ingresados por el usuario
-    nombre = nombre_var.get()
+    nombre = nombre_var.get().strip().lower()
     cuit = cuit_var.get()
     telefono = telefono_var.get()
     direccion = direccion_var.get()
@@ -23,8 +24,8 @@ def agregar_cliente(nombre_var, cuit_var, telefono_var, direccion_var, session, 
         messagebox.showerror("Error", "Ingresa un nombre.")
         return
     
-    # Validar que el nombre no esté repetido
-    cliente = session.query(Clientes).filter_by(nombre=nombre).first()
+    # Validar que el nombre no esté repetido 
+    cliente = session.query(Clientes).filter(func.lower(Clientes.nombre) == nombre).first()
     if cliente:
         messagebox.showerror("Error", "Ya existe un cliente con el mismo nombre.")
         return

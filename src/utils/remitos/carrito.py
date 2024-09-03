@@ -15,9 +15,9 @@ def agregar_al_carrito(carrito, productos_tree, cantidad_var, descuento_var):
     precio = item['values'][3]
     # Obtener la cantidad y descuento ingresados por el usuario con el método get
     cantidad = cantidad_var.get()
-    descuento = f'{descuento_var.get()}%'
+    descuento = f'{descuento_var.get()}%' if descuento_var.get() > 0 else ''
 
-    if cantidad <= 0:
+    if cantidad <= 0.0:
         messagebox.showerror("Error", "Ingresa una cantidad válida.")
         return
 
@@ -32,7 +32,7 @@ def actualizar_carrito(carrito_treeview, carrito):
         # Desempaquetar los valores del producto
         producto, cantidad, descuento, precio = item
         # Calcular el total del producto con descuento
-        total = float(precio.replace('$', '').replace(',', '')) * int(cantidad) * (1 - float(descuento.replace('%', '')) / 100)
+        total = float(precio.replace('$', '').replace(',', '')) * float(cantidad) * (1 - float(descuento.replace('%', '')) / 100 if descuento else 1)
         # Insertar el producto en el treeview del carrito
         carrito_treeview.insert('', 'end', values=(producto, cantidad, descuento, precio, f'${total:,.2f}'))
     
@@ -47,7 +47,7 @@ def calcular_total(carrito, carrito_treeview):
         if carrito_treeview.item(carrito_treeview.get_children()[-1])['values'][3] == 'Total:':
             carrito_treeview.delete(carrito_treeview.get_children()[-1])
         # Calcular el total del remito/presupuesto
-        total_carrito = sum(float(item[3].replace('$', '').replace(',', '')) * int(item[1]) * (1 - float(item[2].replace('%', '')) / 100) for item in carrito)
+        total_carrito = sum(float(item[3].replace('$', '').replace(',', '')) * float(item[1]) * (1 - float(item[2].replace('%', '')) / 100 if item[2] else 1) for item in carrito)
         # Añadir el total al treeview del carrito
         carrito_treeview.insert('', 'end', values=('', '', '', 'Total:', f'${total_carrito:,.2f}'))
         
@@ -101,6 +101,10 @@ def editar_celda(self, event):
 
     if not row_id or not column_id:
         return
+    
+    # Si la celda es la de 'Total:', no permitir la edición
+    if self.carrito_treeview.item(row_id)['values'][3] == 'Total:':
+        return
 
     # Obtener valores actuales
     item = self.carrito_treeview.item(row_id)['values']
@@ -127,7 +131,7 @@ def editar_celda(self, event):
         if column in [1, 2, 3]:  # Índices correspondientes a cantidad, descuento y precio
             cantidad = float(values[1])
             # Formatear el descuento para eliminar el signo de porcentaje
-            descuento = float(values[2][:-1])
+            descuento = float(values[2][:-1]) if values[2] else 0
             # Formatear el precio para eliminar el signo de dólar y las comas
             precio_unitario = float(values[3][1:].replace(",", ""))
             total = cantidad * precio_unitario * (1 - descuento / 100)

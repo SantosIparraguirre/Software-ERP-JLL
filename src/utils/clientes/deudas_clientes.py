@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 from database import Clientes, Remitos, Productos, session
+import datetime
 
 ventana_deudas = None
 
@@ -13,8 +14,8 @@ def formatear_fecha(fecha):
 def insertar_remitos_no_pagos(treeview, remitos_no_pagos):
     for deuda in remitos_no_pagos:
         # Formatear la fecha
-        fecha_formateada = formatear_fecha(deuda.fecha)
-        fecha_pago_formateada = formatear_fecha(deuda.fecha_pago)
+        fecha_formateada = formatear_fecha(deuda.fecha) if deuda.fecha else ''
+        fecha_pago_formateada = formatear_fecha(deuda.fecha_pago) if deuda.fecha_pago else ''
         # Si el pago no es "NO" ni "SI", formatear el monto de pago como moneda
         if deuda.pago not in ["NO", "SI"]:
             total_formateado = f'${deuda.total:,.2f}'
@@ -79,15 +80,9 @@ def ver_deudas(self):
 
 def abrir_ventana_deudas(self, nombre):
     global ventana_deudas
-    # Verificar si la ventana ya está abierta
+    # Si la ventana de deudas ya está abierta, cerrarla
     if ventana_deudas and tk.Toplevel.winfo_exists(ventana_deudas):
-        # Mostrar la ventana y llevarla al frente
-        ventana_deudas.lift()
-        # Desiconificar la ventana si está minimizada
-        ventana_deudas.deiconify()
-        # Focus en la ventana
-        ventana_deudas.focus_force()
-        return
+        ventana_deudas.destroy()
     # Obtener el cliente de la base de datos por el nombre
     cliente = obtener_cliente_por_nombre(nombre)
     # Filtrar los remitos del cliente que no han sido pagados
@@ -222,6 +217,8 @@ def cancelar_total(self, nombre, ventana_deudas):
         return
     # Actualizar el monto de pago de la deuda
     deuda.pago = 'SI'
+    # Actualizar la fecha de pago de la deuda
+    deuda.fecha_pago = datetime.datetime.now()
     # Confirmar la transacción
     session.commit()
     # Mostrar un mensaje de éxito
@@ -247,6 +244,8 @@ def confirmar_cancelacion(self, deuda, monto_entry, nombre):
         return
     # Actualizar el monto de pago de la deuda
     deuda.pago = float(deuda.pago) + monto if deuda.pago != "NO" else monto
+    # Actualizar la fecha de pago de la deuda
+    deuda.fecha_pago = datetime.datetime.now()
     # Confirmar la transacción
     session.commit()
     # Mostrar un mensaje de éxito

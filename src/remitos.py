@@ -153,7 +153,7 @@ class RemitosApp(tk.Tk):
 
         # Campo de cantidad
         # IntVar para almacenar el valor ingresado en el campo de cantidad 
-        self.cantidad_var = tk.IntVar()
+        self.cantidad_var = tk.DoubleVar()
         # Entry para ingresar la cantidad, textvariable es la variable que almacena el valor ingresado
         self.cantidad_entry = ttk.Entry(self.main_frame, textvariable=self.cantidad_var)
         self.cantidad_entry.place(x=115, y=400)
@@ -286,13 +286,13 @@ class RemitosApp(tk.Tk):
         self.observaciones_combobox = ttk.Combobox(self.main_frame, textvariable=self.observaciones_var, values=observaciones, width=12)
         self.observaciones_combobox.place(x=690, y=402)
 
-        # Botón para guardar el presupuesto en la base de datos
-        self.save_presupuesto_button = ttk.Button(self.main_frame, text="Guardar Presupuesto", command=self.guardar_presupuesto)
-        self.save_presupuesto_button.place(x=860, y=400)
-
         # Botón para guardar el remito en la base de datos
-        self.save_remito_button = ttk.Button(self.main_frame, text="Guardar Remito", command=self.guardar_remito)
-        self.save_remito_button.place(x=990, y=400)
+        self.save_remito_button = ttk.Button(self.main_frame, text="Generar Remito", command=self.guardar_remito)
+        self.save_remito_button.place(x=790, y=400)
+
+        # Botón para guardar el presupuesto en la base de datos
+        self.save_presupuesto_button = ttk.Button(self.main_frame, text="Generar Presupuesto", command=self.guardar_presupuesto)
+        self.save_presupuesto_button.place(x=950, y=400)
 
     # Funciones para interactuar con la base de datos y la interfaz
 

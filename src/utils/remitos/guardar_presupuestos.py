@@ -36,7 +36,7 @@ def guardar_presupuesto(cliente_var, carrito, session, Clientes, Presupuestos, D
 
         # Iterar sobre los elementos del carrito para agregarlos a los detalles del presupuesto
         for producto, cantidad, descuento, precio in carrito:
-            cantidad = int(cantidad)
+            cantidad = float(cantidad)
             # Quitamos el signo de pesos y las comas
             precio = precio[1:].replace(',', '') if precio else 0
             # Convertir el precio a flotante

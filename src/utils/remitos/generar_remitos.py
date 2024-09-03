@@ -59,14 +59,14 @@ def generar_remito_excel(cliente_var, carrito, observaciones, session, Clientes)
     for item in carrito:
         producto, cantidad, descuento, precio = item
         # Convertir la cantidad y el precio a entero y flotante
-        cantidad = int(cantidad)
+        cantidad = float(cantidad)
         # Quitamos el signo de pesos y las comas
         precio = precio[1:].replace(',', '') if precio else 0
         precio = float(precio) if precio else 0
         # Quitar el signo de porcentaje y convertir a flotante el descuento
-        descuento = float(descuento[:-1]) if descuento else 0
+        descuento = float(descuento[:-1]) if descuento else ''
         # Calcular el precio con descuento
-        precio = precio * (1 - descuento / 100)
+        precio = precio * (1 - descuento / 100 if descuento else 1)
         # Calcular el precio total del producto
         precio_total = cantidad * precio
 
@@ -84,12 +84,15 @@ def generar_remito_excel(cliente_var, carrito, observaciones, session, Clientes)
     sheet.cell(row=fila_inicial +1, column=8, value=total).font = Font(name='Arial', size=12, bold=True)
 
     # Firma del cliente y observaciones
-    sheet.cell(row=fila_inicial + 3, column=1, value="FIRMA DEL CLIENTE:").font = Font(name='Arial', bold=True)
-    sheet.cell(row=fila_inicial + 3, column=5, value=f"OBSERVACIONES: {observaciones}").font = Font(name='Arial', bold=True)
+    sheet.cell(row=fila_inicial + 3, column=1, value="FIRMA DEL CLIENTE:").font = Font(name='Arial', size=12, bold=True)
+    sheet.cell(row=fila_inicial + 3, column=5, value=f"OBSERVACIONES: {observaciones}").font = Font(name='Arial', size=12, bold=True)
+
+    # Alinear firma del cliente a la izquierda
+    sheet.cell(row=fila_inicial + 3, column=1).alignment = Alignment(horizontal='left')
 
     # Copia para la empresa
 
-    if fila_inicial <= 44:
+    if fila_inicial <= 40:
         fila_inicial = 44
         # Fusionar celdas para el título
         sheet.merge_cells(start_row=fila_inicial, start_column=7, end_row=fila_inicial +2, end_column=8)
@@ -154,15 +157,15 @@ def generar_remito_excel(cliente_var, carrito, observaciones, session, Clientes)
         # Imputar los datos del carrito
         for item in carrito:
             producto, cantidad, descuento, precio = item
-            # Convertir la cantidad y el precio a entero y flotante
-            cantidad = int(cantidad)
+            # Convertir la cantidad y el precio a flotante
+            cantidad = float(cantidad)
             # Quitamos el signo de pesos y las comas
             precio = precio[1:].replace(',', '') if precio else 0
             precio = float(precio) if precio else 0
             # Quitar el signo de porcentaje y convertir a flotante el descuento
-            descuento = float(descuento[:-1]) if descuento else 0
+            descuento = float(descuento[:-1]) if descuento else ''
             # Calcular el precio con descuento
-            precio = precio * (1 - descuento / 100)
+            precio = precio * (1 - descuento / 100 if descuento else 1)
             # Calcular el precio total del producto
             precio_total = cantidad * precio
 
@@ -180,8 +183,11 @@ def generar_remito_excel(cliente_var, carrito, observaciones, session, Clientes)
         sheet.cell(row=fila_inicial + 1, column=8, value=total).font = Font(name='Arial', size=12, bold=True)    
 
         # Firma del cliente y observaciones
-        sheet.cell(row=fila_inicial + 3, column=1, value="FIRMA DEL CLIENTE:").font = Font(name='Arial', bold=True)     
-        sheet.cell(row=fila_inicial + 3, column=5, value=f"OBSERVACIONES: {observaciones}").font = Font(name='Arial', bold=True)
+        sheet.cell(row=fila_inicial + 3, column=1, value="FIRMA DEL CLIENTE:").font = Font(name='Arial', size=12, bold=True)     
+        sheet.cell(row=fila_inicial + 3, column=5, value=f"OBSERVACIONES: {observaciones}").font = Font(name='Arial', size=12, bold=True)
+
+        # Alinear firma del cliente a la izquierda
+        sheet.cell(row=fila_inicial + 3, column=1).alignment = Alignment(horizontal='left')
 
     # Guardar el archivo Excel
     wb.save(file_path)
