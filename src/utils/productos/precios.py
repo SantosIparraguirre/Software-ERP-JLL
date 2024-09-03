@@ -36,8 +36,11 @@ def modificar_precios(tabla_var, Productos, Categorias, update_productos_callbac
         # Actualizar la lista de productos en la interfaz de usuario
         update_productos_callback()
 
+        # Obtener el nombre de la categoría seleccionada
+        nombre_categoria = tabla_var.get()
+
         # Mostrar un mensaje de éxito al usuario con el porcentaje de aumento y la categoría seleccionada
-        messagebox.showinfo("Éxito", f"Los precios de la lista {categoria_seleccionada} han sido modificados en un {porcentaje_aumento}%.")
+        messagebox.showinfo("Éxito", f"Los precios de la lista {nombre_categoria} han sido modificados en un {porcentaje_aumento}%.")
 
 def deshacer_ultimo_aumento(tabla_var, precios_anteriores, Categorias, Productos):
     # Verificar si hay precios anteriores guardados
