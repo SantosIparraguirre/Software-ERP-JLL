@@ -12,8 +12,20 @@ def generar_presupuesto_excel(cliente_var, carrito, session, Clientes):
     if not cliente:
         return
 
-    # Solicitar ubicación para guardar el archivo Excel
-    file_path = filedialog.asksaveasfilename(defaultextension=".xlsx", filetypes=[("Excel files", "*.xlsx")])
+    # Obtener la ruta del escritorio del usuario actual
+    desktop_path = os.path.join(os.path.expanduser("~"), "Desktop")
+
+    # Construir la ruta relativa a la carpeta "PRESUPUESTOS" en el escritorio
+    nota_de_entrega_path = os.path.join(desktop_path, "PRESUPUESTOS")
+
+    # Solicitar al usuario la ubicación donde guardar el presupuesto, con la carpeta por defecto PRESUPUESTOS
+    file_path = filedialog.asksaveasfilename(
+        defaultextension=".xlsx",
+        filetypes=[("Excel files", "*.xlsx")],
+        initialdir=nota_de_entrega_path,
+        title="Guardar remito como..."
+    )
+
     if not file_path:
         return
 

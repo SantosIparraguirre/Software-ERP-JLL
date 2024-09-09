@@ -15,8 +15,20 @@ def generar_remito_excel(cliente_var, carrito, observaciones, session, Clientes)
     # Obtener la observación
     observaciones = observaciones.get()
 
-    # Solicitar al usuario la ubicación donde guardar el remito
-    file_path = filedialog.asksaveasfilename(defaultextension=".xlsx", filetypes=[("Excel files", "*.xlsx")])
+    # Obtener la ruta del escritorio del usuario actual
+    desktop_path = os.path.join(os.path.expanduser("~"), "Desktop")
+
+    # Construir la ruta relativa a la carpeta "NOTA DE ENTREGA" en el escritorio
+    nota_de_entrega_path = os.path.join(desktop_path, "NOTA DE ENTREGA")
+
+    # Solicitar al usuario la ubicación donde guardar el remito, con la carpeta por defecto NOTA DE ENTREGA
+    file_path = filedialog.asksaveasfilename(
+        defaultextension=".xlsx",
+        filetypes=[("Excel files", "*.xlsx")],
+        initialdir=nota_de_entrega_path,
+        title="Guardar remito como..."
+    )
+
     if not file_path:
         return
     
