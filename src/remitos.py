@@ -178,11 +178,6 @@ class RemitosApp(tk.Tk):
         self.add_button = ttk.Button(self.main_frame, text="Agregar al Carrito", command=self.agregar_al_carrito)
         self.add_button.place(x=260, y=398)
 
-        # Logo de la empresa
-        # Cargar la imagen del logo y redimensionarla
-        # original_logo = Image.open("./icons/logo.png")
-        # resized_logo = original_logo.resize((600, 100), Image.LANCZOS)
-        # self.logo = ImageTk.PhotoImage(resized_logo)
         # Etiqueta para mostrar el logo
         self.logo = ImageTk.PhotoImage(file="./icons/logo.png")
         self.logo_label = ttk.Label(self.main_frame, image=self.logo)
@@ -290,9 +285,17 @@ class RemitosApp(tk.Tk):
         self.save_remito_button = ttk.Button(self.main_frame, text="Generar Remito", command=self.guardar_remito)
         self.save_remito_button.place(x=790, y=400)
 
+        # Botón para imprimir el remito directamente
+        self.print_remito_button = ttk.Button(self.main_frame, text="Imprimir Remito", command=lambda: self.guardar_remito(imprimir=True))
+        self.print_remito_button.place(x=790, y=430)
+
         # Botón para guardar el presupuesto en la base de datos
         self.save_presupuesto_button = ttk.Button(self.main_frame, text="Generar Presupuesto", command=self.guardar_presupuesto)
         self.save_presupuesto_button.place(x=950, y=400)
+
+        # Botón para imprimir el presupuesto directamente
+        self.print_presupuesto_button = ttk.Button(self.main_frame, text="Imprimir Presupuesto", command=lambda: self.guardar_presupuesto(imprimir=True))
+        self.print_presupuesto_button.place(x=950, y=430)
 
     # Funciones para interactuar con la base de datos y la interfaz
 
@@ -354,18 +357,21 @@ class RemitosApp(tk.Tk):
         editar_celda(self, event)
 
     # Función para guardar el remito en la base de datos
-    def guardar_remito(self):
+    def guardar_remito(self, imprimir=False):
         # Llamar a la función guardar_remito con el cliente seleccionado, el carrito, la sesión y las clases de Clientes, Remitos y DetallesRemitos
         guardar_remito(self.cliente_var, self.carrito, self.observaciones_var, session, Clientes, Remitos, DetallesRemitos) 
         # Llamar a la función generar_remito_excel con el cliente seleccionado, el carrito, la sesión y las clases de Clientes
-        generar_remito_excel(self.cliente_var, self.carrito, self.observaciones_var, session, Clientes)
+        generar_remito_excel(self.cliente_var, self.carrito, self.observaciones_var, session, Clientes, imprimir)
 
     # Función para guardar el presupuesto en la base de datos
-    def guardar_presupuesto(self):
+    def guardar_presupuesto(self, imprimir=False):
         # Llamar a la función guardar_presupuesto con el cliente seleccionado, el carrito, la sesión y las clases de Clientes, Presupuestos y DetallesPresupuestos
         guardar_presupuesto(self.cliente_var, self.carrito, session, Clientes, Presupuestos, DetallesPresupuestos)
         # Llamar a la función generar_presupuesto_excel con el cliente seleccionado, el carrito, la sesión y las clases de Clientes
-        generar_presupuesto_excel(self.cliente_var, self.carrito, session, Clientes)
+        generar_presupuesto_excel(self.cliente_var, self.carrito, session, Clientes, imprimir)
+
+    def agregar_presupuesto(self, producto, cantidad, descuento, precio_unitario):
+        self.carrito.append((producto, cantidad, descuento, precio_unitario))
 
     # Función para mostrar los clientes
     def mostrar_clientes(self):
@@ -374,7 +380,7 @@ class RemitosApp(tk.Tk):
             widget.destroy()
 
         # Crear una instancia de ClientesWidget y agregar sus widgets al main_frame
-        self.clientes_app = ClientesWidget(self.main_frame)     
+        self.clientes_app = ClientesWidget(self.main_frame, self.carrito)     
 
     # Función para mostrar las listas de precios de productos
     def mostrar_productos(self):

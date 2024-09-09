@@ -4,7 +4,7 @@ from tkinter import filedialog, messagebox
 from openpyxl import load_workbook
 from openpyxl.styles import Font, Alignment, Border, Side, PatternFill
 
-def generar_presupuesto_excel(cliente_var, carrito, session, Clientes):
+def generar_presupuesto_excel(cliente_var, carrito, session, Clientes, imprimir):
     # Obtener el cliente
     cliente = cliente_var.get()
 
@@ -249,9 +249,17 @@ def generar_presupuesto_excel(cliente_var, carrito, session, Clientes):
         wb.save(file_path)
         messagebox.showinfo("Éxito", f"Presupuesto generado en {file_path}")
 
-        # Abrir el archivo automáticamente
-        try:
-            os.startfile(file_path)
+        # Si clickeó en "Imprimir Presupuesto"
+        if imprimir:
+            try:
+                os.startfile(file_path, "print")
+            except Exception as e:
+                messagebox.showerror("Error", f"No se pudo imprimir el presupuesto: {str(e)}")
 
-        except Exception as e:
-            messagebox.showerror("Error", f"No se pudo abrir el archivo: {str(e)}")
+        else:
+            # Abrir el archivo automáticamente
+            try:
+                os.startfile(file_path)
+
+            except Exception as e:
+                messagebox.showerror("Error", f"No se pudo abrir el archivo: {str(e)}")

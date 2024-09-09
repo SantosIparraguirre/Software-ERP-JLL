@@ -4,7 +4,7 @@ from database import Clientes, Presupuestos, DetallesPresupuestos, session
 
 ventana_presupuestos = None
 
-def ver_presupuestos(self):
+def ver_presupuestos(self, carrito):
     # Obtener el cliente seleccionado en la tabla
     seleccion = self.clientes_tree.selection()
     if not seleccion:
@@ -12,9 +12,9 @@ def ver_presupuestos(self):
         return
     
     nombre = self.clientes_tree.item(seleccion)['values'][0]
-    self.ventana_presupuestos = abrir_ventana_presupuestos(self, nombre)
+    self.ventana_presupuestos = abrir_ventana_presupuestos(self, nombre, carrito)
 
-def abrir_ventana_presupuestos(self, nombre):
+def abrir_ventana_presupuestos(self, nombre, carrito):
     global ventana_presupuestos
     if ventana_presupuestos and ventana_presupuestos.winfo_exists():
         # Si la ventana ya está abierta, traerla al frente
@@ -63,6 +63,11 @@ def abrir_ventana_presupuestos(self, nombre):
     delete_presupuesto_button = ttk.Button(frame_presupuestos, text="Eliminar Presupuesto", command=lambda: eliminar_presupuesto(self, presupuestos_tree, nombre))
     # Posicionar el botón al centro del marco
     delete_presupuesto_button.pack(pady=10)
+
+    # Botón para llevar el presupuesto al carrito
+    add_to_cart_button = ttk.Button(frame_presupuestos, text="Agregar al Carrito", command=lambda: agregar_presupuesto(self, presupuestos_tree, nombre, carrito))
+    # Posicionar el botón al centro del marco
+    add_to_cart_button.pack(pady=10)
 
     # Crear un marco para la tabla de detalles y su scrollbar
     frame_detalles_tree = tk.Frame(frame_presupuestos)
@@ -149,3 +154,32 @@ def eliminar_presupuesto(self, presupuestos_tree, nombre):
     cliente = session.query(Clientes).filter_by(nombre=nombre).first()
     for presupuesto in cliente.presupuestos:
         presupuestos_tree.insert('', 'end', values=(presupuesto.id, presupuesto.fecha.strftime('%d/%m/%Y %H:%M:%S'), f"${presupuesto.total:,.2f}"))
+
+def agregar_presupuesto(self, presupuestos_tree, nombre, carrito):
+    # Obtener el presupuesto seleccionado en la tabla
+    seleccion = presupuestos_tree.selection()
+    if not seleccion:
+        messagebox.showerror("Error", "Selecciona un presupuesto.", parent=self.ventana_presupuestos)
+        return
+
+    # Obtener el ID del presupuesto seleccionado
+    ID = presupuestos_tree.item(seleccion)['values'][0]
+
+    # Mostrar un mensaje de confirmación para agregar el presupuesto al carrito
+    confirmacion = messagebox.askyesno(f"Agregar al Carrito", f"¿Estás seguro de agregar el presupuesto {ID} de {nombre} al carrito?", parent=self.ventana_presupuestos)
+    # Si el usuario no confirma, salir de la función
+    if not confirmacion:
+        return
+
+    # Obtener el presupuesto de la base de datos por la ID
+    presupuesto = session.query(Presupuestos).filter_by(id=ID).first()
+
+    # Limpiar el carrito antes de insertar los detalles del presupuesto
+    carrito.clear()
+
+    # Iterar sobre los detalles del presupuesto para agregarlos al carrito
+    for detalle in presupuesto.detalles:
+        carrito.append((detalle.producto, detalle.cantidad, f"{detalle.descuento}%", f"${detalle.precio_unitario:,.2f}"))
+    
+    # Mostrar un mensaje de éxito
+    messagebox.showinfo("Éxito", "Presupuesto agregado al carrito exitosamente.", parent=self.ventana_presupuestos)

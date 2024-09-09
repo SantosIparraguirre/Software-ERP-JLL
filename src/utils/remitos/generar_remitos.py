@@ -4,7 +4,7 @@ from tkinter import filedialog, messagebox
 from openpyxl import load_workbook
 from openpyxl.styles import Font, Alignment, Border, Side
 
-def generar_remito_excel(cliente_var, carrito, observaciones, session, Clientes):
+def generar_remito_excel(cliente_var, carrito, observaciones, session, Clientes, imprimir):
     # Obtener el cliente
     cliente = cliente_var.get()
 
@@ -205,9 +205,17 @@ def generar_remito_excel(cliente_var, carrito, observaciones, session, Clientes)
     wb.save(file_path)
     messagebox.showinfo("Éxito", f"Remito generado en {file_path}")
 
-    # Abrir el archivo automáticamente
-    try:
-        os.startfile(file_path)
+    # Si clickeó en imprimir, imprimir el remito
+    if imprimir:
+        try:
+            os.startfile(file_path, "print")
+        except Exception as e:
+            messagebox.showerror("Error", f"No se pudo imprimir el remito: {str(e)}")
 
-    except Exception as e:
-        messagebox.showerror("Error", f"No se pudo abrir el archivo: {str(e)}")
+    else:
+        # Abrir el archivo automáticamente
+        try:
+            os.startfile(file_path)
+
+        except Exception as e:
+            messagebox.showerror("Error", f"No se pudo abrir el archivo: {str(e)}")

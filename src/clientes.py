@@ -12,7 +12,7 @@ from utils.clientes.deudas_clientes import ver_deudas
 
 # Clase para la aplicación de gestión de clientes
 class ClientesWidget(tk.Tk):
-    def __init__(self, main_frame):
+    def __init__(self, main_frame, carrito):
         # Inicializar la ventana de la aplicación
         self.main_frame = main_frame
 
@@ -128,7 +128,7 @@ class ClientesWidget(tk.Tk):
 
         # Botón para ver los presupuestos de un cliente
         # El botón llama a la función ver_presupuestos cuando se hace click
-        self.ver_presupuestos_button = ttk.Button(self.main_frame, text="Ver Presupuestos", command=self.ver_presupuestos)
+        self.ver_presupuestos_button = ttk.Button(self.main_frame, text="Ver Presupuestos", command=lambda: self.ver_presupuestos(carrito))
         self.ver_presupuestos_button.place(x=940, y=110)
 
         # Botón para ver los remitos de un cliente
@@ -224,9 +224,9 @@ class ClientesWidget(tk.Tk):
         guardar_cambios(nombre_original, nuevo_nombre, nuevo_cuit, nuevo_telefono, nueva_direccion, ventana, session, Clientes, self.actualizar_clientes)
 
     # Funciones para ver los presupuestos, remitos y deudas de un cliente
-    def ver_presupuestos(self):
+    def ver_presupuestos(self, carrito):
         # Llamar a la función ver_presupuestos
-        ver_presupuestos(self)
+        ver_presupuestos(self, carrito)
 
     # Funciones para ver los presupuestos, remitos y deudas de un cliente
     def ver_remitos(self):
