@@ -14,10 +14,10 @@ def buscar_cliente(nombre_buscar_var, clientes_tree, session, Clientes):
 
 def agregar_cliente(nombre_var, cuit_var, telefono_var, direccion_var, session, Clientes):
     # Obtener los datos del cliente ingresados por el usuario
-    nombre = nombre_var.get().strip().lower()
-    cuit = cuit_var.get()
-    telefono = telefono_var.get()
-    direccion = direccion_var.get()
+    nombre = nombre_var.get().strip()
+    cuit = cuit_var.get().strip()
+    telefono = telefono_var.get().strip()
+    direccion = direccion_var.get().strip()
 
     # Validar que el nombre no esté vacío
     if not nombre:
@@ -25,7 +25,7 @@ def agregar_cliente(nombre_var, cuit_var, telefono_var, direccion_var, session, 
         return
     
     # Validar que el nombre no esté repetido 
-    cliente = session.query(Clientes).filter(func.lower(Clientes.nombre) == nombre).first()
+    cliente = session.query(Clientes).filter(func.lower(Clientes.nombre) == nombre.lower()).first()
     if cliente:
         messagebox.showerror("Error", "Ya existe un cliente con el mismo nombre.")
         return

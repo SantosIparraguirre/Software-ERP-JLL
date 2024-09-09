@@ -79,6 +79,12 @@ class ClientesWidget(tk.Tk):
         self.direccion_entry = ttk.Entry(self.main_frame, textvariable=self.direccion_var)
         self.direccion_entry.place(x=80, y=190)
 
+        # Vincular la tecla Enter con la función agregar_cliente en todos los campos de texto
+        self.nombre_entry.bind("<Return>", lambda event: self.agregar_cliente())
+        self.cuit_entry.bind("<Return>", lambda event: self.agregar_cliente())
+        self.telefono_entry.bind("<Return>", lambda event: self.agregar_cliente())
+        self.direccion_entry.bind("<Return>", lambda event: self.agregar_cliente())
+
         # Botón para agregar el cliente
         # El botón llama a la función agregar_cliente cuando se hace click
         self.add_cliente_button = ttk.Button(self.main_frame, text="Agregar Cliente", command=self.agregar_cliente)
