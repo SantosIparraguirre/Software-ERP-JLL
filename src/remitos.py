@@ -276,7 +276,7 @@ class RemitosApp(tk.Tk):
 
         # Combobox de observaciones
         # Tres opciones para las observaciones
-        observaciones = ["Retirado", "A retirar", "Devolución"]
+        observaciones = ["Retirado", "De Acopio", "A retirar", "Devolución"]
         # Etiqueta para seleccionar la observación
         self.observaciones_label = ttk.Label(self.main_frame, text="Observaciones:")
         self.observaciones_label.place(x=600, y=402)
@@ -300,13 +300,6 @@ class RemitosApp(tk.Tk):
     def obtener_nombres_clientes(self):
         clientes = session.query(Clientes.nombre).all()
         return [cliente[0] for cliente in clientes]
-
-    # # Funciones para interactuar con la base de datos y la interfaz
-    # def modificar_precios(self):
-    #     # Llamar a la función modificar_precios con la tabla seleccionada, los precios anteriores y las clases de Productos y Categorias
-    #     modificar_precios(self.tabla_var, self.precios_anteriores, Categorias, Productos)
-    #     # Actualizar la lista de productos
-    #     self.update_productos(None)
 
     # Función para agregar productos fuera de lista al carrito
     def agregar_fuera_lista(self, event=None):
@@ -363,7 +356,7 @@ class RemitosApp(tk.Tk):
     # Función para guardar el remito en la base de datos
     def guardar_remito(self):
         # Llamar a la función guardar_remito con el cliente seleccionado, el carrito, la sesión y las clases de Clientes, Remitos y DetallesRemitos
-        guardar_remito(self.cliente_var, self.carrito, session, Clientes, Remitos, DetallesRemitos) 
+        guardar_remito(self.cliente_var, self.carrito, self.observaciones_var, session, Clientes, Remitos, DetallesRemitos) 
         # Llamar a la función generar_remito_excel con el cliente seleccionado, el carrito, la sesión y las clases de Clientes
         generar_remito_excel(self.cliente_var, self.carrito, self.observaciones_var, session, Clientes)
 

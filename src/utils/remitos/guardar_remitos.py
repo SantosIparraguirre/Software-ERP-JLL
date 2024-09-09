@@ -1,7 +1,7 @@
 import datetime
 from tkinter import messagebox
 
-def guardar_remito(cliente_var, carrito, session, Clientes, Remitos, DetallesRemitos):
+def guardar_remito(cliente_var, carrito, observaciones, session, Clientes, Remitos, DetallesRemitos):
     try:
         # Obtener el nombre del cliente seleccionado
         nombre_cliente = cliente_var.get()
@@ -29,8 +29,11 @@ def guardar_remito(cliente_var, carrito, session, Clientes, Remitos, DetallesRem
         # Obtener la fecha actual
         fecha_actual = datetime.datetime.now()
 
+        # Obtener las observaciones ingresadas por el usuario
+        observaciones = observaciones.get().strip()
+
         # Crear un nuevo remito
-        nuevo_remito = Remitos(id_cliente=cliente.id, fecha=fecha_actual, pago=pago, total=0)
+        nuevo_remito = Remitos(id_cliente=cliente.id, fecha=fecha_actual, pago=pago, total=0, observacion=observaciones)
 
         # Agregar el remito a la base de datos
         session.add(nuevo_remito)

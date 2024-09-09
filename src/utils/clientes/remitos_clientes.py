@@ -35,17 +35,19 @@ def abrir_ventana_remitos(self, nombre):
     scrollbar_remitos = ttk.Scrollbar(frame_remitos, orient="vertical")
 
     # Crear una tabla para mostrar los remitos del cliente
-    remitos_tree = ttk.Treeview(frame_remitos, columns=('ID', 'Fecha', 'Fecha Pago', 'Total', 'Pago'), show='headings', yscrollcommand=scrollbar_remitos.set)
+    remitos_tree = ttk.Treeview(frame_remitos, columns=('ID', 'Fecha', 'Fecha Pago', 'Total', 'Pago', 'Observacion'), show='headings', yscrollcommand=scrollbar_remitos.set)
     remitos_tree.heading('ID', text='ID')
     remitos_tree.heading('Fecha', text='Fecha')
     remitos_tree.heading('Fecha Pago', text='Fecha Pago')
     remitos_tree.heading('Total', text='Total')
     remitos_tree.heading('Pago', text='Pago')
+    remitos_tree.heading('Observacion', text='Observacion')
     remitos_tree.column('ID', width=30, anchor='center')
     remitos_tree.column('Fecha', width=150, anchor='center')
     remitos_tree.column('Fecha Pago', width=150, anchor='center')
     remitos_tree.column('Total', width=100, anchor='center')
     remitos_tree.column('Pago', width=100, anchor='center')
+    remitos_tree.column('Observacion', width=200, anchor='center')
 
     # Vincular el scrollbar al Treeview de remitos
     scrollbar_remitos.config(command=remitos_tree.yview)
@@ -69,7 +71,7 @@ def abrir_ventana_remitos(self, nombre):
             pago_formateado = f"${float(remito.pago):,.2f}"
         else:
             pago_formateado = remito.pago
-        remitos_tree.insert('', 'end', values=(remito.id, fecha_formateada, fecha_pago_formateada, f"${remito.total:,.2f}", pago_formateado))
+        remitos_tree.insert('', 'end', values=(remito.id, fecha_formateada, fecha_pago_formateada, f"${remito.total:,.2f}", pago_formateado, remito.observacion))
     
     # Frame para los botones
     frame_botones = tk.Frame(ventana_remitos)

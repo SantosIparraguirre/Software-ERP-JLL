@@ -78,6 +78,7 @@ class Remitos(Base):
     fecha_pago = Column(DateTime)
     total = Column(Float, nullable=False)
     pago = Column(String, nullable=False)
+    observacion = Column(String)
     cliente = relationship('Clientes', back_populates='remitos')
     detalles = relationship('DetallesRemitos', back_populates='remito')
 
