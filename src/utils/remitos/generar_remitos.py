@@ -41,9 +41,9 @@ def generar_remito_excel(cliente_var, carrito, observaciones, session, Clientes)
 
             # Escribir los datos del cliente en las celdas correspondientes
             sheet.cell(row=5, column=4, value=f"CLIENTE: {nombre_cliente}").font = Font(name='Arial', size=12)
-            sheet.cell(row=7, column=4, value=f"DOMICILIO: {domicilio_cliente}").font = Font(name='Arial', size=12)
+            sheet.cell(row=5, column=6, value=f"DOMICILIO: {domicilio_cliente}").font = Font(name='Arial', size=12)
             sheet.cell(row=7, column=6, value=f"CUIT: {cuit_cliente}").font = Font(name='Arial', size=12)
-            sheet.cell(row=5, column=6, value=f"TELÉFONO: {telefono_cliente}").font = Font(name='Arial', size=12)
+            sheet.cell(row=7, column=4, value=f"TELÉFONO: {telefono_cliente}").font = Font(name='Arial', size=12)
             sheet.cell(row=3, column=4, value=f"Fecha de entrega: {fecha_actual}").font = Font(name='Arial', size=12)
 
     
@@ -109,8 +109,8 @@ def generar_remito_excel(cliente_var, carrito, observaciones, session, Clientes)
             # Rellenar con los datos del cliente
             sheet.cell(row=fila_inicial + 1, column=1, value=f"CLIENTE: {nombre_cliente}").font = Font(name='Arial', size=12)
             sheet.cell(row=fila_inicial + 1, column=3, value=f"CUIT: {cuit_cliente}").font = Font(name='Arial', size=12)
-            sheet.cell(row=fila_inicial + 3, column=1, value=f"DOMICILIO: {domicilio_cliente}").font = Font(name='Arial', size=12)
-            sheet.cell(row=fila_inicial + 3, column=3, value=f"TELÉFONO: {telefono_cliente}").font = Font(name='Arial', size=12)
+            sheet.cell(row=fila_inicial + 3, column=3, value=f"DOMICILIO: {domicilio_cliente}").font = Font(name='Arial', size=12)
+            sheet.cell(row=fila_inicial + 3, column=1, value=f"TELÉFONO: {telefono_cliente}").font = Font(name='Arial', size=12)
             # Alinear a la izquierda Cliente y Domicilio
             sheet.cell(row=fila_inicial + 1, column=1).alignment = Alignment(horizontal='left')
             sheet.cell(row=fila_inicial + 3, column=1).alignment = Alignment(horizontal='left')
