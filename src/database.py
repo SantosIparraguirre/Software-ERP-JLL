@@ -19,11 +19,11 @@ session = Session()
 class Productos(Base):
     __tablename__ = 'PRODUCTOS'
     id = Column(Integer, primary_key=True, autoincrement=True)
-    id_categoria = Column(Integer, ForeignKey('CATEGORIAS.id'), nullable=False)
+    id_categoria = Column(Integer, ForeignKey('CATEGORIAS.id'))
     codigo = Column(String)
     linea = Column(String)
-    nombre = Column(String, nullable=False)
-    precio = Column(Float, nullable=False)
+    nombre = Column(String)
+    precio = Column(Float)
     categoria = relationship('Categorias', back_populates='productos')
 
 # Crear la clase de la tabla de categorías
@@ -50,9 +50,9 @@ class Presupuestos(Base):
     __tablename__ = 'PRESUPUESTOS'
     id = Column(Integer, primary_key=True, autoincrement=True)
     id_cliente = Column(Integer, ForeignKey ('CLIENTES.id'), nullable=False)
-    fecha = Column(DateTime, nullable=False)
+    fecha = Column(DateTime)
     fecha_modificacion = Column(DateTime)
-    total = Column(Float, nullable=False)
+    total = Column(Float)
     cliente = relationship('Clientes', back_populates='presupuestos')
     detalles = relationship('DetallesPresupuestos', back_populates='presupuesto')
 
@@ -61,11 +61,11 @@ class DetallesPresupuestos(Base):
     __tablename__ = 'DETALLES_PRESUPUESTOS'
     id = Column(Integer, primary_key=True, autoincrement=True)
     id_presupuesto = Column(Integer, ForeignKey ('PRESUPUESTOS.id'), nullable=False)
-    producto = Column(String, nullable=False)
-    cantidad = Column(Float, nullable=False)
-    precio_unitario = Column(Float, nullable=False)
-    descuento = Column(Float, nullable=False)
-    total = Column(Float, nullable=False)
+    producto = Column(String)
+    cantidad = Column(Float)
+    precio_unitario = Column(Float)
+    descuento = Column(Float)
+    total = Column(Float)
     presupuesto = relationship('Presupuestos', back_populates='detalles')
 
 # Remitos
@@ -73,11 +73,11 @@ class Remitos(Base):
     __tablename__ = 'REMITOS'
     id = Column(Integer, primary_key=True, autoincrement=True)
     id_cliente = Column(Integer, ForeignKey ('CLIENTES.id'), nullable=False)
-    fecha = Column(DateTime, nullable=False)
+    fecha = Column(DateTime)
     fecha_modificacion = Column(DateTime)
     fecha_pago = Column(DateTime)
-    total = Column(Float, nullable=False)
-    pago = Column(String, nullable=False)
+    total = Column(Float)
+    pago = Column(String)
     observacion = Column(String)
     cliente = relationship('Clientes', back_populates='remitos')
     detalles = relationship('DetallesRemitos', back_populates='remito')
@@ -87,11 +87,11 @@ class DetallesRemitos(Base):
     __tablename__ = 'DETALLES_REMITOS'
     id = Column(Integer, primary_key=True, autoincrement=True)
     id_remito = Column(Integer, ForeignKey ('REMITOS.id'), nullable=False)
-    producto = Column(String, nullable=False)
-    cantidad = Column(Float, nullable=False)
-    precio_unitario = Column(Float, nullable=False)
-    descuento = Column(Float, nullable=False)
-    total = Column(Float, nullable=False)
+    producto = Column(String)
+    cantidad = Column(Float)
+    precio_unitario = Column(Float)
+    descuento = Column(Float)
+    total = Column(Float)
     remito = relationship('Remitos', back_populates='detalles')
 
 # Acopios
@@ -99,10 +99,10 @@ class Acopios(Base):
     __tablename__ = 'ACOPIOS'
     id = Column(Integer, primary_key=True, autoincrement=True)
     id_cliente = Column(Integer, ForeignKey('CLIENTES.id'), nullable=False)
-    fecha = Column(DateTime, default=datetime.datetime.now)
+    fecha = Column(DateTime)
     fecha_modificacion = Column(DateTime)
-    producto = Column(String, nullable=False)
-    cantidad = Column(Float, nullable=False)
+    producto = Column(String)
+    cantidad = Column(Float)
     cliente = relationship('Clientes', back_populates='acopios')
 
 

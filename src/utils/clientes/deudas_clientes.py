@@ -66,6 +66,35 @@ def crear_treeview(parent):
     # Retornar el Treeview
     return treeview
 
+def crear_treeview_detalles(parent):
+    # Crear un Treeview con las columnas Producto, Cantidad, Precio Unitario, Descuento y Total
+    treeview = ttk.Treeview(parent, columns=('Producto', 'Cantidad', 'Precio Unitario', 'Descuento', 'Total'), show='headings')
+    # Propiedades de las columnas
+    column_properties = {
+        'Producto': {'width': 250, 'anchor': 'center'},
+        'Cantidad': {'width': 70, 'anchor': 'center'},
+        'Precio Unitario': {'width': 100, 'anchor': 'center'},
+        'Descuento': {'width': 70, 'anchor': 'center'},
+        'Total': {'width': 100, 'anchor': 'center'}
+    }
+    # Configurar las cabeceras y las columnas
+    for col in ['Producto', 'Cantidad', 'Precio Unitario', 'Descuento', 'Total']:
+        treeview.heading(col, text=col)
+        treeview.column(col, **column_properties.get(col, {}))
+    # Empaquetar el Treeview
+    treeview.pack(pady=10, fill='x')
+    # Crear una scrollbar para el Treeview
+    scrollbar = ttk.Scrollbar(parent, orient='vertical', command=treeview.yview)
+    treeview.configure(yscroll=scrollbar.set)
+    # Posicionar el Treeview y la scrollbar en el marco
+    treeview.grid(row=0, column=0, sticky='nsew')
+    scrollbar.grid(row=0, column=1, sticky='ns')
+    # Configurar el marco para que se expanda con la ventana
+    parent.grid_rowconfigure(0, weight=1)
+    parent.grid_columnconfigure(0, weight=1)
+    # Retornar el Treeview
+    return treeview
+
 def ver_deudas(self):
     # Obtener el cliente seleccionado en la tabla
     seleccion = self.clientes_tree.selection()
@@ -107,6 +136,12 @@ def abrir_ventana_deudas(self, nombre):
     self.deudas_tree = crear_treeview(frame_deudas_tree)
     # Insertar los remitos no pagos en el Treeview
     insertar_remitos_no_pagos(self.deudas_tree, remitos_no_pagos)
+    # Crear un segundo Treeview para mostrar los detalles de la deuda seleccionada
+    frame_detalles_tree = tk.Frame(frame_deudas)
+    frame_detalles_tree.pack(fill='x', pady=10)
+    self.detalles_tree = crear_treeview_detalles(frame_detalles_tree)
+    # Vincular el evento de selección del Treeview de deudas
+    self.deudas_tree.bind("<<TreeviewSelect>>", lambda event: mostrar_detalles_deuda(self))
     # Crear una etiqueta para mostrar el total de la deuda
     self.etiqueta_total = tk.Label(ventana_deudas, text=f"Total de la Deuda: ${total_deuda:,.2f}")
     self.etiqueta_total.pack(pady=10)
@@ -117,6 +152,28 @@ def abrir_ventana_deudas(self, nombre):
     ttk.Button(frame_botones, text="Actualizar Precios", command=lambda: actualizar_precios(self, nombre, ventana_deudas)).grid(row=0, column=0, padx=10)
     ttk.Button(frame_botones, text="Cancelar Parcial", command=lambda: cancelar_deuda(self, nombre, ventana_deudas)).grid(row=0, column=1, padx=10)
     ttk.Button(frame_botones, text="Cancelar Total", command=lambda: cancelar_total(self, nombre, ventana_deudas)).grid(row=0, column=2, padx=10)
+
+def mostrar_detalles_deuda(self):
+    # Limpiar el Treeview de detalles
+    for item in self.detalles_tree.get_children():
+        self.detalles_tree.delete(item)
+    # Obtener la selección del Treeview de deudas
+    seleccion = self.deudas_tree.selection()
+    if not seleccion:
+        return
+    # Obtener el ID de la deuda seleccionada
+    id_deuda = self.deudas_tree.item(seleccion)['values'][0]
+    # Buscar la deuda en la base de datos por el ID
+    deuda = session.query(Remitos).get(id_deuda)
+    # Insertar los detalles de la deuda en el Treeview de detalles
+    for detalle in deuda.detalles:
+        self.detalles_tree.insert('', 'end', values=(
+            detalle.producto,
+            detalle.cantidad,
+            f"${detalle.precio_unitario:,.2f}",
+            f"{detalle.descuento}%",
+            f"${detalle.total:,.2f}"
+        ))
 
 def actualizar_precios(self, nombre, ventana_deudas):
     # Obtener la selección del Treeview

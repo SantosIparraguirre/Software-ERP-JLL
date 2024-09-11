@@ -1,7 +1,10 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk, messagebox, filedialog
 from database import Clientes, Remitos, DetallesRemitos, session  
 from datetime import datetime
+import os
+from openpyxl import load_workbook
+from openpyxl.styles import Font, Alignment, Border, Side, PatternFill
 
 ventana_remitos = None
 
@@ -115,7 +118,7 @@ def abrir_ventana_remitos(self, nombre):
     detalles_tree.heading('Precio Unitario', text='Precio Unitario')
     detalles_tree.heading('Descuento', text='Descuento')
     detalles_tree.heading('Total', text='Total')
-    detalles_tree.column('ID', width=5, anchor='center')
+    detalles_tree.column('ID', width=0, stretch=tk.NO)
     detalles_tree.column('Producto', width=250, anchor='center')
     detalles_tree.column('Cantidad', width=50, anchor='center')
     detalles_tree.column('Precio Unitario', width=150, anchor='center')
@@ -140,10 +143,17 @@ def unir_remitos(remitos_tree, detalles_tree, ventana_remitos):
     # Obtener los IDs de los remitos seleccionados
     selected_items = remitos_tree.selection()
 
-    if not selected_items:
-        messagebox.showerror("Error", "Por favor, seleccione uno o más remitos para unir.", parent=ventana_remitos)
+    # Validar que se hayan seleccionado dos o más remitos
+    if len(selected_items) < 2 or not selected_items:
+        messagebox.showerror("Error", "Por favor, seleccione dos o más remitos para unir.", parent=ventana_remitos)
+        return
+    
+    # Mostrar un mensaje de confirmación
+    confirmacion = messagebox.askyesno("Confirmación", "¿Estás seguro de unir los remitos seleccionados?", parent=ventana_remitos)
+    if not confirmacion:
         return
 
+    # Crear una lista para almacenar los detalles de los remitos seleccionados
     remitos_unidos = []
     total_general = 0
 
@@ -151,7 +161,41 @@ def unir_remitos(remitos_tree, detalles_tree, ventana_remitos):
         remito_id = remitos_tree.item(item, 'values')[0]
         remito = session.query(Remitos).filter_by(id=remito_id).first()
         if remito:
-            remitos_unidos.extend(remito.detalles)
+            # Recorrer los detalles del remito y combinarlos
+            for detalle in remito.detalles:
+                # Buscar si el producto ya está en la lista de detalles unidos
+                encontrado = False
+                for detalle_unido in remitos_unidos:
+                    if detalle.producto == detalle_unido["producto"]:
+                        # # Calcular el nuevo precio unitario ponderado
+                        # detalle_unido["precio_unitario"] = (
+                        #     (detalle_unido["precio_unitario"] * detalle_unido["cantidad"] + detalle.precio_unitario * detalle.cantidad)
+                        #     / (detalle_unido["cantidad"] + detalle.cantidad)
+                        # )
+
+                        # # Calcular el nuevo descuento ponderado
+                        # detalle_unido["descuento"] = (
+                        #     (detalle_unido["descuento"] * detalle_unido["cantidad"] + detalle.descuento * detalle.cantidad)
+                        #     / (detalle_unido["cantidad"] + detalle.cantidad)
+                        # )
+                        # Si ya está, sumar la cantidad y el total
+                        detalle_unido["cantidad"] += detalle.cantidad
+                        detalle_unido["total"] += detalle.total
+                        encontrado = True
+                        break
+                
+                if not encontrado:
+                    # Si no está, hacer una copia del detalle y agregarlo a la lista
+                    detalle_copia = {
+                        "producto": detalle.producto,
+                        "cantidad": detalle.cantidad,
+                        # "precio_unitario": detalle.precio_unitario,
+                        # "descuento": detalle.descuento,
+                        "total": detalle.total
+                    }
+                    remitos_unidos.append(detalle_copia)
+
+            # Sumar el total del remito al total general
             total_general += remito.total
 
     # Crear un nuevo remito con los detalles combinados
@@ -160,20 +204,21 @@ def unir_remitos(remitos_tree, detalles_tree, ventana_remitos):
         fecha=datetime.now(),
         fecha_pago=None,
         total=total_general,
-        pago="NO",
+        pago="SI",
+        observacion="Remito general",
     )
     session.add(remito_general)
     session.commit()
 
     # Agregar los detalles al nuevo remito general
-    for detalle in remitos_unidos:
+    for detalle_unido in remitos_unidos:
         nuevo_detalle = DetallesRemitos(
             id_remito=remito_general.id,
-            producto=detalle.producto,
-            cantidad=detalle.cantidad,
-            precio_unitario=detalle.precio_unitario,
-            descuento=detalle.descuento,
-            total=detalle.total,
+            producto=detalle_unido["producto"],
+            cantidad=detalle_unido["cantidad"],
+            # precio_unitario=detalle_unido["precio_unitario"],
+            # descuento=detalle_unido["descuento"],
+            total=detalle_unido["total"],
         )
         session.add(nuevo_detalle)
 
@@ -181,8 +226,183 @@ def unir_remitos(remitos_tree, detalles_tree, ventana_remitos):
 
     messagebox.showinfo("Éxito", f"Remito general creado con un total de ${total_general:,.2f}", parent=ventana_remitos)
 
+    # Llamar a la función generar_remito con el remito general
+    exportar_remito_excel(remito_general)
+
     # Actualizar los remitos
     actualizar_remitos(remitos_tree, remito.cliente.nombre)
+
+def exportar_remito_excel(remito):
+    # Obtener la ruta del escritorio del usuario actual
+    desktop_path = os.path.join(os.path.expanduser("~"), "Desktop")
+
+    # Construir la ruta relativa a la carpeta "REMITOS" en el escritorio
+    nota_de_entrega_path = os.path.join(desktop_path, "REMITOS")
+
+    # Solicitar al usuario la ubicación donde guardar el remito, con la carpeta por defecto NOTA DE ENTREGA
+    file_path = filedialog.asksaveasfilename(
+        defaultextension=".xlsx",
+        filetypes=[("Excel files", "*.xlsx")],
+        initialdir=nota_de_entrega_path,
+        title="Guardar remito como..."
+    )
+
+    if not file_path:
+        return
+    
+    # Cargar el archivo Excel
+    wb = load_workbook("./data/PLANTILLA REMITO GENERAL.xlsx")
+    sheet = wb.active
+
+    # Obtener los datos del cliente
+    cliente = remito.cliente
+
+    nombre = cliente.nombre if cliente.nombre else ""
+    direccion = cliente.direccion if cliente.direccion else ""
+    cuit = cliente.cuit if cliente.cuit else ""
+    telefono = cliente.telefono if cliente.telefono else ""
+
+    # Definir estilos
+    bold_italic_font = Font(name='Arial', size=12, bold=True, italic=True, color="8EB4E3")
+    bold_font = Font(name='Arial', size=12, bold=True)
+    thin_border = Border(left=Side(style='thin'), 
+                        right=Side(style='thin'), 
+                        top=Side(style='thin'), 
+                        bottom=Side(style='thin'))
+
+    # Obtener la fecha actual (dia, mes y año)
+    fecha = datetime.now().strftime("%d/%m/%Y")
+
+    # Escribir los datos del cliente y la fecha en el remito
+    sheet["E3"] = fecha
+    sheet["E5"] = nombre
+    sheet["E6"] = cuit
+    sheet["E7"] = direccion
+    sheet["E9"] = telefono
+
+    # Obtener los detalles del remito
+    detalles = remito.detalles
+
+    # Escribir los detalles en el remito
+    row = 11
+    for detalle in detalles:
+        sheet[f"B{row}"] = detalle.cantidad
+        sheet[f"C{row}"] = detalle.producto
+        sheet[f"E{row}"] = detalle.total
+        row += 1
+
+    # Calcular subtotal, IVA y total
+    subtotal = sum(detalle.total for detalle in detalles) / 1.21
+    iva = subtotal * 0.21
+    total = subtotal + iva
+
+    # Escribir los montos en el remito con negrita y cursiva + color
+    sheet[f"D{row + 1}"] = "SUBTOTAL"
+    sheet[f"D{row + 1}"].font = bold_italic_font
+
+    sheet[f"E{row + 1}"] = subtotal
+
+    sheet[f"D{row + 2}"] = "IVA"
+    sheet[f"D{row + 2}"].font = bold_italic_font
+
+    sheet[f"E{row + 2}"] = iva
+
+    sheet[f"D{row + 3}"] = "TOTAL"
+    sheet[f"D{row + 3}"].font = bold_italic_font
+
+    sheet[f"E{row + 3}"] = total
+    sheet[f"E{row + 3}"].font = bold_font
+
+    # "Gracias por su confianza"
+    sheet[f"B{row + 3}"] = "GRACIAS POR SU CONFIANZA"
+    sheet[f"B{row + 3}"].font = bold_italic_font
+
+    # Copia para la empresa
+    if row + 5 <= 40:
+        # Duplicar la información en la misma hoja, a partir de la fila 41
+        row = 41
+
+        # "REMITO" con tamaño 27 y color 8eb4e3 en columna E41
+        sheet[f"E{row}"] = "REMITO"
+        sheet[f"E{row}"].font = Font(name='Arial', size=27, color="8EB4E3")
+
+        # "Documento no valido como factura" con tamaño 8 en columna E42
+        sheet[f"E{row + 1}"] = "Documento no válido como factura"
+        sheet[f"E{row + 1}"].font = Font(name='Arial', size=8)
+        # Alinear arriba
+        sheet[f"E{row + 1}"].alignment = Alignment(vertical='top')
+
+        # "Fecha" en columna B43
+        sheet[f"B{row}"] = f"Fecha: {fecha}"
+
+        # "Cliente" en columna B44
+        sheet[f"B{row + 2}"] = f"Cliente: {nombre}"
+
+        # "CUIT" en columna B45
+        sheet[f"B{row + 3}"] = f"CUIT: {cuit}"
+
+        # "Dirección" en columna D44
+        sheet[f"D{row + 2}"] = f"Dirección: {direccion}"
+
+        # "Teléfono" en columna D45
+        sheet[f"D{row + 3}"] = f"Teléfono: {telefono}"
+
+        # "CANTIDAD" en columna B46 con relleno dce6f2
+        sheet[f"B{row + 4}"] = "CANTIDAD"
+        sheet[f"B{row + 4}"].fill = PatternFill(start_color="dce6f2", end_color="dce6f2", fill_type="solid")
+
+        # Rellenar la celda vacía en C46 con relleno dce6f2
+        sheet[f"C{row + 4}"].fill = PatternFill(start_color="dce6f2", end_color="dce6f2", fill_type="solid")
+        
+        # "DESCRIPCIÓN" en columna D46 con relleno dce6f2
+        sheet[f"D{row + 4}"] = "DESCRIPCIÓN"
+        sheet[f"D{row + 4}"].fill = PatternFill(start_color="dce6f2", end_color="dce6f2", fill_type="solid")
+
+        # "IMPORTE C/ IVA" en columna E46 con relleno dce6f2
+        sheet[f"E{row + 4}"] = "IMPORTE C/ IVA"
+        sheet[f"E{row + 4}"].fill = PatternFill(start_color="dce6f2", end_color="dce6f2", fill_type="solid")
+
+        # Escribir los detalles en la copia del remito
+        row += 5
+        for detalle in detalles:
+            sheet[f"B{row}"] = detalle.cantidad
+            sheet[f"C{row}"] = detalle.producto
+            sheet[f"E{row}"] = detalle.total
+            row += 1
+        
+        # Calcular subtotal, IVA y total
+        subtotal = sum(detalle.total for detalle in detalles) / 1.21
+        iva = subtotal * 0.21
+        total = subtotal + iva
+
+        # Escribir los montos en la copia del remito
+        sheet[f"D{row + 1}"] = "SUBTOTAL"
+        sheet[f"D{row + 1}"].font = bold_italic_font
+        sheet[f"D{row + 1}"].alignment = Alignment(horizontal='right')
+
+        sheet[f"E{row + 1}"] = subtotal
+
+        sheet[f"D{row + 2}"] = "IVA"
+        sheet[f"D{row + 2}"].font = bold_italic_font
+        sheet[f"D{row + 2}"].alignment = Alignment(horizontal='right')
+
+        sheet[f"E{row + 2}"] = iva
+
+        sheet[f"D{row + 3}"] = "TOTAL"
+        sheet[f"D{row + 3}"].font = bold_italic_font
+        sheet[f"D{row + 3}"].alignment = Alignment(horizontal='right')
+
+        sheet[f"E{row + 3}"] = total
+        sheet[f"E{row + 3}"].font = bold_font
+
+    # Guardar el archivo Excel
+    wb.save(file_path)
+
+    # Mostrar un mensaje de éxito
+    messagebox.showinfo("Éxito", f"Remito guardado exitosamente en {file_path}")
+
+    # Abrir el archivo Excel
+    os.startfile(file_path)
 
 def ver_detalles_remito(remitos_tree, detalles_tree):
     # Obtener el remito seleccionado en la tabla
@@ -203,8 +423,12 @@ def mostrar_detalles_remito(ID, detalles_tree):
     # Obtener el remito de la base de datos por la ID
     remito = session.query(Remitos).filter_by(id=ID).first()
     for detalle in remito.detalles:
-        # Agregar los detalles del remito a la tabla de detalles, formateando los montos como moneda (separando miles y con dos decimales)
-        detalles_tree.insert('', 'end', values=(detalle.id, detalle.producto, detalle.cantidad, f"${detalle.precio_unitario:,.2f}", detalle.descuento, f"${detalle.total:,.2f}"))
+        # Si es un remito general, no mostrar el precio unitario ni el descuento
+        if remito.observacion == 'Remito general':
+            detalles_tree.insert('', 'end', values=(detalle.id, detalle.producto, detalle.cantidad, '', '', f"${detalle.total:,.2f}"))
+        # Si no, mostrar todos los detalles
+        else:
+            detalles_tree.insert('', 'end', values=(detalle.id, detalle.producto, detalle.cantidad, f"${detalle.precio_unitario:,.2f}", detalle.descuento, f"${detalle.total:,.2f}"))
         
 
 def eliminar_remito(remitos_tree, ventana_remitos):
@@ -256,7 +480,7 @@ def actualizar_remitos(remitos_tree, nombre):
             pago_formateado = f"${float(remito.pago):,.2f}"
         else:
             pago_formateado = remito.pago
-        remitos_tree.insert('', 'end', values=(remito.id, fecha_formateada, fecha_pago_formateada, f"${remito.total:,.2f}", pago_formateado))
+        remitos_tree.insert('', 'end', values=(remito.id, fecha_formateada, fecha_pago_formateada, f"${remito.total:,.2f}", pago_formateado, remito.observacion))
 
 def modificar_detalle(remitos_tree, detalles_tree, ventana_remitos):
     # Obtener el remito seleccionado en la tabla
@@ -433,6 +657,9 @@ def eliminar_detalle(remitos_tree, detalles_tree, ventana_remitos):
     
     # Eliminar el detalle
     session.delete(detalle)
+
+    # Confirmar la transacción
+    session.commit()
 
     # Actualizar el total del remito
     remito.total = sum([detalle.total for detalle in remito.detalles])
