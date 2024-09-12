@@ -350,6 +350,8 @@ def exportar_remito_excel(remito):
         # "CANTIDAD" en columna B46 con relleno dce6f2
         sheet[f"B{row + 4}"] = "CANTIDAD"
         sheet[f"B{row + 4}"].fill = PatternFill(start_color="dce6f2", end_color="dce6f2", fill_type="solid")
+        # Centrar
+        sheet[f"B{row + 4}"].alignment = Alignment(horizontal='center')
 
         # Rellenar la celda vacía en C46 con relleno dce6f2
         sheet[f"C{row + 4}"].fill = PatternFill(start_color="dce6f2", end_color="dce6f2", fill_type="solid")

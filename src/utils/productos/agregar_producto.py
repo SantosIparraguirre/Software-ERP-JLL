@@ -23,8 +23,11 @@ def agregar_producto(self, event=None):
     codigo_entry = ttk.Entry(new_window)
     codigo_entry.grid(row=0, column=1, padx=10, pady=5)
 
+    # Línea con el nombre de la categoría seleccionada
     ttk.Label(new_window, text="Línea:").grid(row=1, column=0, padx=10, pady=5)
     linea_entry = ttk.Entry(new_window)
+    linea_entry.insert(0, nombre_categoria)
+    linea_entry.config(state="disabled")
     linea_entry.grid(row=1, column=1, padx=10, pady=5)
 
     ttk.Label(new_window, text="Nombre:").grid(row=2, column=0, padx=10, pady=5)
