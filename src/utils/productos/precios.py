@@ -69,3 +69,44 @@ def deshacer_ultimo_aumento(tabla_var, precios_anteriores, Categorias, Productos
     messagebox.showinfo("Éxito", "Última modificación revertida exitosamente.")
     # Limpiar la lista de precios anteriores
     precios_anteriores.clear() 
+
+def modificar_precios_seleccionados(self, Productos):
+    # Obtener los productos seleccionados del Treeview
+    selected_items = self.productos_treeview.selection()
+
+    # Verificar si se seleccionaron productos
+    if not selected_items:
+        messagebox.showwarning("Advertencia", "Debe seleccionar al menos un producto para aplicar el aumento.")
+        return
+
+    # Pedir al usuario que ingrese el porcentaje de aumento
+    try:
+        porcentaje_aumento = simpledialog.askfloat("Aumento de precios", "Ingrese el porcentaje de aumento (%):")
+        if porcentaje_aumento is None:
+            return  # El usuario canceló la entrada
+
+    except ValueError:
+        messagebox.showerror("Error", "Por favor, ingrese un número válido.")
+        return
+
+    # Aplicar el aumento a los productos seleccionados
+    for item in selected_items:
+        # Obtener el ID del producto
+        producto_id = self.productos_treeview.item(item, 'values')[4]
+
+        # Buscar el producto en la base de datos
+        producto = session.query(Productos).filter_by(id=producto_id).first()
+
+        if producto:
+            # Calcular el nuevo precio
+            nuevo_precio = producto.precio * (1 + porcentaje_aumento / 100)
+            producto.precio = round(nuevo_precio, 2)  # Redondear a 2 decimales
+
+            # Actualizar la base de datos
+            session.commit()
+
+            # Actualizar el Treeview con el nuevo precio formateado como moneda
+            self.productos_treeview.set(item, '#4', f"${nuevo_precio:,.2f}")
+
+    # Mostrar un mensaje de éxito
+    messagebox.showinfo("Éxito", f"Se han actualizado los precios con un aumento del {porcentaje_aumento}%.")
