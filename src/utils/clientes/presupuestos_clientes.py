@@ -16,14 +16,10 @@ def ver_presupuestos(self, carrito):
 
 def abrir_ventana_presupuestos(self, nombre, carrito):
     global ventana_presupuestos
+    
+    # Si la ventana de remitos ya está abierta, destruir la ventana actual y crear una nueva
     if ventana_presupuestos and ventana_presupuestos.winfo_exists():
-        # Si la ventana ya está abierta, traerla al frente
-        ventana_presupuestos.lift()
-        # Focus en la ventana
-        ventana_presupuestos.focus_force()
-        # Deiconify en caso de que esté iconificada
-        ventana_presupuestos.deiconify()
-        return
+        ventana_presupuestos.destroy()
 
     # Crear una ventana secundaria para ver los presupuestos del cliente
     ventana_presupuestos = tk.Toplevel()

@@ -131,18 +131,18 @@ def editar_celda(self, event):
         if column in [1, 2, 3]:  # Índices correspondientes a cantidad, descuento y precio
             cantidad = float(values[1])
             # Formatear el descuento para eliminar el signo de porcentaje
-            descuento = float(values[2][:-1]) if values[2] else 0
+            descuento = float(values[2][:-1]) if values[2].endswith('%') else float(values[2]) if values[2] else 0
             # Formatear el precio para eliminar el signo de dólar y las comas
-            precio_unitario = float(values[3][1:].replace(",", ""))
+            precio_unitario = float(values[3][1:].replace(",", "")) if values[3].startswith('$') else float(values[3].replace(",", ""))
             total = cantidad * precio_unitario * (1 - descuento / 100)
             values[4] = f"${total:,.2f}"  # Actualizar el total en la lista de valores
         
         # Si se cambia el total, recalcular el precio unitario
         elif column == 4:
-            total = float(values[4][1:].replace(",", ""))
+            total = float(values[4][1:].replace(",", "")) if values[4].startswith('$') else float(values[4].replace(",", ""))
             cantidad = float(values[1])
             # Formatear el descuento para eliminar el signo de porcentaje
-            descuento = float(values[2][:-1])
+            descuento = float(values[2][:-1]) if values[2].endswith('%') else float(values[2]) if values[2] else 0
             precio_unitario = total / (cantidad * (1 - descuento / 100))
             values[3] = f"${precio_unitario:,.2f}"  # Actualizar el precio unitario en la lista de valores
 

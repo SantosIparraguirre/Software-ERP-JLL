@@ -9,6 +9,7 @@ from utils.clientes.modificar_clientes import abrir_ventana_modificacion, guarda
 from utils.clientes.presupuestos_clientes import ver_presupuestos
 from utils.clientes.remitos_clientes import ver_remitos
 from utils.clientes.deudas_clientes import ver_deudas
+from utils.clientes.acopio_clientes import ver_acopio
 
 # Clase para la aplicación de gestión de clientes
 class ClientesWidget(tk.Tk):
@@ -128,18 +129,23 @@ class ClientesWidget(tk.Tk):
 
         # Botón para ver los presupuestos de un cliente
         # El botón llama a la función ver_presupuestos cuando se hace click
-        self.ver_presupuestos_button = ttk.Button(self.main_frame, text="Ver Presupuestos", command=lambda: self.ver_presupuestos(carrito))
+        self.ver_presupuestos_button = ttk.Button(self.main_frame, text="Presupuestos", command=lambda: self.ver_presupuestos(carrito))
         self.ver_presupuestos_button.place(x=940, y=110)
 
         # Botón para ver los remitos de un cliente
         # El botón llama a la función ver_remitos cuando se hace click
-        self.ver_remitos_button = ttk.Button(self.main_frame, text="Ver Remitos", command=self.ver_remitos)
+        self.ver_remitos_button = ttk.Button(self.main_frame, text="Remitos", command=self.ver_remitos)
         self.ver_remitos_button.place(x=940, y=140)
 
         # Botón para ver las deudas de un cliente
         # El botón llama a la función ver_deudas cuando se hace click
-        self.ver_deudas_button = ttk.Button(self.main_frame, text="Ver Deudas", command=self.ver_deudas)
+        self.ver_deudas_button = ttk.Button(self.main_frame, text="Deudas", command=self.ver_deudas)
         self.ver_deudas_button.place(x=940, y=170)
+
+        # Botón para ver los productos en acopio de un cliente
+        # El botón llama a la función ver_acopio cuando se hace click
+        self.ver_acopio_button = ttk.Button(self.main_frame, text="Acopio", command=self.ver_acopio)
+        self.ver_acopio_button.place(x=940, y=200)
 
         # Actualizar la tabla de clientes
         self.actualizar_clientes()
@@ -174,7 +180,7 @@ class ClientesWidget(tk.Tk):
     def modificar_cliente(self):
         # Llamar a la función modificar_cliente con la tabla de clientes, la función abrir_ventana_modificacion y la función guardar_cambios
         modificar_cliente(self.clientes_tree,
-                          # Función para abrir la ventana de modificación de un cliente con los datos del cliente seleccionado y la ventana principal
+                            # Función para abrir la ventana de modificación de un cliente con los datos del cliente seleccionado y la ventana principal
                            lambda cliente_data: abrir_ventana_modificacion(
                                cliente_data, 
                                self.main_frame, 
@@ -183,7 +189,7 @@ class ClientesWidget(tk.Tk):
                                nuevo_cuit, 
                                nuevo_telefono, 
                                nueva_direccion, 
-                # Función para guardar los cambios realizados en la ventana de modificación de un cliente con los datos del cliente seleccionado 
+                            # Función para guardar los cambios realizados en la ventana de modificación de un cliente con los datos del cliente seleccionado 
                                ventana: guardar_cambios(
                                         nombre_original,
                                         nuevo_nombre,
@@ -228,12 +234,14 @@ class ClientesWidget(tk.Tk):
         # Llamar a la función ver_presupuestos
         ver_presupuestos(self, carrito)
 
-    # Funciones para ver los presupuestos, remitos y deudas de un cliente
     def ver_remitos(self):
         # Llamar a la función ver_remitos
         ver_remitos(self)
 
-    # Funciones para ver los presupuestos, remitos y deudas de un cliente
     def ver_deudas(self):
         # Llamar a la función ver_deudas
         ver_deudas(self)
+
+    def ver_acopio(self):
+        # Llamar a la función ver_acopio
+        ver_acopio(self)

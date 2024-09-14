@@ -11,6 +11,7 @@ from utils.remitos.guardar_remitos import guardar_remito
 from utils.remitos.generar_remitos import generar_remito_excel
 from utils.remitos.guardar_presupuestos import guardar_presupuesto
 from utils.remitos.generar_presupuestos import generar_presupuesto_excel
+from utils.remitos.acopio import agregar_a_acopio, descontar_de_acopio
 
 
 # Clase para la interfaz
@@ -358,10 +359,21 @@ class RemitosApp(tk.Tk):
 
     # Función para guardar el remito en la base de datos
     def guardar_remito(self, imprimir=False):
-        # Llamar a la función guardar_remito con el cliente seleccionado, el carrito, la sesión y las clases de Clientes, Remitos y DetallesRemitos
-        guardar_remito(self.cliente_var, self.carrito, self.observaciones_var, session, Clientes, Remitos, DetallesRemitos) 
-        # Llamar a la función generar_remito_excel con el cliente seleccionado, el carrito, la sesión y las clases de Clientes
-        generar_remito_excel(self.cliente_var, self.carrito, self.observaciones_var, session, Clientes, imprimir)
+        observaciones = self.observaciones_var.get()
+        cliente = self.cliente_var.get()
+
+        if observaciones == "De Acopio":
+            descontar_de_acopio(self.carrito, cliente)
+        
+        elif observaciones == "A retirar" or observaciones == "Devolución":
+            agregar_a_acopio(self.carrito, cliente)
+            guardar_remito(cliente, self.carrito, self.observaciones_var)
+
+        else:
+            guardar_remito(cliente, self.carrito, self.observaciones_var)
+        # # Llamar a la función generar_remito_excel con el cliente seleccionado, el carrito, la sesión y las clases de Clientes
+        # generar_remito_excel(self.cliente_var, self.carrito, self.observaciones_var, session, Clientes, imprimir)
+
 
     # Función para guardar el presupuesto en la base de datos
     def guardar_presupuesto(self, imprimir=False):
