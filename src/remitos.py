@@ -205,7 +205,7 @@ class RemitosApp(tk.Tk):
         self.cantidad_fuera_lista_label.place(x=970, y=70)
 
         # Campo para ingresar la cantidad del producto
-        self.cantidad_fuera_lista_var = tk.IntVar()
+        self.cantidad_fuera_lista_var = tk.DoubleVar()
         self.cantidad_fuera_lista_entry = ttk.Entry(self.main_frame, textvariable=self.cantidad_fuera_lista_var)
         self.cantidad_fuera_lista_entry.place(x=1035, y=70)
 
@@ -363,16 +363,16 @@ class RemitosApp(tk.Tk):
         cliente = self.cliente_var.get()
 
         if observaciones == "De Acopio":
-            descontar_de_acopio(self.carrito, cliente)
+            descontar_de_acopio(self.carrito, cliente, imprimir)
         
         elif observaciones == "A retirar" or observaciones == "Devolución":
             agregar_a_acopio(self.carrito, cliente)
             guardar_remito(cliente, self.carrito, self.observaciones_var)
+            generar_remito_excel(cliente, self.carrito, observaciones, imprimir)
 
         else:
             guardar_remito(cliente, self.carrito, self.observaciones_var)
-        # # Llamar a la función generar_remito_excel con el cliente seleccionado, el carrito, la sesión y las clases de Clientes
-        # generar_remito_excel(self.cliente_var, self.carrito, self.observaciones_var, session, Clientes, imprimir)
+            generar_remito_excel(cliente, self.carrito, observaciones, imprimir)
 
 
     # Función para guardar el presupuesto en la base de datos

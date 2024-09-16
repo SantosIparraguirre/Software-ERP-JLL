@@ -1,6 +1,7 @@
 from database import Acopios, session, Clientes
 import datetime
 from utils.remitos.guardar_remitos import guardar_remito
+from utils.remitos.generar_remitos import generar_remito_excel
 from tkinter import messagebox
 
 def agregar_a_acopio(carrito, cliente):
@@ -19,6 +20,7 @@ def agregar_a_acopio(carrito, cliente):
 
     # Insertar los productos en la tabla de acopios
     for producto, cantidad, _, _ in carrito:
+        cantidad = float(cantidad)
         if any(producto == a.producto for a in acopios):
             acopio = session.query(Acopios).filter(Acopios.id_cliente == cliente_id, Acopios.producto == producto).first()
             acopio.cantidad += cantidad
@@ -31,7 +33,7 @@ def agregar_a_acopio(carrito, cliente):
     # Confirmar la transacción
     session.commit()
 
-def descontar_de_acopio(carrito, cliente):
+def descontar_de_acopio(carrito, cliente, imprimir):
     # Obtener el ID del cliente seleccionado en la DB
     cliente_id = session.query(Clientes).filter(Clientes.nombre == cliente).first().id
 
@@ -69,11 +71,13 @@ def descontar_de_acopio(carrito, cliente):
     # Crear el remito de los productos descontados de acopio
     if acopio_carrito:
         guardar_remito(cliente, acopio_carrito, "De Acopio", False)
+        generar_remito_excel(cliente, acopio_carrito, "De Acopio", imprimir)
 
     # Crear el remito de la deuda
     if deuda_carrito:
         messagebox.showwarning("Atención", "El cliente retiró productos que no se encuentran en acopio, o retiró más productos de los que tenía en acopio. Se creará un remito con los productos faltantes.")
         guardar_remito(cliente, deuda_carrito, "Retirado", True)
+        generar_remito_excel(cliente, deuda_carrito, "Retirado", imprimir)
 
     # Confirmar la transacción
     session.commit()

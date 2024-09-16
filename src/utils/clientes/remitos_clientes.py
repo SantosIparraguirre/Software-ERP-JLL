@@ -287,8 +287,12 @@ def exportar_remito_excel(remito):
     row = 11
     for detalle in detalles:
         sheet[f"B{row}"] = detalle.cantidad
+        sheet[f"B{row}"].alignment = Alignment(horizontal='center')
+
         sheet[f"C{row}"] = detalle.producto
+
         sheet[f"E{row}"] = detalle.total
+        
         row += 1
 
     # Calcular subtotal, IVA y total
@@ -368,8 +372,12 @@ def exportar_remito_excel(remito):
         row += 5
         for detalle in detalles:
             sheet[f"B{row}"] = detalle.cantidad
+            sheet[f"B{row}"].alignment = Alignment(horizontal='center')
+
             sheet[f"C{row}"] = detalle.producto
+
             sheet[f"E{row}"] = detalle.total
+
             row += 1
         
         # Calcular subtotal, IVA y total

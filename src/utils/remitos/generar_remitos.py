@@ -3,17 +3,12 @@ import os
 from tkinter import filedialog, messagebox
 from openpyxl import load_workbook
 from openpyxl.styles import Font, Alignment, Border, Side
+from database import session, Clientes
 
-def generar_remito_excel(cliente_var, carrito, observaciones, session, Clientes, imprimir):
-    # Obtener el cliente
-    cliente = cliente_var.get()
-
+def generar_remito_excel(cliente, carrito, observaciones, imprimir):
     # Verificar si se seleccionó un cliente
     if not cliente:
         return
-
-    # Obtener la observación
-    observaciones = observaciones.get()
 
     # Obtener la ruta del escritorio del usuario actual
     desktop_path = os.path.join(os.path.expanduser("~"), "Desktop")
@@ -85,15 +80,15 @@ def generar_remito_excel(cliente_var, carrito, observaciones, session, Clientes,
         # Escribir los datos en las celdas correspondientes
         sheet.cell(row=fila_inicial, column=1, value=cantidad)
         sheet.cell(row=fila_inicial, column=2, value=producto)
-        sheet.cell(row=fila_inicial, column=7, value=precio)
-        sheet.cell(row=fila_inicial, column=8, value=precio_total)
+        sheet.cell(row=fila_inicial, column=7, value=precio if precio > 0 else "")
+        sheet.cell(row=fila_inicial, column=8, value=precio_total if precio_total > 0 else "")
 
         # Pasar a la siguiente fila
         total += precio_total
         fila_inicial += 1
     
     # Imputar el total
-    sheet.cell(row=fila_inicial +1, column=8, value=total).font = Font(name='Arial', size=12, bold=True)
+    sheet.cell(row=fila_inicial +1, column=8, value=total if total > 0 else "").font = Font(name='Arial', size=12, bold=True)
 
     # Firma del cliente y observaciones
     sheet.cell(row=fila_inicial + 3, column=1, value="FIRMA DEL CLIENTE:").font = Font(name='Arial', size=12, bold=True)
@@ -185,17 +180,17 @@ def generar_remito_excel(cliente_var, carrito, observaciones, session, Clientes,
 
             sheet.cell(row=fila_inicial, column=1, value=cantidad)
             sheet.cell(row=fila_inicial, column=2, value=producto)
-            sheet.cell(row=fila_inicial, column=7, value=precio)
-            sheet.cell(row=fila_inicial, column=8, value=precio_total)
+            sheet.cell(row=fila_inicial, column=7, value=precio if precio > 0 else "")
+            sheet.cell(row=fila_inicial, column=8, value=precio_total if precio_total > 0 else "")
 
             # Pasar a la siguiente fila
             fila_inicial += 1
         
         # Imputar el total
-        sheet.cell(row=fila_inicial + 1, column=8, value=total).font = Font(name='Arial', size=12, bold=True)    
+        sheet.cell(row=fila_inicial + 1, column=8, value=total if total > 0 else "").font = Font(name='Arial', size=12, bold=True)
 
         # Firma del cliente y observaciones
-        sheet.cell(row=fila_inicial + 3, column=1, value="FIRMA DEL CLIENTE:").font = Font(name='Arial', size=12, bold=True)     
+        sheet.cell(row=fila_inicial + 3, column=1, value="FIRMA DEL CLIENTE:").font = Font(name='Arial', size=12, bold=True)
         sheet.cell(row=fila_inicial + 3, column=5, value=f"OBSERVACIONES: {observaciones}").font = Font(name='Arial', size=12, bold=True)
 
         # Alinear firma del cliente a la izquierda

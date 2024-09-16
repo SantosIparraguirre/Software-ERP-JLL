@@ -65,7 +65,7 @@ def agregar_fuera_lista(carrito, producto_var, cantidad_fuera_lista_var, precio_
         return
 
     # Agregar el producto a la lista de productos del carrito
-    carrito.append((producto, cantidad, '0.0%', precio))
+    carrito.append((producto, cantidad, '', precio))
     # Limpiar los campos de entrada después de agregar el producto
     producto_var.set('')
     cantidad_fuera_lista_var.set('')

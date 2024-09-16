@@ -28,6 +28,8 @@ class ClientesWidget(tk.Tk):
         # Campo para ingresar el nombre del cliente a buscar
         self.nombre_buscar_var = tk.StringVar()
         self.nombre_buscar_entry = ttk.Entry(self.main_frame, textvariable=self.nombre_buscar_var)
+        # Vincular la tecla Enter con la función buscar_cliente en el campo de texto
+        self.nombre_buscar_entry.bind("<Return>", lambda event: self.buscar_cliente())
         self.nombre_buscar_entry.place(x=80, y=40)
 
         # Botón para buscar el cliente
