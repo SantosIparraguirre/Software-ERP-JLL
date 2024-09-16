@@ -3,6 +3,7 @@ import os
 from tkinter import filedialog, messagebox
 from openpyxl import load_workbook
 from openpyxl.styles import Font, Alignment, Border, Side, PatternFill
+from utils.remitos.imprimir_excel import imprimir_excel
 
 def generar_presupuesto_excel(cliente_var, carrito, session, Clientes, imprimir):
     # Obtener el cliente
@@ -252,7 +253,7 @@ def generar_presupuesto_excel(cliente_var, carrito, session, Clientes, imprimir)
         # Si clickeó en "Imprimir Presupuesto"
         if imprimir:
             try:
-                os.startfile(file_path, "print")
+                imprimir_excel(file_path)
             except Exception as e:
                 messagebox.showerror("Error", f"No se pudo imprimir el presupuesto: {str(e)}")
 

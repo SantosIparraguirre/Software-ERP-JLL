@@ -621,7 +621,7 @@ def guardar_detalle(ID, producto, cantidad, precio, descuento, ventana_remitos, 
         cantidad=cantidad,
         precio_unitario=precio,
         descuento=descuento,
-        total=int(cantidad) * float(precio) * (1 - float(descuento) / 100)
+        total=int(cantidad) * float(precio) * (1 - float(descuento) / 100 if descuento else 0)
     )
 
     # Agregar el detalle al remito
