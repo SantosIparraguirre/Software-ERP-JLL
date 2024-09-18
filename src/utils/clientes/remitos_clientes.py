@@ -324,7 +324,7 @@ def exportar_remito_excel(remito):
     # Copia para la empresa
     if row + 5 <= 40:
         # Duplicar la información en la misma hoja, a partir de la fila 41
-        row = 41
+        row = 43
 
         # "REMITO" con tamaño 27 y color 8eb4e3 en columna E41
         sheet[f"E{row}"] = "REMITO"
