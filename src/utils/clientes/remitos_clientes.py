@@ -322,9 +322,9 @@ def exportar_remito_excel(remito):
     sheet[f"B{row + 3}"].font = bold_italic_font
 
     # Copia para la empresa
-    if row + 5 <= 40:
-        # Duplicar la información en la misma hoja, a partir de la fila 41
-        row = 43
+    if row + 5 <= 43:
+        # Duplicar la información en la misma hoja, a partir de la fila 44
+        row = 44
 
         # "REMITO" con tamaño 27 y color 8eb4e3 en columna E41
         sheet[f"E{row}"] = "REMITO"
@@ -334,7 +334,7 @@ def exportar_remito_excel(remito):
         sheet[f"E{row + 1}"] = "Documento no válido como factura"
         sheet[f"E{row + 1}"].font = Font(name='Arial', size=8)
         # Alinear arriba
-        sheet[f"E{row + 1}"].alignment = Alignment(vertical='top')
+        sheet[f"E{row + 1}"].alignment = Alignment(vertical='top', horizontal='center')
 
         # "Fecha" en columna B43
         sheet[f"B{row}"] = f"Fecha: {fecha}"

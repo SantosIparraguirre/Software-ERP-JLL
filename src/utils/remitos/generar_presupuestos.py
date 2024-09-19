@@ -127,8 +127,8 @@ def generar_presupuesto_excel(cliente_var, carrito, session, Clientes, imprimir)
 
     # Copia para la empresa
 
-    if fila_inicial <= 40:
-        fila_inicial = 44
+    if fila_inicial <= 37:
+        fila_inicial = 41
         # Fusionar celdas para el título
         sheet.merge_cells(start_row=fila_inicial, start_column=4, end_row=fila_inicial +1, end_column=6)
         # Titulo "PRESUPUESTO" con fuente 'Arial' de tamaño 27 y negrita
@@ -246,21 +246,21 @@ def generar_presupuesto_excel(cliente_var, carrito, session, Clientes, imprimir)
                 cell = sheet.cell(row=row, column=col)
                 cell.border = borde
 
-        # Guardar el archivo Excel
-        wb.save(file_path)
-        messagebox.showinfo("Éxito", f"Presupuesto generado en {file_path}")
+    # Guardar el archivo Excel
+    wb.save(file_path)
+    messagebox.showinfo("Éxito", f"Presupuesto generado en {file_path}")
 
-        # Si clickeó en "Imprimir Presupuesto"
-        if imprimir:
-            try:
-                imprimir_excel(file_path)
-            except Exception as e:
-                messagebox.showerror("Error", f"No se pudo imprimir el presupuesto: {str(e)}")
+    # Si clickeó en "Imprimir Presupuesto"
+    if imprimir:
+        try:
+            imprimir_excel(file_path)
+        except Exception as e:
+            messagebox.showerror("Error", f"No se pudo imprimir el presupuesto: {str(e)}")
 
-        else:
-            # Abrir el archivo automáticamente
-            try:
-                os.startfile(file_path)
+    else:
+        # Abrir el archivo automáticamente
+        try:
+            os.startfile(file_path)
 
-            except Exception as e:
-                messagebox.showerror("Error", f"No se pudo abrir el archivo: {str(e)}")
+        except Exception as e:
+            messagebox.showerror("Error", f"No se pudo abrir el archivo: {str(e)}")
