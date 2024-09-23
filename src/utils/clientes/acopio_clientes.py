@@ -149,7 +149,7 @@ def abrir_ventana_acopio(nombre):
                 return
             
             # Crear un nuevo producto en acopio
-            nuevo_producto = Acopios(id_cliente=cliente.id, producto=producto, cantidad=cantidad, fecha=datetime.datetime.now())
+            nuevo_producto = Acopios(id_cliente=cliente.id, producto=producto, cantidad=cantidad, fecha=datetime.now())
             session.add(nuevo_producto)
             session.commit()
             
