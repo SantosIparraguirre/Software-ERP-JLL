@@ -55,15 +55,19 @@ def abrir_ventana_presupuestos(self, nombre, carrito):
         # Agregar los presupuestos del cliente a la tabla, formateando la fecha y el total como moneda
         presupuestos_tree.insert('', 'end', values=(presupuesto.id, presupuesto.fecha.strftime('%d/%m/%Y %H:%M:%S'), f"${presupuesto.total:,.2f}"))
 
+    # Crear un marco para los botones
+    frame_botones = tk.Frame(frame_presupuestos)
+    frame_botones.pack(pady=10)
+
     # Botón para eliminar el presupuesto seleccionado
-    delete_presupuesto_button = ttk.Button(frame_presupuestos, text="Eliminar Presupuesto", command=lambda: eliminar_presupuesto(self, presupuestos_tree, nombre))
+    delete_presupuesto_button = ttk.Button(frame_botones, text="Eliminar Presupuesto", command=lambda: eliminar_presupuesto(self, presupuestos_tree, nombre))
     # Posicionar el botón al centro del marco
-    delete_presupuesto_button.pack(pady=10)
+    delete_presupuesto_button.pack(side='left', padx=15, pady=10)
 
     # Botón para llevar el presupuesto al carrito
-    add_to_cart_button = ttk.Button(frame_presupuestos, text="Agregar al Carrito", command=lambda: agregar_presupuesto(self, presupuestos_tree, nombre, carrito))
+    add_to_cart_button = ttk.Button(frame_botones, text="Agregar al Carrito", command=lambda: agregar_presupuesto(self, presupuestos_tree, nombre, carrito))
     # Posicionar el botón al centro del marco
-    add_to_cart_button.pack(pady=10)
+    add_to_cart_button.pack(side='left', padx=15, pady=10)
 
     # Crear un marco para la tabla de detalles y su scrollbar
     frame_detalles_tree = tk.Frame(frame_presupuestos)
