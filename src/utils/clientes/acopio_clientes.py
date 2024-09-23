@@ -42,7 +42,7 @@ def abrir_ventana_acopio(nombre):
     acopio_tree.column("cantidad", anchor="center", width=70)
     acopio_tree.column("fecha", anchor="center", width=150)
     acopio_tree.column("fecha_modificación", anchor="center", width=150)
-    acopio_tree.pack(padx=10, pady=10, fill="both", expand=True)
+    acopio_tree.grid(row=0, column=0, columnspan=7, padx=10, pady=10)
 
     # Obtener el cliente seleccionado en la tabla
     cliente = session.query(Clientes).filter_by(nombre=nombre).first()
@@ -77,7 +77,7 @@ def abrir_ventana_acopio(nombre):
     
     # Botón para eliminar un producto en acopio
     eliminar_producto_button = ttk.Button(ventana_acopio, text="Eliminar producto", command=eliminar_producto)
-    eliminar_producto_button.pack(pady=10)
+    eliminar_producto_button.grid(row=1, column=3, padx=10, pady=10)
 
     def editar_cantidad():
         # Obtener el ID del producto seleccionado
@@ -117,6 +117,51 @@ def abrir_ventana_acopio(nombre):
     
     # Botón para editar la cantidad de un producto en acopio
     editar_cantidad_button = ttk.Button(ventana_acopio, text="Editar cantidad", command=editar_cantidad)
-    editar_cantidad_button.pack(pady=10)
+    editar_cantidad_button.grid(row=1, column=4, padx=10, pady=10)
+
+    # Función para agregar un producto al acopio
+    def agregar_producto():
+        # Crear una nueva ventana para agregar un producto
+        ventana_agregar_producto = Toplevel()
+        ventana_agregar_producto.title("Agregar producto")
+        
+        producto_label = ttk.Label(ventana_agregar_producto, text="Producto:")
+        producto_label.pack(padx=10, pady=10)
+        producto_entry = ttk.Entry(ventana_agregar_producto)
+        producto_entry.pack(padx=10, pady=10)
+        
+        cantidad_label = ttk.Label(ventana_agregar_producto, text="Cantidad:")
+        cantidad_label.pack(padx=10, pady=10)
+        cantidad_entry = ttk.Entry(ventana_agregar_producto)
+        cantidad_entry.pack(padx=10, pady=10)
+        
+        guardar_button = ttk.Button(ventana_agregar_producto, text="Guardar", command=lambda: guardar_producto(producto_entry, cantidad_entry))
+        guardar_button.pack(pady=10)
+
+        def guardar_producto(producto_entry, cantidad_entry):
+            # Obtener los valores ingresados
+            producto = producto_entry.get()
+            cantidad = cantidad_entry.get()
+            
+            # Validar los valores ingresados
+            if not producto or not cantidad:
+                messagebox.showerror("Error", "Todos los campos son obligatorios.", parent=ventana_agregar_producto)
+                return
+            
+            # Crear un nuevo producto en acopio
+            nuevo_producto = Acopios(id_cliente=cliente.id, producto=producto, cantidad=cantidad, fecha=datetime.datetime.now())
+            session.add(nuevo_producto)
+            session.commit()
+            
+            # Actualizar el Treeview
+            acopio_tree.insert('', 'end', text=nuevo_producto.id, values=(nuevo_producto.producto, 
+                                                                        nuevo_producto.cantidad, 
+                                                                        nuevo_producto.fecha.strftime('%d/%m/%Y %H:%M:%S'), 
+                                                                        ""))
+            ventana_agregar_producto.destroy()
+
+    # Botón para agregar un producto al acopio
+    agregar_producto_button = ttk.Button(ventana_acopio, text="Agregar producto", command=agregar_producto)
+    agregar_producto_button.grid(row=1, column=2, padx=10, pady=10)
 
     return ventana_acopio
