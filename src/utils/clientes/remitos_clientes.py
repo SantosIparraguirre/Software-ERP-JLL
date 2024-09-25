@@ -9,7 +9,7 @@ from utils.remitos.generar_remitos import generar_remito_excel
 
 ventana_remitos = None
 
-def ver_remitos(self):
+def ver_remitos(self, carrito):
     # Obtener el cliente seleccionado en la tabla
     seleccion = self.clientes_tree.selection()
     if not seleccion:
@@ -17,9 +17,9 @@ def ver_remitos(self):
         return
     
     nombre = self.clientes_tree.item(seleccion)['values'][0]
-    abrir_ventana_remitos(self, nombre)
+    abrir_ventana_remitos(self, nombre, carrito)
 
-def abrir_ventana_remitos(self, nombre):
+def abrir_ventana_remitos(self, nombre, carrito):
     global ventana_remitos
 
     # Si la ventana de remitos ya está abierta, destruir la ventana actual y crear una nueva
@@ -86,27 +86,31 @@ def abrir_ventana_remitos(self, nombre):
     unir_remitos_button.grid(row=0, column=0, padx=5)
 
     # Botón para imprimir el remito
-    imprimir_remito_button = ttk.Button(frame_botones, text="Imprimir Remito", command=lambda: generar_remito_excel())
+    imprimir_remito_button = ttk.Button(frame_botones, text="Imprimir Remito", command=lambda: generar_remito(nombre, detalles_tree, remitos_tree))
     imprimir_remito_button.grid(row=0, column=1, padx=5)
+
+    # Botón para agregar el remito al carrito
+    agregar_al_carrito_button = ttk.Button(frame_botones, text="Agregar al Carrito", command=lambda: agregar_al_carrito(detalles_tree, remitos_tree, carrito))
+    agregar_al_carrito_button.grid(row=0, column=2, padx=5)
 
     # Botón para eliminar remitos
     eliminar_remito_button = ttk.Button(frame_botones, text="Eliminar Remito", command=lambda: eliminar_remito(remitos_tree, ventana_remitos))
-    eliminar_remito_button.grid(row=0, column=1, padx=5)
+    eliminar_remito_button.grid(row=0, column=3, padx=5)
 
     # Botón para modificar un detalle del remito
     # El botón toma como argumento la fila seleccionada en el Treeview de detalles
     modificar_detalle_button = ttk.Button(frame_botones, text="Modificar Detalle", command=lambda: modificar_detalle(remitos_tree, detalles_tree, ventana_remitos))
-    modificar_detalle_button.grid(row=0, column=2, padx=5)
+    modificar_detalle_button.grid(row=0, column=4, padx=5)
 
     # Botón para agregar un detalle al remito
     # El botón toma como argumento el ID del remito seleccionado
     agregar_detalle_button = ttk.Button(frame_botones, text="Agregar Detalle", command=lambda: agregar_detalle(remitos_tree, ventana_remitos, detalles_tree))
-    agregar_detalle_button.grid(row=0, column=3, padx=5)
+    agregar_detalle_button.grid(row=0, column=5, padx=5)
 
     # Botón para eliminar un detalle del remito
     # El botón toma como argumento la fila seleccionada en el Treeview de detalles
     eliminar_detalle_button = ttk.Button(frame_botones, text="Eliminar Detalle", command=lambda: eliminar_detalle(remitos_tree, detalles_tree, ventana_remitos))
-    eliminar_detalle_button.grid(row=0, column=4, padx=5)
+    eliminar_detalle_button.grid(row=0, column=6, padx=5)
 
     # Crear un marco para los detalles del remito
     frame_detalles = tk.Frame(ventana_remitos)
@@ -143,6 +147,51 @@ def abrir_ventana_remitos(self, nombre):
 
     # Vincular el evento de selección del Treeview de remitos a la función ver_detalles_remito
     remitos_tree.bind('<<TreeviewSelect>>', lambda event: ver_detalles_remito(remitos_tree, detalles_tree))
+
+def generar_remito(nombre, detalles_tree, remitos_tree):
+    # Pasar los datos del treeview a una lista de tuplas
+    detalles = []
+    for item in detalles_tree.get_children():
+        # Obtener los valores del item
+        values = detalles_tree.item(item)['values']
+        # Seleccionar solo los valores necesarios en el orden correcto
+        producto = values[1]
+        cantidad = values[2]
+        precio_unitario = values[3]
+        descuento = values[4]
+        total = values[5]
+        detalles.append((producto, cantidad, descuento, precio_unitario))
+    
+    observacion = remitos_tree.item(remitos_tree.selection())['values'][5]
+    
+    generar_remito_excel(nombre, detalles, observacion, True)
+
+def agregar_al_carrito(detalles_tree, remitos_tree, carrito):
+    seleccion = remitos_tree.selection()
+    if not seleccion:
+        messagebox.showerror("Error", "Selecciona un remito.", parent=ventana_remitos)
+        return
+    
+    id_remito = remitos_tree.item(seleccion)['values'][0]
+
+    # Mensaje de confirmación
+    confirmacion = messagebox.askyesno("Confirmación", f"¿Estás seguro de agregar el remito {id_remito} al carrito?", parent=ventana_remitos)
+    if not confirmacion:
+        return
+    
+    # Obtener el remito de la base de datos
+    remito = session.query(Remitos).filter_by(id=id_remito).first()
+
+    # Limpiar el carrito
+    carrito.clear()
+    
+    # Iterar para agregar los detalles al carrito
+    for detalle in remito.detalles:
+        carrito.append((detalle.producto, detalle.cantidad, f'{detalle.descuento}%', f"${detalle.precio_unitario:,.2f}"))
+
+    # Mensaje de éxito
+    messagebox.showinfo('Éxito', 'Remito agregado al carrito exitosamente', parent=ventana_remitos)
+
 
 def unir_remitos(remitos_tree, detalles_tree, ventana_remitos):
     # Obtener los IDs de los remitos seleccionados

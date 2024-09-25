@@ -136,7 +136,7 @@ class ClientesWidget(tk.Tk):
 
         # Botón para ver los remitos de un cliente
         # El botón llama a la función ver_remitos cuando se hace click
-        self.ver_remitos_button = ttk.Button(self.main_frame, text="Remitos", command=self.ver_remitos)
+        self.ver_remitos_button = ttk.Button(self.main_frame, text="Remitos", command=lambda: self.ver_remitos(carrito))
         self.ver_remitos_button.place(x=940, y=140)
 
         # Botón para ver las deudas de un cliente
@@ -236,9 +236,9 @@ class ClientesWidget(tk.Tk):
         # Llamar a la función ver_presupuestos
         ver_presupuestos(self, carrito)
 
-    def ver_remitos(self):
+    def ver_remitos(self, carrito):
         # Llamar a la función ver_remitos
-        ver_remitos(self)
+        ver_remitos(self, carrito)
 
     def ver_deudas(self):
         # Llamar a la función ver_deudas
