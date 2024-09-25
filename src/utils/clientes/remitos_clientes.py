@@ -5,6 +5,7 @@ from datetime import datetime
 import os
 from openpyxl import load_workbook
 from openpyxl.styles import Font, Alignment, Border, Side, PatternFill
+from utils.remitos.generar_remitos import generar_remito_excel
 
 ventana_remitos = None
 
@@ -83,6 +84,10 @@ def abrir_ventana_remitos(self, nombre):
     # Botón para unir remitos
     unir_remitos_button = ttk.Button(frame_botones, text="Remito General", command=lambda: unir_remitos(remitos_tree, detalles_tree, ventana_remitos))
     unir_remitos_button.grid(row=0, column=0, padx=5)
+
+    # Botón para imprimir el remito
+    imprimir_remito_button = ttk.Button(frame_botones, text="Imprimir Remito", command=lambda: generar_remito_excel())
+    imprimir_remito_button.grid(row=0, column=1, padx=5)
 
     # Botón para eliminar remitos
     eliminar_remito_button = ttk.Button(frame_botones, text="Eliminar Remito", command=lambda: eliminar_remito(remitos_tree, ventana_remitos))
