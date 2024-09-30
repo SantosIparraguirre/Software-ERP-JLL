@@ -1,0 +1,7 @@
+openpyxl==3.1.2
+pandas==2.2.3
+Pillow==10.4.0
+pywin32==306
+SQLAlchemy==2.0.30
+tqdm==4.66.4
+ttkwidgets==0.13.0
