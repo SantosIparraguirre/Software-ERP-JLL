@@ -44,6 +44,8 @@ def actualizar_clientes(clientes_tree, session, Clientes):
     clientes_tree.delete(*clientes_tree.get_children())
     # Obtener todos los clientes de la base de datos
     clientes = session.query(Clientes).all()
+    # Ordenarlos alfabeticamente
+    clientes = sorted(clientes, key=lambda x: x.nombre)
     # Iterar sobre los clientes y agregarlos a la tabla de clientes
     for cliente in clientes:
         clientes_tree.insert('', 'end', values=(cliente.nombre, cliente.cuit, cliente.telefono, cliente.direccion))
