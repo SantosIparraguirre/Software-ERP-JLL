@@ -62,21 +62,21 @@ def calcular_total(carrito, carrito_treeview):
 def agregar_fuera_lista(carrito, producto_var, cantidad_fuera_lista_var, precio_var):
     # Obtener el nombre y precio del producto ingresados por el usuario
     producto = producto_var.get()
-    # Obtener la cantidad y precio del producto ingresados por el usuario
-    cantidad = cantidad_fuera_lista_var.get()
-    # Obtener la cantidad y precio del producto ingresados por el usuario y formatearlo como moneda
-    precio = f'${precio_var.get():,.2f}'
 
-    # Validar que el producto y el precio no estén vacíos
     if not producto:
-        messagebox.showerror("Error", "Ingresa un producto.")
+        messagebox.showerror("Error", "Ingresa el nombre del producto.")
         return
     
-    if not cantidad:
+    # Obtener la cantidad y precio del producto ingresados por el usuario
+    try:
+        cantidad = cantidad_fuera_lista_var.get()
+    except:
         messagebox.showerror("Error", "Ingresa una cantidad.")
         return
-    
-    if not precio:
+    # Obtener la cantidad y precio del producto ingresados por el usuario y formatearlo como moneda
+    try:
+        precio = f'${precio_var.get():,.2f}'
+    except: 
         messagebox.showerror("Error", "Ingresa un precio.")
         return
     
@@ -95,7 +95,7 @@ def agregar_fuera_lista(carrito, producto_var, cantidad_fuera_lista_var, precio_
     else:
         # Si el producto no está en el carrito, agregarlo al final
         carrito.append((producto, cantidad, '', precio))
-        
+
     # Limpiar los campos de entrada después de agregar el producto
     producto_var.set('')
     cantidad_fuera_lista_var.set('')
