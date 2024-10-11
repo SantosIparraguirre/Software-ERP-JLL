@@ -21,8 +21,16 @@ def agregar_al_carrito(carrito, productos_tree, cantidad_var, descuento_var):
         messagebox.showerror("Error", "Ingresa una cantidad válida.")
         return
 
-    # Agregar el producto al carrito y actualizar la lista de productos
-    carrito.append((producto_nombre, cantidad, descuento, precio))
+    # Verificar si el producto ya está en el carrito
+    for i, (nombre, cant, desc, prec) in enumerate(carrito):
+        if nombre == producto_nombre:
+            # Si el producto ya está en el carrito, sumar la cantidad
+            nueva_cantidad = cant + cantidad
+            carrito[i] = (nombre, nueva_cantidad, desc, prec)
+            break
+    else:
+        # Si el producto no está en el carrito, agregarlo al final
+        carrito.append((producto_nombre, cantidad, descuento, precio))
 
 def actualizar_carrito(carrito_treeview, carrito):
     # Limpiar la lista de productos del carrito antes de insertar los productos actuales
@@ -60,12 +68,34 @@ def agregar_fuera_lista(carrito, producto_var, cantidad_fuera_lista_var, precio_
     precio = f'${precio_var.get():,.2f}'
 
     # Validar que el producto y el precio no estén vacíos
-    if not producto or not precio:
-        messagebox.showerror("Error", "Ingresa un producto y un precio.")
+    if not producto:
+        messagebox.showerror("Error", "Ingresa un producto.")
         return
-
-    # Agregar el producto a la lista de productos del carrito
-    carrito.append((producto, cantidad, '', precio))
+    
+    if not cantidad:
+        messagebox.showerror("Error", "Ingresa una cantidad.")
+        return
+    
+    if not precio:
+        messagebox.showerror("Error", "Ingresa un precio.")
+        return
+    
+    # Validar que la cantidad sea mayor a 0
+    if float(cantidad) <= 0:
+        messagebox.showerror("Error", "Ingresa una cantidad válida.")
+        return
+    
+    # Verificar si el producto ya está en el carrito
+    for i, (nombre, cant, desc, prec) in enumerate(carrito):
+        if nombre == producto:
+            # Si el producto ya está en el carrito, sumar la cantidad
+            nueva_cantidad = cant + cantidad
+            carrito[i] = (nombre, nueva_cantidad, desc, prec)
+            break
+    else:
+        # Si el producto no está en el carrito, agregarlo al final
+        carrito.append((producto, cantidad, '', precio))
+        
     # Limpiar los campos de entrada después de agregar el producto
     producto_var.set('')
     cantidad_fuera_lista_var.set('')
