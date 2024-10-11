@@ -1,3 +1,5 @@
+# Archivo principal para la interfaz de remitos
+
 import tkinter as tk
 from tkinter import ttk, messagebox
 from ttkwidgets.autocomplete import AutocompleteCombobox
