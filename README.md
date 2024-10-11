@@ -1,11 +1,13 @@
 # Software de gestión integral
 
 ## Descripción
-Este proyecto es una aplicación de escritorio desarrollada en Python utilizando Tkinter para la interfaz gráfica y SQLAlchemy para la gestión de la base de datos. La aplicación está diseñada para una empresa de materiales de construcción y permite generar y guardar presupuestos, remitos, facturas y administrar clientes.
+Este proyecto es una aplicación de escritorio desarrollada en Python utilizando Tkinter para la interfaz gráfica y SQLAlchemy para la gestión de la base de datos. La aplicación está diseñada para una empresa de materiales de construcción y permite generar y guardar presupuestos, remitos, facturas y administrar clientes. 
 
 ## Características
 - **Interfaz intuitiva y amigable**: El diseño está pensado para facilitar el uso por parte de empleados de la empresa, con herramientas visuales claras y de fácil acceso.
 - **Facilidad de expansión**: Estructura modular que permite agregar nuevas funcionalidades sin afectar el núcleo de la aplicación.
+
+### Funcionalidades
 - **Listas de productos**: Seleccionar una línea de productos/proveedores para buscar sus productos.
 - **Aumento de precios**: Permite aumentar los precios de los productos o la lista seleccionada, por el porcentaje ingresado.
 - **Gestión de Carrito**: Añadir, eliminar, editar y visualizar productos en un carrito de compras.
@@ -18,7 +20,7 @@ Este proyecto es una aplicación de escritorio desarrollada en Python utilizando
 - **Sistema de acopios**: Agregar producto al acopio del cliente, descontar productos del mismo a través de un remito, generar un remito de deuda automáticamente si se excede la cantidad / retira un producto que no está en acopio.
 - **Copia de seguridad**: Proceso automatizado para realizar un backup diario de la DB y subirlo a la nube.
 
-## Librerias principales
+## Librerias principales 
 - Tkinter
 - SQLAlchemy
 - Openpyxl
