@@ -39,6 +39,11 @@ def descontar_de_acopio(carrito, cliente, imprimir):
     if not cliente:
         messagebox.showerror("Error", "Selecciona un cliente.")
         return
+    
+    # Mensaje de confirmación
+    confirmacion = messagebox.askyesno("Confirmación", "¿Estás seguro que deseas descontar los productos del acopio y guardar el remito?")
+    if not confirmacion:
+        return
 
     # Obtener el ID del cliente seleccionado en la DB
     cliente_id = session.query(Clientes).filter(Clientes.nombre == cliente).first().id

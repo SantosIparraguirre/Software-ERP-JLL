@@ -27,10 +27,11 @@ def guardar_remito(nombre_cliente, carrito, observaciones, deuda=False):
             else:
                 pago = "SI"
 
-            # Preguntar al usuario si desea guardar el remito
-            guardar = messagebox.askyesno("Guardar", "¿Deseas guardar el remito?")
-            if not guardar:
-                return
+            if observaciones != "De Acopio":
+                # Preguntar al usuario si desea guardar el remito
+                guardar = messagebox.askyesno("Guardar", "¿Deseas guardar el remito?")
+                if not guardar:
+                    return
         
         else:
             cliente = session.query(Clientes).filter_by(nombre=nombre_cliente).first()
