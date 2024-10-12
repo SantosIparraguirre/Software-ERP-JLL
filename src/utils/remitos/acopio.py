@@ -34,6 +34,18 @@ def agregar_a_acopio(carrito, cliente):
     session.commit()
 
 def descontar_de_acopio(carrito, cliente, imprimir):
+    # Si no se seleccionó ningún cliente, anular la operación
+    if not cliente:
+        messagebox.showerror("Error", "Selecciona un cliente.")
+        return
+    
+    # Mensaje de confirmación
+    confirmacion = messagebox.askyesno("Confirmar", "¿Deseas descontar los productos del acopio?")
+
+    # Si el usuario no confirma, anular la operación
+    if not confirmacion:
+        return
+
     # Obtener el ID del cliente seleccionado en la DB
     cliente_id = session.query(Clientes).filter(Clientes.nombre == cliente).first().id
 
