@@ -378,6 +378,7 @@ class RemitosApp(tk.Tk):
             descontar_de_acopio(self.carrito, cliente, imprimir)
         
         elif observaciones == "A retirar" or observaciones == "Devolución":
+            # Lógica para descontar de acopio y agregar al carrito
             agregar_a_acopio(self.carrito, cliente)
             guardar_remito(cliente, self.carrito, self.observaciones_var)
             generar_remito_excel(cliente, self.carrito, observaciones, imprimir)
