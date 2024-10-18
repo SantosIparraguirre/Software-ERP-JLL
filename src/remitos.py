@@ -159,7 +159,7 @@ class RemitosApp(tk.Tk):
         self.cantidad_var = tk.DoubleVar()
         # Entry para ingresar la cantidad, textvariable es la variable que almacena el valor ingresado
         self.cantidad_entry = ttk.Entry(self.main_frame, textvariable=self.cantidad_var)
-        self.cantidad_entry.place(x=115, y=400)
+        self.cantidad_entry.place(x=100, y=400)
         # Llamar a la función agregar_al_carrito cuando se presiona Enter
         self.cantidad_entry.bind("<Return>", self.agregar_al_carrito)
 
@@ -172,14 +172,24 @@ class RemitosApp(tk.Tk):
         self.descuento_var = tk.DoubleVar()
         # Entry para ingresar el descuento, textvariable es la variable que almacena el valor ingresado
         self.descuento_entry = ttk.Entry(self.main_frame, textvariable=self.descuento_var)
-        self.descuento_entry.place(x=115, y=430)
+        self.descuento_entry.place(x=100, y=430)
         # Llamar a la función agregar_al_carrito cuando se presiona Enter
         self.descuento_entry.bind("<Return>", self.agregar_al_carrito)
+
+        # Etiqueta de aumento
+        self.aumento_label = ttk.Label(self.main_frame, text="Aumento (%):")
+        self.aumento_label.place(x=10, y=460)
+
+        # Campo de aumento
+        self.aumento_var = tk.DoubleVar()
+        self.aumento_entry = ttk.Entry(self.main_frame, textvariable=self.aumento_var)
+        self.aumento_entry.place(x=100, y=460)
+        self.aumento_entry.bind("<Return>", self.agregar_al_carrito)
 
         # Botón para agregar al carrito
         # El botón llama a la función agregar_al_carrito cuando se hace click
         self.add_button = ttk.Button(self.main_frame, text="Agregar al Carrito", command=self.agregar_al_carrito)
-        self.add_button.place(x=260, y=398)
+        self.add_button.place(x=235, y=428)
 
         # Etiqueta para mostrar el logo
         self.logo = ImageTk.PhotoImage(file="./icons/logo.png")
@@ -327,7 +337,7 @@ class RemitosApp(tk.Tk):
     # Funciones para interactuar con el carrito
     def agregar_al_carrito(self, event=None):
         # Llamar a la función agregar_al_carrito con el carrito, la tabla de productos, la cantidad y el descuento
-        agregar_al_carrito(self.carrito, self.productos_tree, self.cantidad_var, self.descuento_var)
+        agregar_al_carrito(self.carrito, self.productos_tree, self.cantidad_var, self.descuento_var, self.aumento_var)
         # Actualizar la lista de productos del carrito
         self.actualizar_carrito()
 

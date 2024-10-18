@@ -1,7 +1,7 @@
 from tkinter import messagebox
 import tkinter as tk
 
-def agregar_al_carrito(carrito, productos_tree, cantidad_var, descuento_var):
+def agregar_al_carrito(carrito, productos_tree, cantidad_var, descuento_var, aumento_var):
     # Obtener el producto seleccionado en la tabla de productos
     selected_item = productos_tree.selection()
 
@@ -12,7 +12,8 @@ def agregar_al_carrito(carrito, productos_tree, cantidad_var, descuento_var):
     # Obtener el nombre y precio del producto seleccionado a través del índice
     item = productos_tree.item(selected_item)
     producto_nombre = item['values'][2]
-    precio = item['values'][3]
+    # Convertir el precio a float antes de la multiplicación y formatear el resultado
+    precio = f"${float(item['values'][3][1:].replace(',', '')) * (1 + aumento_var.get() / 100):,.2f}"
     # Obtener la cantidad y descuento ingresados por el usuario con el método get
     cantidad = cantidad_var.get()
     descuento = f'{descuento_var.get()}%' if descuento_var.get() > 0 else ''
